@@ -3,26 +3,15 @@ import { Button } from "@/components/ui/button"
 import { ExternalLink, Cpu, HardDrive, LayoutGrid, MemoryStick } from "lucide-react"
 import type { Product } from "@/hooks/use-products"
 
-// Google favicon proxy — no CORS issues, reliable for all stores
-const STORE_DOMAIN: Record<string, string> = {
-    vatan: "vatanbilgisayar.com",
-    itopya: "itopya.com",
-    gaminggen: "gaming.gen.tr",
-    gamegaraj: "gamegaraj.com",
-    pckolik: "pckolik.com",
-    sinerji: "sinerji.gen.tr",
-    incehesap: "incehesap.com",
-    tebilon: "tebilon.com",
-    gencergaming: "gencergaming.com",
-}
-
 function getLogoUrl(store: string) {
     const key = store.toLowerCase().replace(/[^a-z]/g, "")
-    const domain = STORE_DOMAIN[key]
-    if (!domain) return null
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+    // Listed stores have a dedicated logo in the /logos/ folder
+    const validStores = ["vatan", "itopya", "gaminggen", "gamegaraj", "pckolik", "sinerji", "incehesap", "tebilon", "gencergaming"]
+    if (validStores.includes(key)) {
+        return `/logos/${key}.png`
+    }
+    return null
 }
-
 function StoreBadge({ store }: { store: string }) {
     const logoUrl = getLogoUrl(store)
 

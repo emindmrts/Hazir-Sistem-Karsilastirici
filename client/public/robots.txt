@@ -1,3 +1,4 @@
 User-agent: *
-Disallow: /api/combined
 Allow: /
+
+Sitemap: https://www.ucuzasistem.com/sitemap.xml

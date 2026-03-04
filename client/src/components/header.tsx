@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ModeToggle } from "./mode-toggle"
-import { MonitorPlay, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 
 interface HeaderProps {
@@ -23,15 +23,21 @@ export function Header({ searchValue, onSearchChange }: HeaderProps) {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
-            <div className="px-4 md:px-8 flex h-16 max-w-screen-2xl mx-auto items-center gap-4">
+            <div className="px-4 md:px-8 flex h-20 max-w-screen-2xl mx-auto items-center gap-4">
                 {/* Brand */}
-                <a ref={logoRef} href="/" className="flex items-center gap-2.5 shrink-0 opacity-0">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground shadow-sm">
-                        <MonitorPlay className="h-4 w-4" />
-                    </div>
-                    <span className="hidden font-bold sm:inline-block text-lg tracking-tight">
-                        Ucuza Sistem
-                    </span>
+                <a ref={logoRef} href="/" className="flex items-center shrink-0 opacity-0 group h-16 sm:h-20 w-auto">
+                    {/* Light mode logo (siyahlogo.png) */}
+                    <img
+                        src="/siyahlogo.png"
+                        alt="PCKARSILASTIR.com"
+                        className="h-full w-auto object-contain dark:hidden transition-opacity duration-300 group-hover:opacity-80 py-2 sm:py-3"
+                    />
+                    {/* Dark mode logo (beyazlogo.png) */}
+                    <img
+                        src="/beyazlogo.png"
+                        alt="PCKARSILASTIR.com"
+                        className="h-full w-auto object-contain hidden dark:block transition-opacity duration-300 group-hover:opacity-80 py-2 sm:py-3"
+                    />
                 </a>
 
                 {/* Search */}
@@ -52,7 +58,7 @@ export function Header({ searchValue, onSearchChange }: HeaderProps) {
                 {/* Right nav */}
                 <nav ref={navRef} className="flex items-center gap-1 shrink-0 opacity-0">
                     <a
-                        href="mailto:ucuza.sistem.iletisim@gmail.com"
+                        href="mailto:zenith31269@gmail.com"
                         className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
                     >
                         İletişim
