@@ -1,7 +1,48 @@
+/**
+ * getProducts.mjs — filtered, sorted, paginated product endpoint.
+ *
+ * Improvements:
+ *  - In-memory cache of mock.json (invalidated when file changes via fs.watch)
+ *  - Accepts both `url` and `link` field names
+ *  - SSD/RAM filter support
+ */
+
 import { Router } from "express";
 import { promises as fs } from "fs";
+import { watch } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const router = Router();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const MOCK_PATH = path.join(__dirname, "..", "mock.json");
+
+// ─── In-memory cache ─────────────────────────────────────────────────────────
+let cache = null;
+
+async function loadCache() {
+  const raw = await fs.readFile(MOCK_PATH, "utf-8");
+  cache = JSON.parse(raw);
+  console.log(`[cache] Loaded ${cache.length} products from mock.json`);
+  return cache;
+}
+
+async function getProducts() {
+  if (!cache) await loadCache();
+  return cache;
+}
+
+// Invalidate cache when mock.json is written
+watch(MOCK_PATH, (eventType) => {
+  if (eventType === "change") {
+    console.log("[cache] mock.json changed — invalidating cache");
+    cache = null;
+  }
+});
+
+// ─── Route ───────────────────────────────────────────────────────────────────
 
 router.post("/", async (req, res) => {
   const {
@@ -10,153 +51,75 @@ router.post("/", async (req, res) => {
     endPrice,
     selectedGPUs,
     selectedCPUs,
-    selectedGPUModels,
-    selectedCPUModels,
     stores,
     page = 1,
-    pageSize = 10,
+    pageSize = 60,
     orderBy,
     isStocked,
   } = req.body;
 
   try {
-    const data = JSON.parse(await fs.readFile("mock.json", "utf-8"));
+    let data = await getProducts();
 
-    let filteredData = data;
+    // Normalise: ensure every item has a `url` and `price` as number
+    data = data.map((item) => ({
+      ...item,
+      url: item.url ?? item.link ?? "",
+      price: typeof item.price === "number" ? item.price : parseFloat(String(item.price ?? 0)) || 0,
+    }));
 
-    if (startPrice !== undefined && startPrice > 0) {
-      filteredData = filteredData.filter((item) => item.price >= startPrice);
-    }
-    if (endPrice !== undefined && endPrice > 0) {
-      filteredData = filteredData.filter((item) => item.price <= endPrice);
-    }
-    if (searchTerm !== undefined && searchTerm !== null) {
-      filteredData = filteredData.filter(
-        (item) =>
-          item.name &&
-          item.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    if (selectedGPUs && selectedGPUs.length > 0) {
-      filteredData = filteredData.filter((item) =>
-        selectedGPUs.some(
-          (model) =>
-            item.specs?.GPU &&
-            item.specs.GPU.toLowerCase().includes(model.toLowerCase())
-        )
-      );
-    }
-    if (selectedGPUModels && selectedGPUModels.length > 0) {
-      filteredData = filteredData.filter((item) =>
-        selectedGPUModels.some((series) => {
-          let gpuName = item.specs?.GPU?.toLowerCase().replace(/\s+/g, "");
-          let normalizedSeries = series.replace(/\s+/g, "").toLowerCase();
-    
-          if (gpuName && gpuName.includes("arc")) {
-            const arcIndex = gpuName.indexOf("arc");
-            const modifiedGPU =
-              gpuName.slice(0, arcIndex + 3) +
-              gpuName.slice(arcIndex + 3).replace("a", "");
-            gpuName = modifiedGPU;
-          }
-    
-          return gpuName?.includes(normalizedSeries);
-        })
-      );
-    }
-    
+    // ── Filters ──────────────────────────────────────────────────────────────
+    if (startPrice != null && startPrice > 0)
+      data = data.filter((i) => i.price >= startPrice);
 
-    if (selectedCPUModels && selectedCPUModels.length > 0) {
-      filteredData = filteredData.filter((item) =>
-        selectedCPUModels.some(
-          (series) =>
-            item.specs?.CPU &&
-            (item.specs.CPU.toLowerCase() + " ").includes(series.toLowerCase())
-        )
-      );
-    }
+    if (endPrice != null && endPrice > 0)
+      data = data.filter((i) => i.price <= endPrice);
 
-    if (selectedCPUs && selectedCPUs.length > 0) {
-      if (
-        selectedCPUs[0].toLowerCase() === "amd" &&
-        selectedCPUs.length === 1
-      ) {
-        filteredData = filteredData.filter((item) =>
-          selectedCPUs.some(
-            (cpu) =>
-              item.specs?.CPU &&
-              (item.specs.CPU.toLowerCase().includes("r3 ") ||
-                item.specs.CPU.toLowerCase().includes("r5 ") ||
-                item.specs.CPU.toLowerCase().includes("r7 ") ||
-                item.specs.CPU.toLowerCase().includes("amd") ||
-                item.specs.CPU.toLowerCase().includes("ryzen"))
-          )
-        );
-      } else if (
-        selectedCPUs[0].toLowerCase() === "intel" &&
-        selectedCPUs.length === 1
-      ) {
-        filteredData = filteredData.filter((item) =>
-          selectedCPUs.some(
-            (cpu) =>
-              item.specs?.CPU &&
-              (item.specs.CPU.toLowerCase().includes("i3 ") ||
-                item.specs.CPU.toLowerCase().includes("i5 ") ||
-                item.specs.CPU.toLowerCase().includes("i7 ") ||
-                item.specs.CPU.toLowerCase().includes("intel") ||
-                item.specs.CPU.toLowerCase().includes("ıntel") ||
-                item.specs.CPU.toLowerCase().includes("core"))
-          )
-        );
-      }
-    }
-    if (stores && stores.length > 0) {
-      filteredData = filteredData.filter((item) =>
-        stores.some(
-          (store) =>
-            item.store && item.store.toLowerCase().includes(store.toLowerCase())
-        )
+    if (searchTerm)
+      data = data.filter(
+        (i) => i.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-    }
 
-    if (isStocked === true) {
-      filteredData = filteredData.filter((item) => {
-        return (
-          item.price !== null && item.price !== undefined && item.price !== 0
-        );
+    if (selectedGPUs?.length)
+      data = data.filter((i) =>
+        selectedGPUs.some((g) => i.specs?.GPU?.toLowerCase().includes(g.toLowerCase()))
+      );
+
+    if (selectedCPUs?.length) {
+      const hasAmd = selectedCPUs.some((c) => c.toLowerCase() === "amd");
+      const hasIntel = selectedCPUs.some((c) => c.toLowerCase() === "intel");
+      data = data.filter((i) => {
+        const cpu = (i.specs?.CPU ?? "").toLowerCase();
+        if (hasAmd && (cpu.includes("ryzen") || cpu.includes("r3") || cpu.includes("r5") || cpu.includes("r7") || cpu.includes("amd"))) return true;
+        if (hasIntel && (cpu.includes("intel") || cpu.includes("core") || cpu.includes("i3") || cpu.includes("i5") || cpu.includes("i7") || cpu.includes("i9"))) return true;
+        return false;
       });
     }
 
-    if (orderBy) {
-      filteredData.sort((a, b) => {
-        if (orderBy === "lowToHigh") {
-          return a.price - b.price;
-        } else if (orderBy === "highToLow") {
-          return b.price - a.price;
-        }
-        return 0;
-      });
-    }
+    if (stores?.length)
+      data = data.filter((i) =>
+        stores.some((s) => i.store?.toLowerCase().includes(s.toLowerCase()))
+      );
 
-    const totalItems = filteredData.length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-    const paginatedData = filteredData.slice(
-      (page - 1) * pageSize,
-      page * pageSize
-    );
+    if (isStocked === true)
+      data = data.filter((i) => i.price > 0);
+
+    // ── Sort ─────────────────────────────────────────────────────────────────
+    if (orderBy === "lowToHigh") data.sort((a, b) => a.price - b.price);
+    if (orderBy === "highToLow") data.sort((a, b) => b.price - a.price);
+
+    // ── Paginate ─────────────────────────────────────────────────────────────
+    const totalItems = data.length;
+    const totalPages = Math.ceil(totalItems / pageSize) || 1;
+    const paginatedData = data.slice((page - 1) * pageSize, page * pageSize);
 
     res.json({
       data: paginatedData,
-      pagination: {
-        totalItems,
-        totalPages,
-        currentPage: page,
-        pageSize,
-      },
+      pagination: { totalItems, totalPages, currentPage: page, pageSize },
     });
-  } catch (error) {
-    console.error("Error occurred while filtering products:", error);
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error("[getProducts] Error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 

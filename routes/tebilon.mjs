@@ -1,164 +1,101 @@
-import express from "express";
-import fetch from "node-fetch";
+import { Router } from "express";
 import { JSDOM } from "jsdom";
+import { fetchHtml, parsePrice, normalise } from "../lib/scraper-utils.mjs";
 
-const router = express.Router();
+const router = Router();
 
-async function getTotalPages(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.error(`Failed to fetch ${url}: ${response.statusText}`);
-      return 1;
-    }
+const BASE = "https://www.tebilon.com/hazir-sistemler/";
 
-    const html = await response.text();
-    const dom = new JSDOM(html);
-    const doc = dom.window.document;
-    const paginationElements = doc.querySelectorAll(
-      ".productSort__pagination a"
-    );
-    const totalPages = Array.from(paginationElements)
-      .map((el) => parseInt(el.textContent.trim()))
-      .filter((num) => !isNaN(num))
-      .sort((a, b) => b - a)[0];
-
-    return totalPages || 1;
-  } catch (error) {
-    console.error(`Error fetching total pages from ${url}: ${error.message}`);
-    return 1;
-  }
+async function getTotalPages() {
+  const html = await fetchHtml(BASE, { timeoutMs: 20_000, retries: 2 });
+  const { document: doc } = new JSDOM(html).window;
+  const nums = Array.from(doc.querySelectorAll(".productSort__pagination a"))
+    .map((a) => parseInt(a.textContent.trim()))
+    .filter((n) => !isNaN(n));
+  return nums.length ? Math.max(...nums) : 1;
 }
 
-async function fetchAllProducts(urls) {
+async function scrapeListPage(url) {
+  const html = await fetchHtml(url, { timeoutMs: 25_000, retries: 2 });
+  const { document: doc } = new JSDOM(html).window;
   const products = [];
-  const fetchPromises = urls.map(async (url) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        console.error(`Failed to fetch ${url}: ${response.statusText}`);
-        return;
-      }
 
-      const html = await response.text();
-      const dom = new JSDOM(html);
-      const doc = dom.window.document;
-      let productElements = doc.querySelectorAll(".showcase__product");
-      if (productElements.length > 39) {
-        productElements = Array.from(productElements).slice(0, 40);
-      }
+  let els = Array.from(doc.querySelectorAll(".showcase__product"));
+  if (els.length > 40) els = els.slice(0, 40);
 
-      productElements.forEach((productElement) => {
-        const nameElement = productElement.querySelector(".showcase__title a");
-        const priceElement = productElement.querySelector(".newPrice");
-        const imageElement = productElement.querySelector(
-          ".showcase__image img"
-        );
+  els.forEach((el) => {
+    const nameEl = el.querySelector(".showcase__title a");
+    const name = nameEl?.textContent.trim() ?? "N/A";
+    const rawHref = nameEl?.getAttribute("href") ?? "";
+    const productUrl = rawHref.startsWith("http")
+      ? rawHref
+      : rawHref
+        ? `https://www.tebilon.com${rawHref.startsWith("/") ? "" : "/"}${rawHref}`
+        : "";
 
-        const link = nameElement ? nameElement.href : "No link";
-        const name = nameElement ? nameElement.textContent.trim() : "No name";
+    const priceText = el.querySelector(".newPrice")?.textContent ?? "0";
+    const price = parsePrice(priceText);
+    const image = el.querySelector(".showcase__image img")?.getAttribute("src") ?? null;
 
-        // Parse the price
-        const priceText = priceElement
-          ? priceElement.textContent
-              .trim()
-              .replace(/\s+/g, " ")
-              .replace(" TL", "")
-          : "0";
-        const price =
-          parseFloat(priceText.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
-
-        const image = imageElement
-          ? imageElement.getAttribute("src")
-          : "No image";
-
-        products.push({ name, price, image, link, store: "tebilon" });
-      });
-    } catch (error) {
-      console.error(
-        `Error fetching product list from ${url}: ${error.message}`
-      );
-    }
+    products.push({ name, price, image, url: productUrl });
   });
 
-  await Promise.all(fetchPromises);
   return products;
 }
 
-async function fetchProductDetails(url) {
+async function scrapeDetails(url) {
+  if (!url) return {};
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.error(`Failed to fetch ${url}: ${response.statusText}`);
-      return null;
-    }
-
-    const html = await response.text();
-    const dom = new JSDOM(html);
-    const doc = dom.window.document;
-    const specElements = doc.querySelectorAll(".spec-head");
-
-    const tempSpecs = {};
-    specElements.forEach((specElement) => {
-      const titleElement = specElement.querySelector(".spec-sub-title span");
-      const detailElement = specElement.querySelector(".spec-detail span");
-      if (titleElement && detailElement) {
-        const title = titleElement.textContent.trim();
-        const detail = detailElement.textContent.trim();
-        tempSpecs[title] = detail;
-      }
+    const html = await fetchHtml(url, { timeoutMs: 20_000, retries: 2 });
+    const { document: doc } = new JSDOM(html).window;
+    const map = {};
+    doc.querySelectorAll(".spec-head").forEach((el) => {
+      const key = el.querySelector(".spec-sub-title span")?.textContent.trim() ?? "";
+      const val = el.querySelector(".spec-detail span")?.textContent.trim() ?? "";
+      if (key) map[key] = val;
     });
-
-    const specs = {
-      CPU: tempSpecs["İşlemci Modeli"] || "N/A",
-      Motherboard: "N/A",
-      GPU: tempSpecs["Grafik İşlemci"] || "N/A",
-      Ram: tempSpecs["Ram Kapasitesi"] || "N/A",
-      Case : (
-        (tempSpecs["PSU"] || "") + " " + (tempSpecs["PSU Verimlilik"] || "")
-      ).trim() === "" ? "N/A" : (tempSpecs["PSU"] || "") + " " + (tempSpecs["PSU Verimlilik"] || ""),
-      Storage:
-        (tempSpecs["Depolama Kapasitesi"] || "") +
-        " " +
-        (tempSpecs["Depolama Türü"] || "N/A"),
+    return {
+      CPU: map["İşlemci Modeli"] ?? null,
+      GPU: map["Grafik İşlemci"] ?? null,
+      RAM: map["Ram Kapasitesi"] ?? null,
+      SSD: [map["Depolama Kapasitesi"], map["Depolama Türü"]].filter(Boolean).join(" ") || null,
+      Motherboard: null,
     };
-
-    return specs;
-  } catch (error) {
-    console.error(
-      `Error fetching product details from ${url}: ${error.message}`
-    );
-    return null;
+  } catch {
+    return {};
   }
 }
 
-function generateUrls(base, totalPages) {
-  const urls = [];
-  for (let i = 1; i <= totalPages; i++) {
-    const url = `${base}?page=${i}`;
-    urls.push(url);
+async function scrapeAllPages() {
+  const totalPages = await getTotalPages();
+  const urls = Array.from({ length: totalPages }, (_, i) => `${BASE}?page=${i + 1}`);
+
+  const listResults = await Promise.allSettled(urls.map(scrapeListPage));
+  const listItems = listResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+
+  // Fetch details 8 at a time to avoid hammering the server
+  const BATCH = 8;
+  const withDetails = [];
+  for (let i = 0; i < listItems.length; i += BATCH) {
+    const batch = listItems.slice(i, i + BATCH);
+    const settled = await Promise.allSettled(batch.map((p) => scrapeDetails(p.url)));
+    batch.forEach((p, idx) => {
+      const specs = settled[idx].status === "fulfilled" ? settled[idx].value : {};
+      withDetails.push(normalise({ ...p, specs }, "tebilon"));
+    });
   }
-  return urls;
+
+  return withDetails;
 }
 
 router.get("/", async (req, res) => {
-  const baseUrl = "https://www.tebilon.com/hazir-sistemler/";
-
   try {
-    const totalPages = await getTotalPages(baseUrl);
-    const urls = generateUrls(baseUrl, totalPages);
-
-    const products = await fetchAllProducts(urls);
-    const detailPromises = products.map(async (product) => {
-      product.specs = await fetchProductDetails(product.link);
-      return product;
-    });
-
-    const productsWithDetails = await Promise.all(detailPromises);
-    res.json(productsWithDetails);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const products = await scrapeAllPages();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
+export { scrapeAllPages };
 export default router;

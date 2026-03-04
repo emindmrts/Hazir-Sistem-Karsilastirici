@@ -120,16 +120,22 @@ function generateUrls(base, totalPages) {
   return urls;
 }
 
-router.get("/", async (req, res) => {
+async function scrapeAllPages() {
   const baseUrl = "https://www.incehesap.com/hazir-sistemler-fiyatlari/";
+  let totalPages = 1;
+  try { totalPages = await getTotalPages(baseUrl); } catch { /* ignore */ }
+  const urls = generateUrls(baseUrl, totalPages);
+  return fetchAllProducts(urls);
+}
+
+router.get("/", async (req, res) => {
   try {
-    const totalPages = await getTotalPages(baseUrl);
-    const urls = generateUrls(baseUrl, 14 /* totalPages */);
-    const products = await fetchAllProducts(urls);
+    const products = await scrapeAllPages();
     res.json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+export { scrapeAllPages };
 export default router;

@@ -1,135 +1,67 @@
-import express from "express";
-import fetch from "node-fetch";
+import { Router } from "express";
 import { JSDOM } from "jsdom";
+import { fetchHtml, parsePrice, normalise } from "../lib/scraper-utils.mjs";
 
-const router = express.Router();
+const router = Router();
 
-async function getTotalPages(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.error(`Failed to fetch ${url}: ${response.statusText}`);
-      return 1;
-    }
+const BASE = "https://www.vatanbilgisayar.com/oem-hazir-sistemler/";
 
-    const html = await response.text();
-    const dom = new JSDOM(html);
-    const doc = dom.window.document;
-
-    // Select all pagination items
-    const paginationItems = doc.querySelectorAll(".pagination__item");
-    if (paginationItems.length < 2) {
-      return 1;
-    }
-
-    // Get the second-to-last item
-    const secondToLastItem = paginationItems[paginationItems.length - 2];
-    const totalPages = parseInt(secondToLastItem.textContent.trim(), 10);
-
-    return totalPages || 1;
-  } catch (error) {
-    console.error(`Error fetching total pages from ${url}: ${error.message}`);
-    return 1;
-  }
+async function getTotalPages() {
+  const html = await fetchHtml(BASE, { timeoutMs: 20_000, retries: 2 });
+  const { document: doc } = new JSDOM(html).window;
+  const nums = Array.from(doc.querySelectorAll(".pagination__item"))
+    .map((el) => parseInt(el.textContent.trim()))
+    .filter((n) => !isNaN(n));
+  return nums.length ? Math.max(...nums) : 1;
 }
 
-async function fetchAllProducts(urls) {
+async function scrapePage(url) {
+  const html = await fetchHtml(url, { timeoutMs: 25_000, retries: 2 });
+  const { document: doc } = new JSDOM(html).window;
   const products = [];
-  const fetchPromises = urls.map(async (url) => {
-    try {
-      const response = await fetch(url);
-      const html = await response.text();
-      const dom = new JSDOM(html);
-      const doc = dom.window.document;
-      const productElements = doc.querySelectorAll(
-        ".product-list.product-list--list-page .product-list-link"
-      );
 
-      productElements.forEach((productElement) => {
-        const nameElement = productElement.querySelector(
-          ".product-list__product-name h3"
-        );
-        const priceElement = productElement.querySelector(
-          ".product-list__price"
-        );
-        const imageElement = productElement.querySelector(
-          ".product-list__image-safe img"
-        );
+  doc.querySelectorAll(".product-list.product-list--list-page .product-list-link").forEach((el) => {
+    const name = el.querySelector(".product-list__product-name h3")?.textContent.trim() ?? "N/A";
+    const priceText = el.querySelector(".product-list__price")?.textContent ?? "0";
+    const price = parsePrice(priceText);
+    const image = el.querySelector(".product-list__image-safe img")?.getAttribute("data-src") ?? null;
+    const href = el.getAttribute("href") ?? "";
+    const url2 = href.startsWith("http") ? href : `https://www.vatanbilgisayar.com${href}`;
 
-        const link =
-          "https://www.vatanbilgisayar.com" +
-          productElement.getAttribute("href");
-        const name = nameElement ? nameElement.textContent.trim() : "No name";
+    const specs = {};
+    el.querySelectorAll(".productlist_spec ul li p").forEach((p) => {
+      const key = p.querySelector("#specname")?.textContent.trim() ?? "";
+      const val = p.querySelector("#specvalue")?.textContent.trim() ?? "";
+      if (key.includes("İşlemci Numarası")) specs.CPU = val;
+      else if (key.includes("Grafik İşlemci")) specs.GPU = val;
+      else if (key.includes("Anakart")) specs.Motherboard = val;
+      else if (key.includes("Ram")) specs.RAM = val;
+      else if (key.includes("Depolama") || key.includes("SSD") || key.includes("HDD")) specs.SSD = val;
+    });
 
-        // Fiyatı al ve sayıya dönüştür
-        const priceText = priceElement
-          ? priceElement.textContent.trim().replace(/\s+/g, " ")
-          : "0";
-        const price =
-          parseFloat(priceText.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
-
-        const image = imageElement
-          ? imageElement.getAttribute("data-src")
-          : "No image";
-        const specs = {};
-
-        productElement
-          .querySelectorAll(".productlist_spec ul li p")
-          .forEach((specElement) => {
-            const specNameElement = specElement.querySelector("#specname");
-            const specValueElement = specElement.querySelector("#specvalue");
-            const specName = specNameElement
-              ? specNameElement.textContent.trim()
-              : "";
-            const specValue = specValueElement
-              ? specValueElement.textContent.trim()
-              : "";
-
-            // Belirli anahtarlar ile eşleştirme yap
-            if (specName.includes("İşlemci Numarası")) {
-              specs["CPU"] = specValue;
-            } else if (specName.includes("Grafik İşlemci")) {
-              specs["GPU"] = specValue;
-            } else if (specName.includes("Anakart Chipseti")) {
-              specs["Motherboard"] = specValue;
-            } else if (specName.includes("Ram (Sistem Belleği)")) {
-              specs["Ram"] = specValue;
-            }
-          });
-
-        products.push({ name, price, image, link, specs, store: "vatan" });
-      });
-    } catch (error) {
-      console.error(
-        `Error fetching product list from ${url}: ${error.message}`
-      );
-    }
+    products.push(normalise({ name, price, image, url: url2, specs }, "vatan"));
   });
 
-  await Promise.all(fetchPromises);
   return products;
 }
 
-function generateUrls(base, totalPages) {
-  const urls = [];
-  for (let i = 1; i <= totalPages; i++) {
-    const url = i === 1 ? base : `${base}?page=${i}`;
-    urls.push(url);
-  }
-  return urls;
+async function scrapeAllPages() {
+  const totalPages = await getTotalPages();
+  const urls = Array.from({ length: totalPages }, (_, i) =>
+    i === 0 ? BASE : `${BASE}?page=${i + 1}`
+  );
+  const results = await Promise.allSettled(urls.map(scrapePage));
+  return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 }
 
 router.get("/", async (req, res) => {
-  const baseUrl = "https://www.vatanbilgisayar.com/oem-hazir-sistemler/";
-
   try {
-    const totalPages = await getTotalPages(baseUrl);
-    const urls = generateUrls(baseUrl, totalPages);
-    const products = await fetchAllProducts(urls);
+    const products = await scrapeAllPages();
     res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
+export { scrapeAllPages };
 export default router;

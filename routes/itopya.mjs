@@ -1,109 +1,94 @@
-import express from "express";
-import puppeteer from "puppeteer";
+import { Router } from "express";
+import { launchBrowser, parsePrice, normalise } from "../lib/scraper-utils.mjs";
 
-const router = express.Router();
+const router = Router();
 
-async function fetchPageData(page) {
-  const browser = await puppeteer.launch();
-  const [pageInstance] = await browser.pages();
-  await pageInstance.goto(`https://www.itopya.com/HazirSistemler?pg=${page}`, {
-    waitUntil: "networkidle2",
-  });
+const BASE_URL = "https://www.itopya.com/HazirSistemler";
 
-  const content = await pageInstance.content();
-  await browser.close();
-  return content;
+async function parseTotalPages(page) {
+  try {
+    const info = await page.$eval(".page-info strong", (el) => el.textContent.trim());
+    return parseInt(info.split("/")[1], 10) || 1;
+  } catch {
+    return 1;
+  }
 }
 
-async function parseTotalPages(pageInstance) {
-  const pageInfo = await pageInstance.$eval(
-    ".page-info strong",
-    (element) => element.textContent.trim()
-  );
-  const totalPages = parseInt(pageInfo.split("/")[1], 10);
-  return totalPages;
-}
+async function parseProducts(page) {
+  return page.$$eval(".product", (els) =>
+    els.map((product) => {
+      const image = product.querySelector(".product-header .image img")?.dataset.src ?? null;
+      const name = product.querySelector(".title")?.textContent.trim() ?? "N/A";
+      const link = "https://www.itopya.com" + (product.querySelector(".title")?.getAttribute("href") ?? "");
+      const priceRaw = product.querySelector(".price strong")?.textContent ?? "0";
 
-async function parseProducts(pageInstance) {
-  const products = await pageInstance.$$eval(".product", (productElements) =>
-    productElements.map((product) => {
-      const image = product.querySelector(".product-header .image img")?.dataset
-        .src;
-      const name = product.querySelector(".title").textContent.trim();
-      const link =
-        "https://www.itopya.com" +
-        product.querySelector(".title").getAttribute("href");
-      const priceText = product
-        .querySelector(".price strong")
-        .textContent.trim()
-        .replace(/\s+/g, " ");
-      const price =
-        parseFloat(priceText.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
-
-      const specsArray = Array.from(
-        product.querySelectorAll(".product-body ul li")
-      ).map((li) => ({
-        specIcon: li.querySelector("img").getAttribute("src"),
-        specText: li.querySelector("p").textContent.trim(),
+      const specsRaw = Array.from(product.querySelectorAll(".product-body ul li")).map((li) => ({
+        text: li.querySelector("p")?.textContent.trim() ?? "",
       }));
 
-      const specs = {
-        CPU:
-          (specsArray.find((spec) => spec.specText.includes("İşlemci")) || {})
-            .specText || "N/A",
-        Motherboard:
-          (specsArray.find((spec) => spec.specText.includes("Anakart")) || {})
-            .specText || "N/A",
-        GPU:
-          (specsArray.find((spec) =>
-            spec.specText.includes("Ekran Kartı")
-          ) || {}).specText || "N/A",
-        Ram:
-          (
-            specsArray.find((spec) =>
-              spec.specText.toLowerCase().includes("Ram".toLowerCase())
-            ) || {}
-          ).specText || "N/A",
-        Storage:
-          (specsArray.find((spec) => spec.specText.includes("SSD")) || {})
-            .specText || "N/A",
-      };
+      const find = (...kws) =>
+        (specsRaw.find((s) => kws.some((k) => s.text.toLowerCase().includes(k.toLowerCase()))) ?? {}).text ?? null;
 
-      return { name, price, image, link, specs, store: "itopya" };
+      return {
+        name,
+        priceRaw,
+        image,
+        url: link,
+        specsRaw,
+        CPU: find("İşlemci"),
+        GPU: find("Ekran Kartı"),
+        RAM: find("Ram"),
+        SSD: find("SSD"),
+        Motherboard: find("Anakart"),
+      };
     })
   );
-  return products;
 }
 
-async function fetchAllProducts() {
-  const browser = await puppeteer.launch();
-  const [pageInstance] = await browser.pages();
-  await pageInstance.goto("https://www.itopya.com/HazirSistemler?pg=1", {
-    waitUntil: "networkidle2",
-  });
+async function scrapeAllPages() {
+  const browser = await launchBrowser();
+  const page = await browser.newPage();
 
-  const totalPages = await parseTotalPages(pageInstance);
-  let allProducts = await parseProducts(pageInstance);
+  try {
+    await page.goto(`${BASE_URL}?pg=1`, { waitUntil: "networkidle2", timeout: 90_000 });
+    const totalPages = await parseTotalPages(page);
 
-  for (let page = 2; page <= totalPages; page++) {
-    await pageInstance.goto(`https://www.itopya.com/HazirSistemler?pg=${page}`, {
-      waitUntil: "networkidle2",
-    });
-    const products = await parseProducts(pageInstance);
-    allProducts = allProducts.concat(products);
+    const rawAll = await parseProducts(page);
+
+    for (let pg = 2; pg <= totalPages; pg++) {
+      await page.goto(`${BASE_URL}?pg=${pg}`, { waitUntil: "networkidle2", timeout: 90_000 });
+      const raw = await parseProducts(page);
+      rawAll.push(...raw);
+    }
+
+    return rawAll.map((r) =>
+      normalise({
+        name: r.name,
+        price: parsePrice(r.priceRaw),
+        image: r.image,
+        url: r.url,
+        specs: {
+          CPU: r.CPU,
+          GPU: r.GPU,
+          RAM: r.RAM,
+          SSD: r.SSD,
+          Motherboard: r.Motherboard,
+        },
+      }, "itopya")
+    );
+  } finally {
+    await browser.close();
   }
-
-  await browser.close();
-  return allProducts;
 }
 
 router.get("/", async (req, res) => {
   try {
-    const products = await fetchAllProducts();
+    const products = await scrapeAllPages();
     res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
+export { scrapeAllPages };
 export default router;
