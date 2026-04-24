@@ -4,7 +4,7 @@ import { fetchHtml, parsePrice, normalise } from "../lib/scraper-utils.mjs";
 
 const router = Router();
 
-const BASE = "https://www.vatanbilgisayar.com/oem-hazir-sistemler/";
+const BASE = "https://www.vatanbilgisayar.com/oem-paketler/";
 
 async function getTotalPages() {
   const html = await fetchHtml(BASE, { timeoutMs: 20_000, retries: 2 });

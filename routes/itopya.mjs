@@ -6,7 +6,7 @@ const router = express.Router();
 async function fetchPageData(page) {
   const browser = await puppeteer.launch();
   const [pageInstance] = await browser.pages();
-  await pageInstance.goto(`https://www.itopya.com/HazirSistemler?pg=${page}`, {
+  await pageInstance.goto(`https://www.itopya.com/oem-paketler?pg=${page}`, {
     waitUntil: "networkidle2",
   });
 
@@ -78,7 +78,7 @@ async function parseProducts(pageInstance) {
 async function fetchAllProducts() {
   const browser = await puppeteer.launch();
   const [pageInstance] = await browser.pages();
-  await pageInstance.goto("https://www.itopya.com/HazirSistemler?pg=1", {
+  await pageInstance.goto("https://www.itopya.com/oem-paketler?pg=1", {
     waitUntil: "networkidle2",
   });
 
@@ -86,7 +86,7 @@ async function fetchAllProducts() {
   let allProducts = await parseProducts(pageInstance);
 
   for (let page = 2; page <= totalPages; page++) {
-    await pageInstance.goto(`https://www.itopya.com/HazirSistemler?pg=${page}`, {
+    await pageInstance.goto(`https://www.itopya.com/oem-paketler?pg=${page}`, {
       waitUntil: "networkidle2",
     });
     const products = await parseProducts(pageInstance);
@@ -106,4 +106,5 @@ router.get("/", async (req, res) => {
   }
 });
 
+export { fetchAllProducts as scrapeAllPages };
 export default router;

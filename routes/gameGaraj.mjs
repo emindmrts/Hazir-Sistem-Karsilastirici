@@ -8,7 +8,7 @@ const router = express.Router();
 async function fetchPageData(page) {
   try {
     const response = await fetch(
-      `https://www.gamegaraj.com/grup/masaustu-bilgisayar/page/${page}/`
+      `https://www.gamegaraj.com/oem-paketler/page/${page}/`
     );
     if (!response.ok)
       throw new Error(`Error fetching page ${page}: ${response.statusText}`);
@@ -24,7 +24,7 @@ async function fetchPageData(page) {
 async function getTotalPages() {
   try {
     const response = await fetch(
-      `https://www.gamegaraj.com/grup/masaustu-bilgisayar/`
+      `https://www.gamegaraj.com/oem-paketler/`
     );
     if (!response.ok)
       throw new Error(`Error fetching total pages: ${response.statusText}`);
@@ -171,4 +171,10 @@ router.get("/", async (req, res) => {
   }
 });
 
+async function scrapeAllPages() {
+  const totalPages = await getTotalPages();
+  return fetchAllProducts(totalPages);
+}
+
+export { scrapeAllPages };
 export default router;

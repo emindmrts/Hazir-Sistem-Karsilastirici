@@ -4,7 +4,7 @@ import { fetchHtml, parsePrice, normalise } from "../lib/scraper-utils.mjs";
 
 const router = Router();
 
-const BASE = "https://pckolik.com/tr/pc/hazir-sistemler";
+const BASE = "https://pckolik.com.tr/hazir-sistemler/";
 
 async function scrapePage(url) {
   const html = await fetchHtml(url, { timeoutMs: 30_000, retries: 3 });
@@ -17,10 +17,10 @@ async function scrapePage(url) {
     const price = parsePrice(priceText);
     const image = (() => {
       const src = card.querySelector(".img-crop img")?.getAttribute("src") ?? "";
-      return src.startsWith("http") ? src : src ? `https://pckolik.com/${src.replace(/^\//, "")}` : null;
+      return src.startsWith("http") ? src : src ? `https://pckolik.com.tr/${src.replace(/^\//, "")}` : null;
     })();
     const href = card.querySelector(".img-crop")?.getAttribute("href") ?? "";
-    const url2 = href.startsWith("http") ? href : `https://pckolik.com${href.startsWith("/") ? "" : "/"}${href}`;
+    const url2 = href.startsWith("http") ? href : `https://pckolik.com.tr${href.startsWith("/") ? "" : "/"}${href}`;
 
     const features = Array.from(card.querySelectorAll("ul li span")).map((s) => s.textContent.trim());
     const find = (...kws) => features.find((f) => kws.some((k) => f.toLowerCase().includes(k))) ?? null;

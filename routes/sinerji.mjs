@@ -4,7 +4,7 @@ import { launchBrowser, parsePrice, normalise } from "../lib/scraper-utils.mjs";
 
 const router = Router();
 
-const BASE = "https://www.sinerji.gen.tr/hazir-sistemler-c-2107";
+const BASE = "https://www.sinerji.gen.tr/oyun-icin-oem-paketler-c-2202";
 
 function parseTotalPages(doc) {
   const links = Array.from(doc.querySelectorAll(".paging a"));

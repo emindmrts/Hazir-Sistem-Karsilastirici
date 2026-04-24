@@ -20,6 +20,8 @@ import { scrapeAllPages as scrapeSinerji } from "./sinerji.mjs";
 import { scrapeAllPages as scrapeItopya } from "./itopya.mjs";
 import { scrapeAllPages as scrapeInceHesap } from "./inceHesap.mjs";
 import { scrapeAllPages as scrapeGencerGaming } from "./gencergaming.mjs";
+import { scrapeAllPages as scrapeGameGaraj } from "./gameGaraj.mjs";
+import { scrapeAllPages as scrapeGamingGen } from "./gamingGen.mjs";
 
 const router = Router();
 
@@ -36,6 +38,8 @@ const SCRAPERS = [
   { name: "itopya", fn: scrapeItopya },
   { name: "inceHesap", fn: scrapeInceHesap },
   { name: "gencerGaming", fn: scrapeGencerGaming },
+  { name: "gameGaraj", fn: scrapeGameGaraj },
+  { name: "gamingGen", fn: scrapeGamingGen },
 ];
 
 export async function runCombined() {

@@ -91,7 +91,7 @@ async function scrapeProduct(page, url) {
 //     EXPRESS ROUTE      //
 // ---------------------- //
 
-router.get("/", async (req, res) => {
+export async function scrapeAllPages() {
   const browser = await puppeteer.launch({
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -103,7 +103,9 @@ router.get("/", async (req, res) => {
   console.log("Scraping started...");
 
   const productIDs = await scrapeProductIDs(page, baseUrl);
-  const productURLs = productIDs.map((id) => `https://www.gaming.gen.tr/urun/${id}`);
+  const productURLs = productIDs.map(
+    (id) => `https://www.gaming.gen.tr/urun/${id}`
+  );
 
   const results = [];
   for (const [i, productUrl] of productURLs.entries()) {
@@ -116,19 +118,16 @@ router.get("/", async (req, res) => {
   }
 
   await browser.close();
+  return results;
+}
 
-  // Kaydet
-  const filePath = path.join(__dirname, "..", "products.json");
+router.get("/", async (req, res) => {
   try {
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(filePath, JSON.stringify(results, null, 2));
-    console.log(`✅ Products saved to ${filePath}`);
-  } catch (error) {
-    console.error("❌ Failed to save products:", error);
+    const results = await scrapeAllPages();
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  console.log("✅ Scraping finished!");
-  res.json(results);
 });
 
 export default router;
