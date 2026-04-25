@@ -23,6 +23,8 @@
     "node-fetch": "^3.3.2",
     "punycode": "^2.3.1",
     "puppeteer": "^22.15.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   }

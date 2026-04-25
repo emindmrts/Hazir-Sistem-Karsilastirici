@@ -1,91 +1,69 @@
-import { Router } from "express";
-import { JSDOM } from "jsdom";
-import { fetchHtml, parsePrice, normalise } from "../lib/scraper-utils.mjs";
+import express from "express";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 
-const router = Router();
+puppeteer.use(StealthPlugin());
 
-const BASE = "https://www.tebilon.com/hazir-sistemler/";
+const router = express.Router();
 
-async function getTotalPages() {
-  const html = await fetchHtml(BASE, { timeoutMs: 20_000, retries: 2 });
-  const { document: doc } = new JSDOM(html).window;
-  const nums = Array.from(doc.querySelectorAll(".productSort__pagination a"))
-    .map((a) => parseInt(a.textContent.trim()))
-    .filter((n) => !isNaN(n));
-  return nums.length ? Math.max(...nums) : 1;
-}
+async function parseProducts(page) {
+  const products = await page.evaluate(() => {
+    const items = Array.from(document.querySelectorAll(".showcase__product"));
+    return items.map(el => {
+      const nameEl = el.querySelector(".showcase__title a");
+      const name = nameEl?.textContent.trim() ?? "N/A";
+      const link = nameEl?.href || null;
 
-async function scrapeListPage(url) {
-  const html = await fetchHtml(url, { timeoutMs: 25_000, retries: 2 });
-  const { document: doc } = new JSDOM(html).window;
-  const products = [];
+      const priceText = el.querySelector(".newPrice")?.textContent ?? "0";
+      const match = priceText.replace(/[^\d,]/g, "").replace(",", ".");
+      const price = parseFloat(match) || 0;
+      
+      const image = el.querySelector(".showcase__image img")?.src || null;
 
-  let els = Array.from(doc.querySelectorAll(".showcase__product"));
-  if (els.length > 40) els = els.slice(0, 40);
-
-  els.forEach((el) => {
-    const nameEl = el.querySelector(".showcase__title a");
-    const name = nameEl?.textContent.trim() ?? "N/A";
-    const rawHref = nameEl?.getAttribute("href") ?? "";
-    const productUrl = rawHref.startsWith("http")
-      ? rawHref
-      : rawHref
-        ? `https://www.tebilon.com${rawHref.startsWith("/") ? "" : "/"}${rawHref}`
-        : "";
-
-    const priceText = el.querySelector(".newPrice")?.textContent ?? "0";
-    const price = parsePrice(priceText);
-    const image = el.querySelector(".showcase__image img")?.getAttribute("src") ?? null;
-
-    products.push({ name, price, image, url: productUrl });
+      return { name, price, image, link, specs: {}, store: "tebilon" };
+    });
   });
-
   return products;
 }
 
-async function scrapeDetails(url) {
-  if (!url) return {};
+export async function scrapeAllPages() {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
   try {
-    const html = await fetchHtml(url, { timeoutMs: 20_000, retries: 2 });
-    const { document: doc } = new JSDOM(html).window;
-    const map = {};
-    doc.querySelectorAll(".spec-head").forEach((el) => {
-      const key = el.querySelector(".spec-sub-title span")?.textContent.trim() ?? "";
-      const val = el.querySelector(".spec-detail span")?.textContent.trim() ?? "";
-      if (key) map[key] = val;
+    const page = await browser.newPage();
+    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+    
+    const baseUrl = "https://www.tebilon.com/hazir-sistemler/";
+    console.log(`Navigating to ${baseUrl}`);
+    await page.goto(baseUrl, { waitUntil: "networkidle2", timeout: 60000 });
+
+    const totalPages = await page.evaluate(() => {
+        const nums = Array.from(document.querySelectorAll(".productSort__pagination a"))
+            .map((a) => parseInt(a.textContent.trim()))
+            .filter((n) => !isNaN(n));
+        return nums.length ? Math.max(...nums) : 1;
     });
-    return {
-      CPU: map["İşlemci Modeli"] ?? null,
-      GPU: map["Grafik İşlemci"] ?? null,
-      RAM: map["Ram Kapasitesi"] ?? null,
-      SSD: [map["Depolama Kapasitesi"], map["Depolama Türü"]].filter(Boolean).join(" ") || null,
-      Motherboard: null,
-    };
-  } catch {
-    return {};
+
+    console.log(`Found ${totalPages} pages for Tebilon`);
+
+    let allProducts = [];
+    for (let i = 1; i <= totalPages; i++) {
+        const url = `${baseUrl}?page=${i}`;
+        console.log(`Scraping Tebilon page ${i}: ${url}`);
+        if (i > 1) {
+            await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+        }
+        const products = await parseProducts(page);
+        allProducts = allProducts.concat(products);
+    }
+
+    return allProducts;
+  } finally {
+    await browser.close();
   }
-}
-
-async function scrapeAllPages() {
-  const totalPages = await getTotalPages();
-  const urls = Array.from({ length: totalPages }, (_, i) => `${BASE}?page=${i + 1}`);
-
-  const listResults = await Promise.allSettled(urls.map(scrapeListPage));
-  const listItems = listResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-
-  // Fetch details 8 at a time to avoid hammering the server
-  const BATCH = 8;
-  const withDetails = [];
-  for (let i = 0; i < listItems.length; i += BATCH) {
-    const batch = listItems.slice(i, i + BATCH);
-    const settled = await Promise.allSettled(batch.map((p) => scrapeDetails(p.url)));
-    batch.forEach((p, idx) => {
-      const specs = settled[idx].status === "fulfilled" ? settled[idx].value : {};
-      withDetails.push(normalise({ ...p, specs }, "tebilon"));
-    });
-  }
-
-  return withDetails;
 }
 
 router.get("/", async (req, res) => {
@@ -97,5 +75,4 @@ router.get("/", async (req, res) => {
   }
 });
 
-export { scrapeAllPages };
 export default router;

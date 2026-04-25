@@ -46,17 +46,22 @@ export async function runCombined() {
   console.log("[combined] Starting parallel scraping…");
   const start = Date.now();
 
-  const settled = await Promise.allSettled(
-    SCRAPERS.map(({ name, fn }) =>
-      fn().then((data) => {
-        console.log(`[combined] ✅ ${name}: ${data.length} products`);
-        return data;
-      }).catch((err) => {
-        console.error(`[combined] ❌ ${name}: ${err.message}`);
-        return [];
-      })
-    )
-  );
+  const settled = [];
+  for (let i = 0; i < SCRAPERS.length; i += 2) {
+    const batch = SCRAPERS.slice(i, i + 2);
+    const batchResults = await Promise.allSettled(
+      batch.map(({ name, fn }) =>
+        fn().then((data) => {
+          console.log(`[combined] ✅ ${name}: ${data.length} products`);
+          return data;
+        }).catch((err) => {
+          console.error(`[combined] ❌ ${name}: ${err.message}`);
+          return [];
+        })
+      )
+    );
+    settled.push(...batchResults);
+  }
 
   const combined = settled.flatMap((r) =>
     r.status === "fulfilled" ? r.value : []

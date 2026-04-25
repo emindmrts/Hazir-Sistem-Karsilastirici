@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
-import type { FilterState } from "@/components/filter-sidebar"
+import type { FilterState } from "../components/filter-sidebar"
 
 // The shape of data returned from the backend mock.json
 export interface Product {
@@ -95,7 +95,8 @@ export function useProducts() {
                 const raw: Record<string, unknown>[] = json.data ?? json
                 setAllProducts(raw.map(normalise))
             } catch (err: unknown) {
-                setError((err as Error).message || "Bilinmeyen bir hata oluştu.")
+                console.error("fetchProducts hatası:", err)
+                setError(`Hata: ${(err as Error).message} | Stack: ${(err as Error).stack}`)
             } finally {
                 setIsLoading(false)
             }
@@ -140,7 +141,7 @@ export function useProducts() {
         if (filters.minPrice !== "") result = result.filter(p => p.fiyat >= (filters.minPrice as number))
         if (filters.maxPrice !== "") result = result.filter(p => p.fiyat <= (filters.maxPrice as number))
 
-        result.sort((a, b) => sortOrder === "lowToHigh" ? a.fiyat - b.fiyat : b.fiyat - a.fiyat)
+        result.sort((a: Product, b: Product) => sortOrder === "lowToHigh" ? a.fiyat - b.fiyat : b.fiyat - a.fiyat)
         return result
     }, [allProducts, filters, sortOrder])
 

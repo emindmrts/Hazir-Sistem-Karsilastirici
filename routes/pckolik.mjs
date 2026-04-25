@@ -1,60 +1,80 @@
-import { Router } from "express";
-import { JSDOM } from "jsdom";
-import { fetchHtml, parsePrice, normalise } from "../lib/scraper-utils.mjs";
+import express from "express";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 
-const router = Router();
+puppeteer.use(StealthPlugin());
 
-const BASE = "https://pckolik.com.tr/hazir-sistemler/";
+const router = express.Router();
 
-async function scrapePage(url) {
-  const html = await fetchHtml(url, { timeoutMs: 30_000, retries: 3 });
-  const { document: doc } = new JSDOM(html).window;
-  const products = [];
+async function parseProducts(page) {
+  const products = await page.evaluate(() => {
+    const items = Array.from(document.querySelectorAll(".product-card"));
+    return items.map(card => {
+      const name = card.querySelector(".name")?.textContent.trim() ?? "N/A";
+      const priceText = card.querySelector(".product-price")?.textContent ?? "0";
+      const price = parseFloat(priceText.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
+      
+      const imgEl = Array.from(card.querySelectorAll("img")).find(img => !img.src.includes("icon-star"));
+      const image = imgEl ? (imgEl.dataset.src || imgEl.src) : null;
+      
+      const aEl = card.querySelector("a");
+      const href = aEl ? aEl.getAttribute("href") : "";
+      const url = href.startsWith("http") ? href : `https://pckolik.com.tr${href.startsWith("/") ? "" : "/"}${href}`;
 
-  doc.querySelectorAll(".product-card.pc").forEach((card) => {
-    const name = card.querySelector(".name")?.textContent.trim() ?? "N/A";
-    const priceText = card.querySelector(".price-new span")?.textContent ?? "0";
-    const price = parsePrice(priceText);
-    const image = (() => {
-      const src = card.querySelector(".img-crop img")?.getAttribute("src") ?? "";
-      return src.startsWith("http") ? src : src ? `https://pckolik.com.tr/${src.replace(/^\//, "")}` : null;
-    })();
-    const href = card.querySelector(".img-crop")?.getAttribute("href") ?? "";
-    const url2 = href.startsWith("http") ? href : `https://pckolik.com.tr${href.startsWith("/") ? "" : "/"}${href}`;
+      const features = Array.from(card.querySelectorAll("li")).map((s) => s.textContent.trim());
+      const specs = {};
+      const find = (...kws) => features.find((f) => kws.some((k) => f.toLowerCase().includes(k))) ?? null;
 
-    const features = Array.from(card.querySelectorAll("ul li span")).map((s) => s.textContent.trim());
-    const find = (...kws) => features.find((f) => kws.some((k) => f.toLowerCase().includes(k))) ?? null;
+      specs.CPU = find("ryzen", "core", "islemci", "i̇şlemci");
+      specs.GPU = find("rx ", "gtx", "rtx", "arc");
+      specs.RAM = find("ram");
+      specs.SSD = find("ssd", "nvme");
+      specs.Motherboard = find("anakart");
 
-    products.push(normalise({
-      name, price, image, url: url2,
-      specs: {
-        CPU: find("ryzen", "core", "islemci", "i̇şlemci"),
-        GPU: find("rx ", "gtx", "rtx", "arc"),
-        RAM: find("ram"),
-        SSD: find("ssd", "nvme"),
-        Motherboard: find("anakart"),
-      },
-    }, "pckolik"));
+      return { name, price, image, url, specs, store: "pckolik" };
+    });
   });
-
   return products;
 }
 
-async function scrapeAllPages() {
-  // Discover total pages from first page
-  const html = await fetchHtml(BASE, { timeoutMs: 30_000, retries: 3 });
-  const { document: doc } = new JSDOM(html).window;
-  const pages = Array.from(doc.querySelectorAll(".pagination a"))
-    .map((a) => parseInt(a.textContent.trim()))
-    .filter((n) => !isNaN(n));
-  const totalPages = pages.length ? Math.max(...pages) : 1;
+export async function scrapeAllPages() {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
 
-  const urls = Array.from({ length: totalPages }, (_, i) =>
-    i === 0 ? BASE : `${BASE}?page=${i + 1}`
-  );
+  try {
+    const page = await browser.newPage();
+    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+    
+    const baseUrl = "https://pckolik.com.tr/kategori/oem-paketler";
+    console.log(`Navigating to ${baseUrl}`);
+    await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-  const results = await Promise.allSettled(urls.map(scrapePage));
-  return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+    const totalPages = await page.evaluate(() => {
+        const pages = Array.from(document.querySelectorAll(".pagination a"))
+            .map((a) => parseInt(a.textContent.trim()))
+            .filter((n) => !isNaN(n));
+        return pages.length ? Math.max(...pages) : 1;
+    });
+
+    console.log(`Found ${totalPages} pages for PCKolik`);
+
+    let allProducts = [];
+    for (let i = 1; i <= totalPages; i++) {
+        const url = i === 1 ? baseUrl : `${baseUrl}?page=${i}`;
+        console.log(`Scraping PCKolik page ${i}: ${url}`);
+        if (i > 1) {
+            await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+        }
+        const products = await parseProducts(page);
+        allProducts = allProducts.concat(products);
+    }
+
+    return allProducts;
+  } finally {
+    await browser.close();
+  }
 }
 
 router.get("/", async (req, res) => {
@@ -66,5 +86,4 @@ router.get("/", async (req, res) => {
   }
 });
 
-export { scrapeAllPages };
 export default router;

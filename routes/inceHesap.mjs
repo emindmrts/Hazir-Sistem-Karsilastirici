@@ -1,141 +1,97 @@
 import express from "express";
-import fetch from "node-fetch";
-import { JSDOM } from "jsdom";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+
+puppeteer.use(StealthPlugin());
 
 const router = express.Router();
 
-async function fetchPageData(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok)
-      throw new Error(`Error fetching page ${url}: ${response.statusText}`);
-    const text = await response.text();
-    const dom = new JSDOM(text);
-    return dom.window.document;
-  } catch (error) {
-    throw new Error(`Failed to fetch page ${url}: ${error.message}`);
-  }
-}
+async function parseProducts(page) {
+  const products = await page.evaluate(() => {
+    const items = Array.from(document.querySelectorAll("#product-grid > div"));
+    return items.map(el => {
+      const nameEl = el.querySelector("p.text-lg.font-semibold");
+      const name = nameEl?.textContent.trim() ?? "N/A";
+      const linkEl = el.querySelector("a[itemprop='url']") || el.querySelector("a.flex.items-center.justify-center");
+      const link = linkEl?.href || null;
 
-async function getTotalPages(baseUrl) {
-  try {
-    const doc = await fetchPageData(baseUrl);
-    const links = doc.querySelectorAll("nav a");
-
-    const secondLastLink = links[links.length - 2];
-
-    const secondLastLinkText = secondLastLink.textContent.trim();
-    return secondLastLinkText ? parseInt(secondLastLinkText, 10) : 1;
-  } catch (error) {
-    throw new Error(`Failed to fetch total pages: ${error.message}`);
-  }
-}
-
-async function fetchAllProducts(urls) {
-  const products = [];
-
-  const fetchPromises = urls.map(async (url) => {
-    try {
-      const response = await fetch(url);
-      const html = await response.text();
-      const dom = new JSDOM(html);
-      const doc = dom.window.document;
-      const productElements = doc.querySelectorAll(
-        ".grid.grid-cols-2.md\\:grid-cols-3.gap-1 > div"
-      );
-
-      productElements.forEach((productElement) => {
-        const linkElement = productElement.querySelector("a[itemprop='url']");
-        const imageElement = productElement.querySelector("img");
-        const nameElement = productElement.querySelector(
-          "p.text-lg.text-center.truncate.font-semibold[title]"
-        );
-        const priceElement = productElement.querySelector(".text-orange-500");
-
-        const link =
-          "https://www.incehesap.com" + linkElement.getAttribute("href");
-        const name = nameElement ? nameElement.textContent.trim() : "No name";
-
-        // Fiyatı al ve sayıya dönüştür
-        const priceText = priceElement
-          ? priceElement.textContent.trim().replace(/\s+/g, " ")
-          : "0";
-        const price =
-          parseFloat(priceText.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
-
-        const image = imageElement
-          ? "https://www.incehesap.com" + imageElement.getAttribute("src")
-          : "No image";
-
-        const specs = {};
-
-        productElement.querySelectorAll("ul li").forEach((specElement) => {
-          const specText = specElement.textContent.trim();
-
-          // Belirli anahtarlar ile eşleştirme yap
-          if (
-            specText.includes("AMD") ||
-            (specText.includes("Intel") &&
-              !specText.toLowerCase().includes("arc"))
-          ) {
-            specs["CPU"] = specText;
-          } else if (
-            specText?.toLowerCase().includes("rtx") ||
-            specText?.toLowerCase().includes("rx") ||
-            specText?.toLowerCase().includes("gtx") ||
-            specText?.toLowerCase().includes("arc")
-          ) {
-            specs["GPU"] = specText;
-          } else if (specText.includes("DDR4") || specText.includes("DDR5")) {
-            specs["Ram"] = specText;
-          } else if (specText.includes("SSD")) {
-            specs["Storage"] = specText.replace("Hazır Sistem", "");
+      const priceData = el.querySelector("a[data-product]")?.getAttribute("data-product");
+      let price = 0;
+      if (priceData) {
+          try {
+              const parsed = JSON.parse(priceData);
+              price = parsed.price || 0;
+          } catch(e) {}
+      } else {
+          const priceEl = el.querySelector(".text-orange-500") || el.querySelector(".font-bold.text-orange-500");
+          if (priceEl) {
+              price = parseFloat(priceEl.textContent.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
           }
-        });
+      }
 
-        products.push({
-          name,
-          price,
-          image,
-          link,
-          specs,
-          store: "inceHesap",
-        });
+      const image = el.querySelector("img")?.src || null;
+
+      const specs = {};
+      el.querySelectorAll("ul li").forEach((li) => {
+        const text = li.textContent.trim();
+        if (text.includes("AMD") || text.includes("Intel")) specs.CPU = text;
+        else if (text.includes("RTX") || text.includes("RX") || text.includes("GTX") || text.includes("ARC")) specs.GPU = text;
+        else if (text.includes("DDR4") || text.includes("DDR5")) specs.RAM = text;
+        else if (text.includes("SSD")) specs.SSD = text;
       });
-    } catch (error) {
-      console.error("Error fetching URL:", url, error);
-    }
-  });
 
-  await Promise.all(fetchPromises);
+      return { name, price, image, link, specs, store: "inceHesap" };
+    });
+  });
   return products;
 }
 
-function generateUrls(base, totalPages) {
-  const urls = [];
-  for (let i = 1; i <= totalPages; i++) {
-    const url = i === 1 ? base : `${base}sayfa-${i}/`;
-    urls.push(url);
-  }
-  return urls;
-}
+export async function scrapeAllPages() {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
 
-async function scrapeAllPages() {
-  const baseUrl = "https://www.incehesap.com/hazir-sistemler-fiyatlari/";
-  let totalPages = 1;
-  try { totalPages = await getTotalPages(baseUrl); } catch { /* ignore */ }
-  const urls = generateUrls(baseUrl, totalPages);
-  return fetchAllProducts(urls);
+  try {
+    const page = await browser.newPage();
+    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+    
+    const baseUrl = "https://www.incehesap.com/hazir-sistemler-fiyatlari/";
+    console.log(`Navigating to ${baseUrl}`);
+    await page.goto(baseUrl, { waitUntil: "networkidle2", timeout: 60000 });
+
+    const totalPages = await page.evaluate(() => {
+        const links = Array.from(document.querySelectorAll("nav a"));
+        const nums = links.map((a) => parseInt(a.textContent.trim())).filter((n) => !isNaN(n));
+        return nums.length ? Math.max(...nums) : 1;
+    });
+
+    console.log(`Found ${totalPages} pages for InceHesap`);
+
+    let allProducts = [];
+    for (let i = 1; i <= totalPages; i++) {
+        const url = i === 1 ? baseUrl : `${baseUrl}sayfa-${i}/`;
+        console.log(`Scraping InceHesap page ${i}: ${url}`);
+        if (i > 1) {
+            await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+        }
+        const products = await parseProducts(page);
+        allProducts = allProducts.concat(products);
+    }
+
+    return allProducts;
+  } finally {
+    await browser.close();
+  }
 }
 
 router.get("/", async (req, res) => {
   try {
     const products = await scrapeAllPages();
     res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-export { scrapeAllPages };
 export default router;

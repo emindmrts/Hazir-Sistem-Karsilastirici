@@ -7,9 +7,10 @@ const router = express.Router();
 // Sayfa verilerini çekme fonksiyonu
 async function fetchPageData(page) {
   try {
-    const response = await fetch(
-      `https://www.gamegaraj.com/oem-paketler/page/${page}/`
-    );
+    const url = page === 1 
+      ? `https://www.gamegaraj.com/oem-paketler/`
+      : `https://www.gamegaraj.com/oem-paketler/page/${page}/`;
+    const response = await fetch(url);
     if (!response.ok)
       throw new Error(`Error fetching page ${page}: ${response.statusText}`);
     const text = await response.text();
@@ -43,16 +44,18 @@ async function getTotalPages() {
 
 // Ürünleri ayrıştırma fonksiyonu
 function parseProducts(doc) {
-  const productElements = doc.querySelectorAll(".products li.product");
-  return Array.from(productElements).map((product) => {
-    const imageElement = product.querySelector(".edgtf-pl-image img");
-    const titleElement = product.querySelector(".edgtf-product-list-title a");
-    const priceElement = product.querySelector(
-      ".price ins .woocommerce-Price-amount"
-    );
-    const specsElement = product.querySelector(
-      'div[itemprop="description"] ul'
-    ); // Teknik özelliklerin bulunduğu alan
+  // Yeni site yapısında ürünler div.grid > div içindedir.
+  // btn-product-review sınıfına sahip linklerden ürünleri bulabiliriz.
+  const titleElements = Array.from(doc.querySelectorAll("a.btn-product-review"))
+    .filter(el => el.textContent.trim() !== "İNCELE");
+  
+  return Array.from(titleElements).map((titleElement) => {
+    // Ürün kartı genellikle titleElement'in üst kapsayıcılarından biridir.
+    const card = titleElement.closest('div.bg-gray-800') || titleElement.parentElement.parentElement;
+    
+    const imageElement = card.querySelector("img");
+    const priceElement = card.querySelector("p.text-3xl.font-extrabold");
+    const specsElement = card.querySelector("ul");
 
     // Fiyatı sayıya çevirme
     let priceText = priceElement ? priceElement.textContent.trim() : null;
@@ -60,7 +63,8 @@ function parseProducts(doc) {
 
     if (priceText) {
       const normalizedPriceText = priceText
-        .replace(/,/g, "")
+        .replace(/\./g, "")
+        .replace(/,/g, ".")
         .replace(/[^0-9.]/g, "");
       priceNumber = parseFloat(normalizedPriceText);
     }
@@ -117,21 +121,15 @@ function parseProducts(doc) {
       );
     };
 
-    // Building the specs object based on the specsList length
-    const specs = specsList.reduce((acc, spec, index) => {
-      if (index === 0) acc["CPU"] = spec;
-      else if (index === 1) acc["Motherboard"] = spec;
-      else if (index === 2) acc["GPU"] = findGPU(specsList);
-      else if (index === 3) acc["Ram"] = findRAM(specsList);
-      else if (index === 4) acc["Storage"] = findStorage(specsList);
-      return acc;
-    }, {});
+    // Building the specs object
+    const specs = {
+        "CPU": specsList[0] || "N/A",
+        "Motherboard": specsList[1] || "N/A",
+        "GPU": findGPU(specsList),
+        "Ram": findRAM(specsList),
+        "Storage": findStorage(specsList)
+    };
 
-    // Handling cases where specsList length is not 5
-    if (specsList.length !== 5) {
-      if (!specs["Ram"]) specs["Ram"] = findRAM(specsList);
-      if (!specs["Storage"]) specs["Storage"] = findStorage(specsList);
-    }
     return {
       image: imageElement ? imageElement.getAttribute("src") : null,
       name: titleElement ? titleElement.textContent.trim() : null,

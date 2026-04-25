@@ -1,69 +1,75 @@
-import { Router } from "express";
-import { JSDOM } from "jsdom";
-import { launchBrowser, parsePrice, normalise } from "../lib/scraper-utils.mjs";
+import express from "express";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 
-const router = Router();
+puppeteer.use(StealthPlugin());
 
-const BASE = "https://www.sinerji.gen.tr/oyun-icin-oem-paketler-c-2202";
+const router = express.Router();
 
-function parseTotalPages(doc) {
-  const links = Array.from(doc.querySelectorAll(".paging a"));
-  const nums = links.map((a) => parseInt(a.textContent.trim())).filter((n) => !isNaN(n));
-  return nums.length ? Math.max(...nums) : 1;
-}
+async function parseProducts(page) {
+  const products = await page.evaluate(() => {
+    const items = Array.from(document.querySelectorAll(".product"));
+    return items.map(el => {
+      const nameEl = el.querySelector(".title a");
+      const name = nameEl?.textContent.trim() ?? "N/A";
+      const link = nameEl?.href || null;
 
-function parseProducts(doc) {
-  const products = [];
+      const priceText = el.querySelector(".price")?.textContent ?? "0";
+      const match = priceText.replace(/[^\d,]/g, "").replace(",", ".");
+      const price = parseFloat(match) || 0;
+      
+      const image = el.querySelector(".img img")?.src || null;
 
-  doc.querySelectorAll(".product").forEach((el) => {
-    const nameEl = el.querySelector(".title a");
-    const name = nameEl?.textContent.trim() ?? "N/A";
+      const specs = {};
+      el.querySelectorAll(".technicalSpecs li").forEach((li) => {
+        const [specName = "", specValue = ""] = li.textContent.split(":").map((s) => s.trim());
+        if (specName.includes("İşlemci Modeli")) specs.CPU = specValue;
+        else if (specName.includes("Ekran Kartı")) specs.GPU = specValue;
+        else if (specName.includes("Anakart")) specs.Motherboard = specValue;
+        else if (specName.includes("RAM")) specs.RAM = specValue;
+        else if (specName.includes("SSD") || specName.includes("Depolama")) specs.SSD = specValue;
+      });
 
-    // Fix URL — relative href needs the origin
-    const rawHref = el.querySelector(".img a")?.getAttribute("href") ?? "";
-    const url2 = rawHref.startsWith("http")
-      ? rawHref
-      : `https://www.sinerji.gen.tr${rawHref.startsWith("/") ? "" : "/"}${rawHref}`;
-
-    const priceText = el.querySelector(".price")?.textContent ?? "0";
-    const price = parsePrice(priceText);
-    const image = el.querySelector(".img img")?.getAttribute("src") ?? null;
-
-    const specs = {};
-    el.querySelectorAll(".technicalSpecs li").forEach((li) => {
-      const [specName = "", specValue = ""] = li.textContent.split(":").map((s) => s.trim());
-      if (specName.includes("İşlemci Modeli")) specs.CPU = specValue;
-      else if (specName.includes("Ekran Kartı")) specs.GPU = specValue;
-      else if (specName.includes("Anakart")) specs.Motherboard = specValue;
-      else if (specName.includes("RAM")) specs.RAM = specValue;
-      else if (specName.includes("SSD") || specName.includes("Depolama")) specs.SSD = specValue;
+      return { name, price, image, link, specs, store: "sinerji" };
     });
-
-    products.push(normalise({ name, price, image, url: url2, specs }, "sinerji"));
   });
-
   return products;
 }
 
-async function scrapeAllPages() {
-  const browser = await launchBrowser();
-  const page = await browser.newPage();
+export async function scrapeAllPages() {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
 
   try {
-    await page.goto(`${BASE}`, { waitUntil: "networkidle2", timeout: 60_000 });
-    const firstContent = await page.content();
-    const firstDoc = new JSDOM(firstContent).window.document;
-    const totalPages = parseTotalPages(firstDoc);
+    const page = await browser.newPage();
+    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+    
+    const baseUrl = "https://www.sinerji.gen.tr/oyun-icin-oem-paketler-c-2202";
+    console.log(`Navigating to ${baseUrl}`);
+    await page.goto(baseUrl, { waitUntil: "networkidle2", timeout: 60000 });
 
-    let products = parseProducts(firstDoc);
+    const totalPages = await page.evaluate(() => {
+        const links = Array.from(document.querySelectorAll(".paging a"));
+        const nums = links.map((a) => parseInt(a.textContent.trim())).filter((n) => !isNaN(n));
+        return nums.length ? Math.max(...nums) : 1;
+    });
 
-    for (let p = 2; p <= totalPages; p++) {
-      await page.goto(`${BASE}?px=${p}`, { waitUntil: "networkidle2", timeout: 60_000 });
-      const html = await page.content();
-      products = products.concat(parseProducts(new JSDOM(html).window.document));
+    console.log(`Found ${totalPages} pages for Sinerji`);
+
+    let allProducts = [];
+    for (let i = 1; i <= totalPages; i++) {
+        const url = `${baseUrl}?px=${i}`;
+        console.log(`Scraping Sinerji page ${i}: ${url}`);
+        if (i > 1) {
+            await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+        }
+        const products = await parseProducts(page);
+        allProducts = allProducts.concat(products);
     }
 
-    return products;
+    return allProducts;
   } finally {
     await browser.close();
   }
@@ -78,5 +84,4 @@ router.get("/", async (req, res) => {
   }
 });
 
-export { scrapeAllPages };
 export default router;

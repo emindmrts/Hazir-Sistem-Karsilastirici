@@ -1,95 +1,59 @@
 import express from "express";
-import puppeteer from "puppeteer";
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+
+puppeteer.use(StealthPlugin());
 
 const router = express.Router();
 
-// --- setup ---
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// ---------------------- //
-//  SCRAPER CORE LOGIC   //
-// ---------------------- //
-
-// Sayfadaki ürün ID'lerini alır
-async function scrapeProductIDs(page, url) {
+async function scrapePage(browser, url) {
+  const page = await browser.newPage();
   try {
     console.log(`Navigating to ${url}`);
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-    await page.waitForFunction(
-      'typeof window.fiboFiltersData !== "undefined" && window.fiboFiltersData.base_products_ids.length > 0',
-      { timeout: 60000 }
-    );
+    const products = await page.evaluate(() => {
+      const items = Array.from(document.querySelectorAll("li.product"));
+      return items.map(item => {
+        const titleElement = item.querySelector(".pc-specs-title");
+        const name = titleElement ? titleElement.textContent.trim() : "N/A";
+        const link = item.querySelector("a")?.href || null;
+        const image = item.querySelector("img")?.src || null;
+        
+        // Fiyat parse
+        const priceElement = item.querySelector(".price");
+        let priceText = "";
+        if (priceElement) {
+            const ins = priceElement.querySelector("ins");
+            priceText = ins ? ins.textContent : priceElement.textContent;
+        }
+        const match = priceText.replace(/[^\d,]/g, "").replace(",", ".");
+        const price = parseFloat(match) || 0;
 
-    const productIDs = await page.evaluate(() => {
-      return window.fiboFiltersData?.base_products_ids || [];
+        // Specs
+        const specs = {};
+        const specItems = Array.from(item.querySelectorAll(".pc-specs-list li"));
+        specItems.forEach((li, idx) => {
+            const text = li.textContent.trim();
+            if (idx === 0) specs.CPU = text;
+            else if (idx === 1) specs.Motherboard = text;
+            else if (idx === 2) specs.GPU = text;
+            else if (idx === 3) specs.Ram = text;
+            else if (idx === 4) specs.Storage = text;
+        });
+
+        return { name, price, image, link, specs, store: "gamingGen" };
+      });
     });
 
-    console.log(`Found ${productIDs.length} product IDs`);
-    return productIDs;
+    return products;
   } catch (error) {
-    console.error(`Error in scrapeProductIDs for ${url}:`, error);
+    console.error(`Error scraping ${url}:`, error);
     return [];
+  } finally {
+    await page.close();
   }
 }
-
-// Ürün detaylarını çeker
-async function scrapeProduct(page, url) {
-  try {
-    console.log(`Visiting: ${url}`);
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
-
-    // Temel bilgiler
-    const product = await page.evaluate(() => {
-      const title = document.querySelector("h1.product_title")?.textContent?.trim() || "N/A";
-      const priceText = document.querySelector("p.price")?.textContent || "";
-      const image = document.querySelector(".woocommerce-product-gallery__image img")?.src || null;
-
-      // Fiyat parse
-      let price = 0;
-      const match = priceText.replace(/[^\d,]/g, "").replace(",", ".");
-      const numeric = parseFloat(match);
-      if (!isNaN(numeric)) price = numeric;
-
-      return { name: title, price, image };
-    });
-
-    // Tavsiye edilen bileşenler tablosu
-    const specs = await page.evaluate(() => {
-      const rows = Array.from(document.querySelectorAll(".su-table table tbody tr"));
-      const specs = {};
-
-      for (const row of rows) {
-        const cells = row.querySelectorAll("td");
-        if (cells.length < 2) continue;
-        const label = cells[0].innerText.trim().toLowerCase();
-        const value = cells[1].querySelector("a")?.innerText.trim() || cells[1].innerText.trim();
-
-        if (label.includes("işlemci")) specs.CPU = value;
-        else if (label.includes("anakart")) specs.Motherboard = value;
-        else if (label.includes("ekran kart")) specs.GPU = value;
-        else if (label.includes("ram")) specs.Ram = value;
-        else if (label.includes("ssd") || label.includes("depolama")) specs.Storage = value;
-        else if (label.includes("kasa")) specs.Case = value;
-      }
-
-      return specs;
-    });
-
-    return { link: url, ...product, specs, store: "gamingGen" };
-  } catch (error) {
-    console.error(`Error scraping product at ${url}:`, error.message);
-    return null;
-  }
-}
-
-// ---------------------- //
-//     EXPRESS ROUTE      //
-// ---------------------- //
 
 export async function scrapeAllPages() {
   const browser = await puppeteer.launch({
@@ -97,34 +61,46 @@ export async function scrapeAllPages() {
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
-  const page = await browser.newPage();
-  const baseUrl = "https://www.gaming.gen.tr/kategori/hazir-sistemler/";
+  try {
+    const baseUrl = "https://www.gaming.gen.tr/kategori/hazir-sistemler/";
+    const page = await browser.newPage();
+    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+    await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+    
+    // Find total pages
+    const totalPages = await page.evaluate(() => {
+        const pageLinks = Array.from(document.querySelectorAll(".page-numbers:not(.next)"));
+        const pageNumbers = pageLinks
+            .map(el => {
+                const text = el.textContent.trim().replace(/[^\d]/g, "");
+                return parseInt(text, 10);
+            })
+            .filter(n => !isNaN(n));
+        return pageNumbers.length ? Math.max(...pageNumbers) : 1;
+    });
+    await page.close();
 
-  console.log("Scraping started...");
+    console.log(`Found ${totalPages} pages for GamingGen`);
 
-  const productIDs = await scrapeProductIDs(page, baseUrl);
-  const productURLs = productIDs.map(
-    (id) => `https://www.gaming.gen.tr/urun/${id}`
-  );
+    const results = [];
+    const pagesToScrape = Math.min(totalPages, 60); 
 
-  const results = [];
-  for (const [i, productUrl] of productURLs.entries()) {
-    console.log(`(${i + 1}/${productURLs.length}) Scraping: ${productUrl}`);
-    const product = await scrapeProduct(page, productUrl);
-    if (product) results.push(product);
+    for (let i = 1; i <= pagesToScrape; i++) {
+        const url = i === 1 ? baseUrl : `${baseUrl}page/${i}/`;
+        const pageProducts = await scrapePage(browser, url);
+        results.push(...pageProducts);
+    }
 
-    // İstekler arası kısa gecikme (bot korumasına yakalanmamak için)
-    await new Promise((r) => setTimeout(r, 1500));
+    return results;
+  } finally {
+    await browser.close();
   }
-
-  await browser.close();
-  return results;
 }
 
 router.get("/", async (req, res) => {
   try {
-    const results = await scrapeAllPages();
-    res.json(results);
+    const products = await scrapeAllPages();
+    res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -1,131 +1,93 @@
 import express from "express";
-import fetch from "node-fetch";
-import { JSDOM } from "jsdom";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+
+puppeteer.use(StealthPlugin());
 
 const router = express.Router();
 
-// Sayfa verilerini çekme fonksiyonu
-async function fetchPageData(url) {
+async function scrapePage(browser, url) {
+  const page = await browser.newPage();
   try {
-    const response = await fetch(url);
-    if (!response.ok)
-      throw new Error(`Error fetching page ${url}: ${response.statusText}`);
-    const text = await response.text();
-    const dom = new JSDOM(text);
-    return dom.window.document;
-  } catch (error) {
-    throw new Error(`Failed to fetch page ${url}: ${error.message}`);
-  }
-}
+    console.log(`Navigating to ${url}`);
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 
-// Toplam sayfa sayısını alma fonksiyonu
-async function getTotalPages(baseUrl) {
-  try {
-    const doc = await fetchPageData(baseUrl);
-    const totalPagesElement = doc.querySelector(
-      ".pagination-nav .pagination li:nth-last-child(1) a"
-    );
-    return totalPagesElement
-      ? parseInt(totalPagesElement.textContent.trim(), 10)
-      : 1;
-  } catch (error) {
-    throw new Error(`Failed to fetch total pages: ${error.message}`);
-  }
-}
+    const products = await page.evaluate(() => {
+      const items = Array.from(document.querySelectorAll(".card-product"));
+      return items.map(item => {
+        const titleElement = item.querySelector(".title.hzr");
+        const name = titleElement ? titleElement.textContent.trim() : "N/A";
+        const link = item.querySelector(".c-p-i-link")?.href || null;
+        const image = item.querySelector(".image img")?.src || null;
+        
+        // Fiyat parse
+        const priceElement = item.querySelector(".sale-price");
+        const match = priceElement ? priceElement.textContent.replace(/[^\d,]/g, "").replace(",", ".") : "0";
+        const price = parseFloat(match) || 0;
 
-// Ürünleri ayrıştırma fonksiyonu
-async function fetchAllProducts(urls) {
-  const products = [];
-
-  const fetchPromises = urls.map(async (url) => {
-    try {
-      const response = await fetch(url);
-      const html = await response.text();
-      const dom = new JSDOM(html);
-      const doc = dom.window.document;
-      const productElements = doc.querySelectorAll(".card-product");
-
-      productElements.forEach((productElement) => {
-        const nameElement = productElement.querySelector(".title.hzr");
-        const priceElement = productElement.querySelector(".sale-price");
-        const imageElement = productElement.querySelector(".image img");
-        const linkElement = productElement.querySelector(".c-p-i-link");
-
-        if (!nameElement || !priceElement || !imageElement || !linkElement) {
-          return;
-        }
-
-        const link = linkElement.href;
-        const name = nameElement ? nameElement.textContent.trim() : "No name";
-
-        // Parse the price
-        const priceText = priceElement
-          ? priceElement.textContent.trim().replace(" TL", "")
-          : "0";
-
-        const tprice = parseFloat(priceText.replace(".", "")) || 0;
-        const price = tprice.toString().replace(",", "");
-
-        const image = null;
-        /* const image = imageElement
-          ? imageElement.getAttribute("src")
-          : "No image"; */
-
+        // Specs
         const specs = {};
-
-        productElement
-          .querySelectorAll(".attributes .nitelik li")
-          .forEach((specElement) => {
-            const specIcon = specElement.querySelector("img").src;
-            const specValue = specElement
-              .querySelector(".value")
-              .textContent.trim();
-            if (specIcon.includes("islemci.png")) {
-              specs["CPU"] = specValue;
-            } else if (specIcon.includes("ekran_kart")) {
-              specs["GPU"] = specValue;
-            } else if (specIcon.includes("ram.png")) {
-              specs["Ram"] = specValue + " Ram";
-            } else if (specIcon.includes("depolama.png")) {
-              specs["Storage"] = specValue;
-            } else if (specIcon.includes("anakart.png")) {
-              specs["Motherboard"] = specValue;
+        const specItems = Array.from(item.querySelectorAll(".attributes .nitelik li"));
+        specItems.forEach(li => {
+            const img = li.querySelector("img");
+            const value = li.querySelector(".value")?.textContent.trim();
+            if (img && value) {
+                const src = img.src.toLowerCase();
+                if (src.includes("islemci")) specs.CPU = value;
+                else if (src.includes("ekran_kart")) specs.GPU = value;
+                else if (src.includes("ram")) specs.Ram = value;
+                else if (src.includes("depolama")) specs.Storage = value;
+                else if (src.includes("anakart")) specs.Motherboard = value;
             }
-          });
-
-        products.push({
-          name,
-          price,
-          image,
-          link,
-          specs,
-          store: "gencergaming",
         });
+
+        return { name, price, image, link, specs, store: "gencergaming" };
       });
-    } catch (error) {
-      console.error("Error fetching URL:", url, error);
-    }
+    });
+
+    return products;
+  } catch (error) {
+    console.error(`Error scraping ${url}:`, error);
+    return [];
+  } finally {
+    await page.close();
+  }
+}
+
+export async function scrapeAllPages() {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
-  await Promise.all(fetchPromises);
-  return products;
-}
+  try {
+    const baseUrl = "https://www.gencergaming.com/hazir-sistemler";
+    const page = await browser.newPage();
+    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+    await page.goto(baseUrl, { waitUntil: "networkidle2", timeout: 60000 });
+    
+    // Find total pages
+    const totalPages = await page.evaluate(() => {
+        const pages = Array.from(document.querySelectorAll(".pagination li a"))
+            .map(el => parseInt(el.textContent))
+            .filter(n => !isNaN(n));
+        return pages.length ? Math.max(...pages) : 1;
+    });
+    await page.close();
 
-function generateUrls(base, totalPages) {
-  const urls = [];
-  for (let i = 1; i <= totalPages; i++) {
-    const url = `${base}${i}`;
-    urls.push(url);
+    console.log(`Found ${totalPages} pages for GencerGaming`);
+
+    const results = [];
+    for (let i = 1; i <= totalPages; i++) {
+        const url = `${baseUrl}?sayfa=${i}`;
+        const pageProducts = await scrapePage(browser, url);
+        results.push(...pageProducts);
+    }
+
+    return results;
+  } finally {
+    await browser.close();
   }
-  return urls;
-}
-
-async function scrapeAllPages() {
-  const baseUrl = "https://www.gencergaming.com/hazir-sistemler?sayfa=";
-  let totalPages = 1;
-  try { totalPages = await getTotalPages(baseUrl); } catch { /* ignore */ }
-  const urls = generateUrls(baseUrl, totalPages);
-  return fetchAllProducts(urls);
 }
 
 router.get("/", async (req, res) => {
@@ -137,5 +99,4 @@ router.get("/", async (req, res) => {
   }
 });
 
-export { scrapeAllPages };
 export default router;
