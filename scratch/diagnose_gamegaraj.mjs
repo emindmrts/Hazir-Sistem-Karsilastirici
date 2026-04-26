@@ -18,23 +18,18 @@ async function diagnose() {
 
     const data = await page.evaluate(() => {
       const firstProductName = document.querySelector("a.text-xl.font-semibold.text-gray-900");
-      const firstPrice = document.querySelector("div.text-3xl.font-extrabold.text-gray-900");
-      const firstImage = document.querySelector("picture img");
-      const firstSpecs = Array.from(document.querySelectorAll("ul.list-disc li")).slice(0, 5).map(li => li.textContent.trim());
+      if (!firstProductName) return { hasProduct: false };
       
-      const pagination = document.querySelector(".woocommerce-pagination");
-      const productsPagination = document.querySelector("a.products-pagination");
+      const productCard = firstProductName.parentElement.parentElement.parentElement; // Go up more levels
+      const allText = productCard.innerText;
+      const potentialPrices = Array.from(productCard.querySelectorAll("div, p, span, strong"))
+        .filter(el => /[\d.,]+\s*TL/i.test(el.innerText))
+        .map(el => ({ class: el.className, text: el.innerText, tag: el.tagName }));
 
       return {
-        hasProductName: !!firstProductName,
-        productName: firstProductName?.textContent.trim(),
-        hasPrice: !!firstPrice,
-        priceText: firstPrice?.textContent.trim(),
-        hasImage: !!firstImage,
-        imageSrc: firstImage?.src,
-        specs: firstSpecs,
-        hasPagination: !!pagination,
-        hasProductsPagination: !!productsPagination
+        hasProduct: true,
+        allText,
+        potentialPrices
       };
     });
 

@@ -7,9 +7,7 @@ const router = express.Router();
 // Sayfa verilerini çekme fonksiyonu
 async function fetchPageData(page) {
   try {
-    const url = page === 1 
-      ? `https://www.gamegaraj.com/oem-paketler/`
-      : `https://www.gamegaraj.com/oem-paketler/page/${page}/`;
+    const url = `https://www.gamegaraj.com/oem-paketler/?page=${page}`;
     const response = await fetch(url);
     if (!response.ok)
       throw new Error(`Error fetching page ${page}: ${response.statusText}`);
@@ -31,12 +29,9 @@ async function getTotalPages() {
       throw new Error(`Error fetching total pages: ${response.statusText}`);
     const text = await response.text();
     const dom = new JSDOM(text);
-    const totalPagesElement = dom.window.document.querySelector(
-      ".woocommerce-pagination .page-numbers li:nth-last-child(2) a"
-    );
-    return totalPagesElement
-      ? parseInt(totalPagesElement.textContent.trim(), 10)
-      : 1;
+    const paginationLinks = Array.from(dom.window.document.querySelectorAll("a.products-pagination"));
+    const pages = paginationLinks.map(a => a.textContent.trim()).filter(t => !isNaN(t)).map(Number);
+    return pages.length > 0 ? Math.max(...pages) : 1;
   } catch (error) {
     throw new Error(`Failed to fetch total pages: ${error.message}`);
   }
@@ -44,18 +39,13 @@ async function getTotalPages() {
 
 // Ürünleri ayrıştırma fonksiyonu
 function parseProducts(doc) {
-  // Yeni site yapısında ürünler div.grid > div içindedir.
-  // btn-product-review sınıfına sahip linklerden ürünleri bulabiliriz.
-  const titleElements = Array.from(doc.querySelectorAll("a.btn-product-review"))
-    .filter(el => el.textContent.trim() !== "İNCELE");
+  const productCards = Array.from(doc.querySelectorAll("div[data-product-id]"));
   
-  return Array.from(titleElements).map((titleElement) => {
-    // Ürün kartı genellikle titleElement'in üst kapsayıcılarından biridir.
-    const card = titleElement.closest('div.bg-gray-800') || titleElement.parentElement.parentElement;
-    
-    const imageElement = card.querySelector("img");
+  return productCards.map((card) => {
+    const titleElement = card.querySelector("a.text-xl.font-semibold.text-gray-900");
+    const imageElement = card.querySelector("picture img") || card.querySelector("img");
     const priceElement = card.querySelector("p.text-3xl.font-extrabold");
-    const specsElement = card.querySelector("ul");
+    const specsElements = Array.from(card.querySelectorAll("ul.list-disc li"));
 
     // Fiyatı sayıya çevirme
     let priceText = priceElement ? priceElement.textContent.trim() : null;
@@ -70,11 +60,7 @@ function parseProducts(doc) {
     }
 
     // Teknik özellikleri al
-    const specsList = specsElement
-      ? Array.from(specsElement.querySelectorAll("li")).map((li) =>
-          li.textContent.trim()
-        )
-      : [];
+    const specsList = specsElements.map((li) => li.textContent.trim());
 
     // Function to find the GPU
     const findGPU = (list) => {
@@ -83,7 +69,8 @@ function parseProducts(doc) {
           (x) =>
             x.toLowerCase().includes("rtx") ||
             x.toLowerCase().includes("gtx") ||
-            x.toLowerCase().includes("rx")
+            x.toLowerCase().includes("rx") ||
+            x.toLowerCase().includes("arc")
         ) || "N/A"
       );
     };
@@ -92,8 +79,6 @@ function parseProducts(doc) {
     const findRAM = (list) => {
       return (
         list
-          .slice()
-          .reverse()
           .find(
             (x) =>
               (x.toLowerCase().includes("mhz") &&
@@ -108,8 +93,6 @@ function parseProducts(doc) {
     const findStorage = (list) => {
       return (
         list
-          .slice()
-          .reverse()
           .find(
             (x) =>
               (x.toLowerCase().includes("ssd") ||
@@ -123,18 +106,18 @@ function parseProducts(doc) {
 
     // Building the specs object
     const specs = {
-        "CPU": specsList[0] || "N/A",
-        "Motherboard": specsList[1] || "N/A",
+        "CPU": specsList.find(x => x.toLowerCase().includes("işlemci") || x.toLowerCase().includes("cpu")) || specsList[0] || "N/A",
+        "Motherboard": specsList.find(x => x.toLowerCase().includes("anakart") || x.toLowerCase().includes("mb")) || specsList[1] || "N/A",
         "GPU": findGPU(specsList),
         "Ram": findRAM(specsList),
         "Storage": findStorage(specsList)
     };
 
     return {
-      image: imageElement ? imageElement.getAttribute("src") : null,
+      image: imageElement ? (imageElement.getAttribute("src") || imageElement.src) : null,
       name: titleElement ? titleElement.textContent.trim() : null,
       price: priceNumber,
-      link: titleElement ? titleElement.getAttribute("href") : null,
+      link: titleElement ? `https://www.gamegaraj.com${titleElement.getAttribute("href")}` : null,
       specs: specs,
       store: "gameGaraj",
     };
