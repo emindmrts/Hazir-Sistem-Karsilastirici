@@ -2,10 +2,8 @@
   "name": "scraper-api",
   "version": "1.0.0",
   "description": "",
-  "type": "module",
-  "main": "index.mjs",
+
   "scripts": {
-    "start": "node --no-deprecation index.mjs",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cd client && npm install && npm run build"
   },
