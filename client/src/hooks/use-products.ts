@@ -58,7 +58,7 @@ function normalise(raw: Record<string, unknown>): Product {
         ram: ram || undefined,
         ssd: ssd || undefined,
         depolama: storage || undefined,
-        stoktaVarMi: price > 0,
+        stoktaVarMi: (raw.store as string) === "pckolik" ? true : price > 0,
     }
 }
 
