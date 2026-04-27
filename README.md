@@ -12,10 +12,8 @@ Türkiye'nin önde gelen bilgisayar mağazalarındaki hazır sistemleri tek bir 
 - Fiyat, mağaza, işlemci ve ekran kartına göre filtreleme
 - Fiyata göre sıralama (artan / azalan)
 - Açık / koyu tema desteği
-- Sayfa geçişlerinde GSAP animasyonları
 - Her gece 03:00'de otomatik veri güncelleme
-- Dosya değişikliğine dayalı in-memory cache
-
+  
 **Desteklenen mağazalar:** Vatan, İtopya, Sinerji, PcKolik, Tebilon, İnceHesap, Gencer Gaming, Gaming Gen, Game Garaj
 
 ---
@@ -74,7 +72,6 @@ Uygulama `http://localhost:3000` adresinde çalışır.
 | GET | `/api/pckolik` | PcKolik ürünleri |
 | GET | `/api/tebilon` | Tebilon ürünleri |
 | GET | `/api/inceHesap` | İnceHesap ürünleri |
-| GET | `/api/gencergaming` | Gencer Gaming ürünleri |
 | GET | `/api-docs` | Swagger UI |
 
 ### POST /api/getProducts
