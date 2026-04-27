@@ -77,9 +77,9 @@ def _parse_page_products(page) -> list[dict]:
             "Storage": "N/A",
         }
 
-        if 'spec_items' in locals() and spec_items:
+        if features:
             def find(*kws):
-                return next((x for x in spec_items if any(k.lower() in x.lower() for k in kws)), "N/A")
+                return next((x for x in features if any(k.lower() in x.lower() for k in kws)), "N/A")
             specs["CPU"] = find("islemci", "cpu", "ryzen", "core", "intel", "amd", "i3", "i5", "i7", "i9", "r3", "r5", "r7", "r9")
             specs["Motherboard"] = find("anakart", "mb", "b450", "b550", "a520", "h610", "b650", "a620", "b760", "z790", "b660", "x670")
             specs["GPU"] = find("rtx", "gtx", "rx ", "arc", "radeon", "ekran")
