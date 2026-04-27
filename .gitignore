@@ -1,2 +1,10 @@
-
 /node_modules
+/.gradle
+/__pycache__
+/.venv
+/venv
+/client/node_modules
+/client/dist
+/.env
+*_test.json
+/mock.json
