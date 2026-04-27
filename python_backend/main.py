@@ -32,7 +32,6 @@ from vatan import scrape_all_pages_async as scrape_vatan_async
 from incehesap import scrape_all_pages_async as scrape_incehesap_async
 from pckolik import scrape_all_pages_async as scrape_pckolik_async
 from gaminggen import scrape_all_pages_async as scrape_gaminggen_async
-
 from tebilon import scrape_all_pages_async as scrape_tebilon_async
 
 # mock.json yolu - proje kokunde
@@ -107,7 +106,7 @@ async def run_all_scrapers() -> list[dict]:
             else:
                 print(f"[HATA] {name}: {r}", flush=True)
 
-        # Async scraper'lari AYNI ANDA calistir
+        # Async scraper'lari SIRAYLA calistir (Timeout ve bloklanmayi onlemek icin)
         async def run_and_save(name, coro_fn):
             try:
                 print(f"[Scraper] {name} baslatiliyor...", flush=True)
@@ -119,16 +118,12 @@ async def run_all_scrapers() -> list[dict]:
             except Exception as e:
                 print(f"[HATA] {name}: {e}", flush=True)
 
-        async_tasks = [
-            run_and_save("Itopya", scrape_itopya_async),
-            run_and_save("Vatan", scrape_vatan_async),
-            run_and_save("InceHesap", scrape_incehesap_async),
-            run_and_save("PCKolik", scrape_pckolik_async),
-            run_and_save("GamingGen", scrape_gaminggen_async),
-            run_and_save("Tebilon", scrape_tebilon_async),
-        ]
-
-        await asyncio.gather(*async_tasks)
+        await run_and_save("Vatan", scrape_vatan_async)
+        await run_and_save("Itopya", scrape_itopya_async)
+        await run_and_save("InceHesap", scrape_incehesap_async)
+        await run_and_save("PCKolik", scrape_pckolik_async)
+        await run_and_save("GamingGen", scrape_gaminggen_async)
+        await run_and_save("Tebilon", scrape_tebilon_async)
 
         print(f"[Scraper] TAMAMLANDI - Toplam {len(all_products)} urun", flush=True)
         return all_products

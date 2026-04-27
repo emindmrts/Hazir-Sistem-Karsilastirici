@@ -32,7 +32,6 @@ const STORES = [
     { id: "sinerji", label: "Sinerji" },
     { id: "inceHesap", label: "İnceHesap" },
     { id: "tebilon", label: "Tebilon" },
-    { id: "gencergaming", label: "Gencer Gaming" },
 ]
 
 const CPU_BRANDS = ["Intel", "AMD"]

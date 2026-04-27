@@ -1,3 +1,4 @@
+import re
 """
 InceHesap scraper - StealthyFetcher
 - Selector: #product-grid > div (Node.js route ile eslestirildi)
@@ -6,7 +7,6 @@ InceHesap scraper - StealthyFetcher
 """
 import asyncio
 import json as json_lib
-import re
 from scrapling.fetchers import StealthyFetcher
 
 STORE = "inceHesap"
@@ -53,19 +53,51 @@ def _parse_page_products(page) -> list[dict]:
         image = img_el.attrib.get("src") if img_el else None
 
         # Specs
-        specs = {}
-        for li in el.css("ul li"):
-            text = li.text.strip()
-            text_lower = text.lower()
-            if "amd" in text_lower or "intel" in text_lower or "ryzen" in text_lower or "core" in text_lower:
-                if "GPU" not in specs:  # CPU once gelir
-                    specs["CPU"] = text
-            if "rtx" in text_lower or "rx " in text_lower or "gtx" in text_lower or "arc" in text_lower:
-                specs["GPU"] = text
-            if "ddr4" in text_lower or "ddr5" in text_lower:
-                specs["RAM"] = text
-            if "ssd" in text_lower or "nvme" in text_lower:
-                specs["Storage"] = text
+        specs = {
+            "CPU": "N/A",
+            "Motherboard": "N/A",
+            "GPU": "N/A",
+            "RAM": "N/A",
+            "Storage": "N/A",
+        }
+
+        if 'spec_items' in locals() and spec_items:
+            def find(*kws):
+                return next((x for x in spec_items if any(k.lower() in x.lower() for k in kws)), "N/A")
+            specs["CPU"] = find("islemci", "cpu", "ryzen", "core", "intel", "amd", "i3", "i5", "i7", "i9", "r3", "r5", "r7", "r9")
+            specs["Motherboard"] = find("anakart", "mb", "b450", "b550", "a520", "h610", "b650", "a620", "b760", "z790", "b660", "x670")
+            specs["GPU"] = find("rtx", "gtx", "rx ", "arc", "radeon", "ekran")
+            specs["RAM"] = find("mhz", "ram", "ddr", "cl")
+            specs["Storage"] = find("ssd", "m.2", "nvme", "tb")
+
+        if name:
+            if specs["CPU"] == "N/A":
+                cpu_match = re.search(r"(INTEL[\w\s]+|AMD[\w\s]+|INTE\s+U\d[\w\s]+)", name, re.IGNORECASE)
+                if cpu_match:
+                    specs["CPU"] = cpu_match.group(1).strip()
+                    specs["CPU"] = re.split(r"\s+RTX|\s+RX|\s+GTX|\s+ARC|\s*-", specs["CPU"], flags=re.IGNORECASE)[0].strip()
+            
+            if specs["GPU"] == "N/A":
+                gpu_match = re.search(r"((?:RTX|GTX|RX|ARC|RADEON)\s*\d+[\w\s]*)", name, re.IGNORECASE)
+                if gpu_match:
+                    specs["GPU"] = gpu_match.group(1).strip()
+                    specs["GPU"] = re.split(r"\s*-", specs["GPU"], flags=re.IGNORECASE)[0].strip()
+                
+            if specs["Storage"] == "N/A":
+                storage_match = re.search(r"(\d+\s*(?:GB|TB)\s*(?:M\.2\s*)?(?:SSD|HDD|NVME))", name, re.IGNORECASE)
+                if storage_match:
+                    specs["Storage"] = storage_match.group(1).strip()
+                
+            if specs["RAM"] == "N/A":
+                ram_match = re.search(r"(\d+\s*GB(?:\s*DDR\d)?\s*RAM|RAM)", name, re.IGNORECASE)
+                if ram_match:
+                    specs["RAM"] = ram_match.group(1).strip()
+                
+            if specs["Motherboard"] == "N/A":
+                mb_match = re.search(r"((?:[AHBZX]\d{3}[A-Z]*(?:-\w+)?)(?:\s*DDR\d)?(?:\s*WIFI)?(?:\s*PRO)?(?:\s*PLUS)?)", name, re.IGNORECASE)
+                if mb_match:
+                    specs["Motherboard"] = mb_match.group(1).strip()
+
 
         products.append({
             "name": name, "price": price, "image": image,

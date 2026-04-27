@@ -1,10 +1,10 @@
+import re
 """
 Tebilon scraper - StealthyFetcher
 - wait_selector: .showcase__product (pagination degil)
 - Concurrent page fetching with Semaphore(3)
 """
 import asyncio
-import re
 from scrapling.fetchers import StealthyFetcher
 
 STORE = "tebilon"
