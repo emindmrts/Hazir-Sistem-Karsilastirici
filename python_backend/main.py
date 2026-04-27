@@ -25,14 +25,14 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # Scraper moduller
-from sinerji import scrape_all_pages as scrape_sinerji
-from gamegaraj import scrape_all_pages as scrape_gamegaraj
-from itopya import scrape_all_pages_async as scrape_itopya_async
-from vatan import scrape_all_pages_async as scrape_vatan_async
-from incehesap import scrape_all_pages_async as scrape_incehesap_async
-from pckolik import scrape_all_pages_async as scrape_pckolik_async
-from gaminggen import scrape_all_pages_async as scrape_gaminggen_async
-from tebilon import scrape_all_pages_async as scrape_tebilon_async
+from scrapers.sinerji import scrape_all_pages as scrape_sinerji
+from scrapers.gamegaraj import scrape_all_pages as scrape_gamegaraj
+from scrapers.itopya import scrape_all_pages_async as scrape_itopya_async
+from scrapers.vatan import scrape_all_pages_async as scrape_vatan_async
+from scrapers.incehesap import scrape_all_pages_async as scrape_incehesap_async
+from scrapers.pckolik import scrape_all_pages_async as scrape_pckolik_async
+from scrapers.gaminggen import scrape_all_pages_async as scrape_gaminggen_async
+from scrapers.tebilon import scrape_all_pages_async as scrape_tebilon_async
 
 # mock.json yolu - proje kokunde
 MOCK_JSON = Path(__file__).parent.parent / "mock.json"
