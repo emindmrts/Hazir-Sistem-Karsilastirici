@@ -8,7 +8,7 @@ import { FilterSidebar } from "./components/filter-sidebar"
 import { useProducts } from "./hooks/use-products"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, SearchX } from "lucide-react"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -141,8 +141,8 @@ function AppContent() {
         {/* Empty state */}
         {!isLoading && !error && products.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-              <span className="text-3xl">🔍</span>
+            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4 text-muted-foreground">
+              <SearchX className="w-8 h-8 opacity-80" />
             </div>
             <h3 className="text-xl font-bold tracking-tight mb-2">Sonuç Bulunamadı</h3>
             <p className="text-muted-foreground mb-6 max-w-sm text-sm">
