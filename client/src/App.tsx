@@ -8,7 +8,7 @@ import { FilterSidebar } from "./components/filter-sidebar"
 import { useProducts } from "./hooks/use-products"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, SearchX } from "lucide-react"
+import { ChevronLeft, ChevronRight, SearchX, SlidersHorizontal } from "lucide-react"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -35,14 +35,9 @@ function AppContent() {
   // Grid container – used as ScrollTrigger parent
   const gridRef = useRef<HTMLDivElement>(null)
 
-  // Animate top bar on first render
+  // Animate top bar on first render (Removed for production stability)
   useEffect(() => {
-    if (!topBarRef.current) return
-    gsap.fromTo(
-      topBarRef.current,
-      { opacity: 0, y: -16 },
-      { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", delay: 0.35 }
-    )
+    // Top bar is now visible by default to prevent issues on Vercel
   }, [])
 
   // Re-run card animation whenever products change (page change / filter change)
@@ -85,35 +80,57 @@ function AppContent() {
       }
     >
       <div className="flex flex-col gap-6">
-        {/* Top bar */}
-        <div ref={topBarRef} className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center justify-between opacity-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Sonuç:</span>
-            <span className="inline-flex items-center rounded-md bg-primary/10 px-2.5 py-1 text-sm font-bold text-primary ring-1 ring-inset ring-primary/20">
-              {totalCount.toLocaleString("tr-TR")} ürün
-            </span>
-          </div>
+        {/* Top bar / Filter Bar */}
+        <div ref={topBarRef} className="sticky top-[56px] md:static z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 py-3 border-b border-border/40 md:border-0 md:p-0 md:bg-transparent md:mx-0 md:mb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-70">Sonuç</span>
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary ring-1 ring-inset ring-primary/20">
+                {totalCount}
+              </span>
+            </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Select value={sortOrder} onValueChange={(v: "lowToHigh" | "highToLow") => setSortOrder(v)}>
-              <SelectTrigger className="h-8 flex-1 sm:flex-none sm:w-[180px] text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="lowToHigh">Fiyat ↑ (Düşük → Yüksek)</SelectItem>
-                <SelectItem value="highToLow">Fiyat ↓ (Yüksek → Düşük)</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={pageSize.toString()} onValueChange={(v) => { setPageSize(Number(v)); setPage(1) }}>
-              <SelectTrigger className="h-8 w-[68px] text-sm shrink-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[60, 120, 240, 480].map(n => (
-                  <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              {/* Mobile Filter Trigger */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="md:hidden h-8 px-3 rounded-full gap-1.5 font-bold text-[11px] border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 active:scale-95 transition-all"
+                onClick={() => {
+                  const trigger = document.getElementById("mobile-filter-fab")
+                  trigger?.click()
+                }}
+              >
+                <SlidersHorizontal className="w-3 h-3" />
+                FİLTRELE
+                {activeFilterCount > 0 && (
+                  <span className="flex items-center justify-center min-w-[16px] h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-black px-1">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+
+              <Select value={sortOrder} onValueChange={(v: "lowToHigh" | "highToLow") => setSortOrder(v)}>
+                <SelectTrigger className="h-8 w-auto min-w-[110px] sm:w-[180px] text-[11px] font-bold rounded-full bg-background border-border/60 uppercase">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lowToHigh">Ucuzdan Pahalıya</SelectItem>
+                  <SelectItem value="highToLow">Pahalıdan Ucuza</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={pageSize.toString()} onValueChange={(v) => { setPageSize(Number(v)); setPage(1) }}>
+                <SelectTrigger className="h-8 w-[55px] text-[11px] font-bold rounded-full bg-background border-border/60 shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[60, 120, 240, 480].map(n => (
+                    <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
