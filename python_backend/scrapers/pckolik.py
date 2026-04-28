@@ -10,12 +10,13 @@ from scrapling.fetchers import StealthyFetcher
 
 STORE = "pckolik"
 BASE_URL = "https://pckolik.com.tr/kategori/oem-paketler"
+SITE_BASE = "https://pckolik.com.tr"
 PRODUCT_SEL = ".product-card"
 
 
 def _parse_price(card) -> float:
-    # PCKolik'te fiyatlar .current-price, .product-price veya .price-new icinde olabilir
-    selectors = [".current-price", ".product-price", ".price-new", ".price-box", ".price"]
+    # PCKolik'te fiyat .price icinde: "26.999,00₺"
+    selectors = [".price", ".current-price", ".product-price", ".price-new", ".price-box"]
     raw = ""
     for sel in selectors:
         el = card.css(sel).first
@@ -23,11 +24,9 @@ def _parse_price(card) -> float:
             raw = el.get_all_text().strip()
             if raw:
                 break
-    
+
     if not raw:
-        # Fallback: Kart icinde TL simgesi veya metni olan ilk yeri bul
         all_text = card.get_all_text()
-        # "12.345,67 TL" formatini yakala
         match = re.search(r"(\d[\d\.]*(?:,\d+)?)\s*(?:TL|₺)", all_text)
         if match:
             raw = match.group(1)
@@ -36,13 +35,11 @@ def _parse_price(card) -> float:
         return 0.0
 
     clean = re.sub(r"[^\d,.]", "", raw)
-    # Eger hem nokta hem virgul varsa (12.345,67), noktayi sil, virgulu nokta yap
     if "." in clean and "," in clean:
         clean = clean.replace(".", "").replace(",", ".")
-    # Sadece virgul varsa (12345,67), virgulu nokta yap
     elif "," in clean:
         clean = clean.replace(",", ".")
-    
+
     try:
         return float(clean)
     except ValueError:
@@ -52,21 +49,37 @@ def _parse_price(card) -> float:
 def _parse_page_products(page) -> list[dict]:
     products = []
     for card in page.css(PRODUCT_SEL):
-        name_el = card.css(".name").first
-        name = name_el.text.strip() if name_el else "N/A"
+        # Name: try multiple selectors
+        name = "N/A"
+        for name_sel in ["a.product-name", ".product-title", ".product-name", ".name", "h2", "h3"]:
+            name_el = card.css(name_sel).first
+            if name_el:
+                name = name_el.get_all_text().strip()
+                if name and name != "N/A":
+                    break
+        # Fallback: title on <a>
+        if name == "N/A":
+            a_el2 = card.css("a[title]").first
+            if a_el2:
+                name = a_el2.attrib.get("title", "N/A").strip()
 
         price = _parse_price(card)
 
+        # Image: prefer data-src (lazy-loaded), fallback to src; always make absolute
         img_el = next(
-            (img for img in card.css("img") if "icon-star" not in (img.attrib.get("src") or "")),
+            (img for img in card.css("img") if "icon-star" not in (img.attrib.get("src") or "") and "logo" not in (img.attrib.get("src") or "")),
             None,
         )
-        image = (img_el.attrib.get("data-src") or img_el.attrib.get("src")) if img_el else None
+        raw_img = (img_el.attrib.get("data-src") or img_el.attrib.get("src")) if img_el else None
+        if raw_img and raw_img.startswith("/"):
+            image = f"{SITE_BASE}{raw_img}"
+        else:
+            image = raw_img
 
         a_el = card.css("a").first
         href = a_el.attrib.get("href", "") if a_el else ""
         if href and not href.startswith("http"):
-            href = f"https://pckolik.com.tr{'/' if not href.startswith('/') else ''}{href}"
+            href = f"{SITE_BASE}{'/' if not href.startswith('/') else ''}{href}"
 
         features = [(li.get_all_text() if hasattr(li, 'get_all_text') else li.text).strip() for li in card.css("li")]
         specs = {
