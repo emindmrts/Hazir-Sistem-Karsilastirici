@@ -38,7 +38,20 @@ function StoreBadge({ store }: { store: string }) {
 }
 
 
+function shortenName(name: string) {
+    return name
+        .replace(/Hazır Sistem/gi, "")
+        .replace(/Gaming (PC|Bilgisayar|Kasa)/gi, "")
+        .replace(/Oyun Bilgisayarı/gi, "")
+        .replace(/Masaüstü Bilgisayar/gi, "")
+        .replace(/PC/g, "")
+        .replace(/\s\s+/g, ' ') // Remove extra spaces
+        .trim()
+}
+
+
 export function ProductCard({ product }: { product: Product }) {
+    const displayName = shortenName(product.sistemAdi)
     return (
         <Card className="group flex flex-col sm:flex-col overflow-hidden border-border/60 bg-card transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/30">
 
@@ -72,7 +85,7 @@ export function ProductCard({ product }: { product: Product }) {
                 {/* Details — right column */}
                 <div className="flex flex-col flex-1 min-w-0 p-3 gap-2 justify-between">
                     <h3 className="font-semibold text-xs leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                        {product.sistemAdi}
+                        {displayName}
                     </h3>
                     <div className="space-y-0.5 text-[10px] text-muted-foreground">
                         {product.islemci && (
@@ -152,7 +165,7 @@ export function ProductCard({ product }: { product: Product }) {
                 {/* Details */}
                 <CardHeader className="flex-1 p-4 pb-3 space-y-3">
                     <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                        {product.sistemAdi}
+                        {displayName}
                     </h3>
                     <div className="space-y-1.5 text-xs text-muted-foreground">
                         {product.islemci && (
