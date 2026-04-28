@@ -65,11 +65,8 @@ def _parse_page_products(page) -> list[dict]:
 
         price = _parse_price(card)
 
-        # Image: prefer data-src (lazy-loaded), fallback to src; always make absolute
-        img_el = next(
-            (img for img in card.css("img") if "icon-star" not in (img.attrib.get("src") or "") and "logo" not in (img.attrib.get("src") or "")),
-            None,
-        )
+        # Image: use .img-left img to get the main case photo (avoiding .img-sm component icons)
+        img_el = card.css(".img-left img").first
         raw_img = (img_el.attrib.get("data-src") or img_el.attrib.get("src")) if img_el else None
         if raw_img and raw_img.startswith("/"):
             image = f"{SITE_BASE}{raw_img}"
