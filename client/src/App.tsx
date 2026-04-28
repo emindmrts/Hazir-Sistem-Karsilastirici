@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { Analytics } from "@vercel/analytics/react"
 import { ThemeProvider } from "./components/theme-provider"
 import { Layout } from "./components/layout"
 import { ProductCard } from "./components/product-card"
@@ -218,6 +219,7 @@ export default function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="sistem-ui-theme">
       <AppContent />
+      <Analytics />
     </ThemeProvider>
   )
 }
