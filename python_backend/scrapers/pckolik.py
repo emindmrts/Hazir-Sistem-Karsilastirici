@@ -142,6 +142,35 @@ def _parse_page_products(page) -> list[dict]:
         
         curr_prod["specs"] = specs
 
+        # Name fallback for specs if still N/A
+        if name and name != "N/A":
+            if specs["CPU"] == "N/A":
+                cpu_match = re.search(r"(INTEL[\w\s]+|AMD[\w\s]+|INTE\s+U\d[\w\s]+)", name, re.IGNORECASE)
+                if cpu_match:
+                    specs["CPU"] = cpu_match.group(1).strip()
+                    specs["CPU"] = re.split(r"\s+RTX|\s+RX|\s+GTX|\s+ARC|\s*-", specs["CPU"], flags=re.IGNORECASE)[0].strip()
+            
+            if specs["GPU"] == "N/A":
+                gpu_match = re.search(r"((?:RTX|GTX|RX|ARC|RADEON)\s*\d+[\w\s]*)", name, re.IGNORECASE)
+                if gpu_match:
+                    specs["GPU"] = gpu_match.group(1).strip()
+                    specs["GPU"] = re.split(r"\s*-", specs["GPU"], flags=re.IGNORECASE)[0].strip()
+                
+            if specs["Storage"] == "N/A":
+                storage_match = re.search(r"(\d+\s*(?:GB|TB)\s*(?:M\.2\s*)?(?:SSD|HDD|NVME))", name, re.IGNORECASE)
+                if storage_match:
+                    specs["Storage"] = storage_match.group(1).strip()
+                
+            if specs["RAM"] == "N/A":
+                ram_match = re.search(r"(\d+\s*GB(?:\s*DDR\d)?\s*RAM|RAM)", name, re.IGNORECASE)
+                if ram_match:
+                    specs["RAM"] = ram_match.group(1).strip()
+                
+            if specs["Motherboard"] == "N/A":
+                mb_match = re.search(r"((?:[AHBZX]\d{3}[A-Z]*(?:-\w+)?)(?:\s*DDR\d)?(?:\s*WIFI)?(?:\s*PRO)?(?:\s*PLUS)?)", name, re.IGNORECASE)
+                if mb_match:
+                    specs["Motherboard"] = mb_match.group(1).strip()
+
     return products
 
 
