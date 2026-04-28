@@ -5,6 +5,7 @@ import { ThemeProvider } from "./components/theme-provider"
 import { Layout } from "./components/layout"
 import { ProductCard } from "./components/product-card"
 import { FilterSidebar } from "./components/filter-sidebar"
+import { SEO } from "./components/seo"
 import { useProducts } from "./hooks/use-products"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
@@ -70,6 +71,40 @@ function AppContent() {
     setPage(1)
   }
 
+  // Generate JSON-LD for SEO
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Hazır Sistem Karşılaştırma",
+    "description": "En ucuz ve en güçlü hazır sistem bilgisayarların karşılaştırmalı listesi.",
+    "numberOfItems": totalCount,
+    "itemListElement": products.slice(0, 10).map((p, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "item": {
+        "@type": "Product",
+        "name": p.name,
+        "description": p.description || `${p.cpu} işlemci ve ${p.gpu} ekran kartına sahip hazır sistem.`,
+        "image": p.imageUrl,
+        "offers": {
+          "@type": "Offer",
+          "price": p.price,
+          "priceCurrency": "TRY",
+          "availability": p.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          "url": p.url
+        },
+        "brand": {
+          "@type": "Brand",
+          "name": p.store
+        }
+      }
+    }))
+  }
+
+  const dynamicTitle = filters.searchStr 
+    ? `"${filters.searchStr}" İçin Hazır Sistemler` 
+    : "En Uygun Hazır Sistemleri Karşılaştırın"
+
   return (
     <Layout
       searchValue={filters.searchStr}
@@ -79,6 +114,10 @@ function AppContent() {
         <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} />
       }
     >
+      <SEO 
+        title={dynamicTitle} 
+        jsonLd={jsonLd}
+      />
       <div className="flex flex-col gap-6">
         {/* Top bar / Filter Bar */}
         <div ref={topBarRef} className="sticky top-[56px] md:static z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 py-3 border-b border-border/40 md:border-0 md:p-0 md:bg-transparent md:mx-0 md:mb-2">
