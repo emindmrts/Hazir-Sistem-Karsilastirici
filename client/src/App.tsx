@@ -21,6 +21,14 @@ function AppContent() {
     sortOrder, setSortOrder,
   } = useProducts()
 
+  const activeFilterCount =
+    filters.stores.length +
+    filters.cpuBrands.length +
+    filters.gpuBrands.length +
+    (filters.minPrice !== "" ? 1 : 0) +
+    (filters.maxPrice !== "" ? 1 : 0) +
+    (filters.inStock ? 1 : 0)
+
   // Top bar ref – animates in on mount
   const topBarRef = useRef<HTMLDivElement>(null)
 
@@ -71,13 +79,14 @@ function AppContent() {
     <Layout
       searchValue={filters.searchStr}
       onSearchChange={handleSearchChange}
+      activeFilterCount={activeFilterCount}
       sidebarContent={
         <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} />
       }
     >
       <div className="flex flex-col gap-6">
         {/* Top bar */}
-        <div ref={topBarRef} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between opacity-0">
+        <div ref={topBarRef} className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center justify-between opacity-0">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Sonuç:</span>
             <span className="inline-flex items-center rounded-md bg-primary/10 px-2.5 py-1 text-sm font-bold text-primary ring-1 ring-inset ring-primary/20">
@@ -85,38 +94,32 @@ function AppContent() {
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground hidden md:inline">Sıralama:</span>
-              <Select value={sortOrder} onValueChange={(v: "lowToHigh" | "highToLow") => setSortOrder(v)}>
-                <SelectTrigger className="h-8 w-[180px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lowToHigh">Fiyat ↑ (Düşük → Yüksek)</SelectItem>
-                  <SelectItem value="highToLow">Fiyat ↓ (Yüksek → Düşük)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground hidden md:inline">Sayfa:</span>
-              <Select value={pageSize.toString()} onValueChange={(v) => { setPageSize(Number(v)); setPage(1) }}>
-                <SelectTrigger className="h-8 w-[72px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[60, 120, 240, 480].map(n => (
-                    <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Select value={sortOrder} onValueChange={(v: "lowToHigh" | "highToLow") => setSortOrder(v)}>
+              <SelectTrigger className="h-8 flex-1 sm:flex-none sm:w-[180px] text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="lowToHigh">Fiyat ↑ (Düşük → Yüksek)</SelectItem>
+                <SelectItem value="highToLow">Fiyat ↓ (Yüksek → Düşük)</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={pageSize.toString()} onValueChange={(v) => { setPageSize(Number(v)); setPage(1) }}>
+              <SelectTrigger className="h-8 w-[68px] text-sm shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[60, 120, 240, 480].map(n => (
+                  <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Loading skeletons */}
         {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="rounded-xl border border-border/50 overflow-hidden">
                 <div className="shimmer aspect-[4/3] w-full" />
@@ -154,7 +157,7 @@ function AppContent() {
 
         {/* Grid — cards are tagged with .product-card for GSAP selector */}
         {!isLoading && (
-          <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
             {products.map((p, i) => (
               <div key={i} className="product-card opacity-0">
                 <ProductCard product={p} />
