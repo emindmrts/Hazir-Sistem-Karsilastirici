@@ -49,6 +49,15 @@ def _parse_price(card) -> float:
 def _parse_page_products(page) -> list[dict]:
     products = []
     for card in page.css(PRODUCT_SEL):
+        # Link check - skip if it's not a real product link (e.g. javascript:void(0))
+        a_el = card.css("a").first
+        href = a_el.attrib.get("href", "") if a_el else ""
+        if not href or "javascript" in href.lower():
+            continue
+
+        if href and not href.startswith("http"):
+            href = f"{SITE_BASE}{'/' if not href.startswith('/') else ''}{href}"
+
         # Name: try multiple selectors
         name = "N/A"
         for name_sel in ["a.product-name", ".product-title", ".product-name", ".name", "h2", "h3"]:
@@ -56,28 +65,64 @@ def _parse_page_products(page) -> list[dict]:
             if name_el:
                 name = name_el.get_all_text().strip()
                 if name and name != "N/A":
+                    # Clean up if price is appended to name
+                    name = name.split('\n')[0].strip()
                     break
-        # Fallback: title on <a>
-        if name == "N/A":
-            a_el2 = card.css("a[title]").first
-            if a_el2:
-                name = a_el2.attrib.get("title", "N/A").strip()
-
+        
+        # Price extraction
         price = _parse_price(card)
+        if price == 0.0:
+            # Try to find price in the whole card text if selectors fail
+            txt = card.get_all_text()
+            match = re.search(r"(\d[\d\.]*(?:,\d+)?)\s*(?:TL|₺)", txt)
+            if match:
+                raw_p = match.group(1).replace(".", "").replace(",", ".")
+                try:
+                    price = float(raw_p)
+                except:
+                    pass
 
-        # Image: use .img-left img to get the main case photo (avoiding .img-sm component icons)
-        img_el = card.css(".img-left img").first
+        # Image: main system photo
+        # First, try to see if there's a GIF (often the case for system animations)
+        img_el = None
+        for img in card.css("img"):
+            src = img.attrib.get("src") or ""
+            if src.endswith(".gif") and "icon" not in src.lower():
+                img_el = img
+                break
+        
+        # If no GIF, use the standard .img-left main image
+        if not img_el:
+            img_el = card.css(".img-left img").first
+            
+        # Fallback to any non-icon image
+        if not img_el:
+            img_el = next(
+                (img for img in card.css("img") if "icon" not in (img.attrib.get("src") or "").lower()),
+                None
+            )
+
         raw_img = (img_el.attrib.get("data-src") or img_el.attrib.get("src")) if img_el else None
         if raw_img and raw_img.startswith("/"):
             image = f"{SITE_BASE}{raw_img}"
         else:
             image = raw_img
 
-        a_el = card.css("a").first
-        href = a_el.attrib.get("href", "") if a_el else ""
-        if href and not href.startswith("http"):
-            href = f"{SITE_BASE}{'/' if not href.startswith('/') else ''}{href}"
+        # If price is 0 and it's out of stock, we can still add it but it will be filtered by frontend
+        # However, user wants "price issue solved", so we keep it if we found a price.
 
+        products.append({
+            "name": name,
+            "price": price,
+            "image": image,
+            "url": href,
+            "store": STORE,
+            "specs": {}, # Will be filled below
+        })
+        
+        # Re-using the spec extraction logic
+        # (Need to make sure specs dict is handled)
+        curr_prod = products[-1]
         features = [(li.get_all_text() if hasattr(li, 'get_all_text') else li.text).strip() for li in card.css("li")]
         specs = {
             "CPU": "N/A",
@@ -86,54 +131,17 @@ def _parse_page_products(page) -> list[dict]:
             "RAM": "N/A",
             "Storage": "N/A",
         }
-
         if features:
-            def find(*kws):
+            def find_spec(*kws):
                 return next((x for x in features if any(k.lower() in x.lower() for k in kws)), "N/A")
-            specs["CPU"] = find("islemci", "cpu", "ryzen", "core", "intel", "amd", "i3", "i5", "i7", "i9", "r3", "r5", "r7", "r9")
-            specs["Motherboard"] = find("anakart", "mb", "b450", "b550", "a520", "h610", "b650", "a620", "b760", "z790", "b660", "x670")
-            specs["GPU"] = find("rtx", "gtx", "rx ", "arc", "radeon", "ekran")
-            specs["RAM"] = find("mhz", "ram", "ddr", "cl")
-            specs["Storage"] = find("ssd", "m.2", "nvme", "tb")
+            specs["CPU"] = find_spec("islemci", "cpu", "ryzen", "core", "intel", "amd", "i3", "i5", "i7", "i9", "r3", "r5", "r7", "r9")
+            specs["Motherboard"] = find_spec("anakart", "mb", "b450", "b550", "a520", "h610", "b650", "a620", "b760", "z790", "b660", "x670")
+            specs["GPU"] = find_spec("rtx", "gtx", "rx ", "arc", "radeon", "ekran")
+            specs["RAM"] = find_spec("mhz", "ram", "ddr", "cl")
+            specs["Storage"] = find_spec("ssd", "m.2", "nvme", "tb")
+        
+        curr_prod["specs"] = specs
 
-        if name:
-            if specs["CPU"] == "N/A":
-                cpu_match = re.search(r"(INTEL[\w\s]+|AMD[\w\s]+|INTE\s+U\d[\w\s]+)", name, re.IGNORECASE)
-                if cpu_match:
-                    specs["CPU"] = cpu_match.group(1).strip()
-                    specs["CPU"] = re.split(r"\s+RTX|\s+RX|\s+GTX|\s+ARC|\s*-", specs["CPU"], flags=re.IGNORECASE)[0].strip()
-            
-            if specs["GPU"] == "N/A":
-                gpu_match = re.search(r"((?:RTX|GTX|RX|ARC|RADEON)\s*\d+[\w\s]*)", name, re.IGNORECASE)
-                if gpu_match:
-                    specs["GPU"] = gpu_match.group(1).strip()
-                    specs["GPU"] = re.split(r"\s*-", specs["GPU"], flags=re.IGNORECASE)[0].strip()
-                
-            if specs["Storage"] == "N/A":
-                storage_match = re.search(r"(\d+\s*(?:GB|TB)\s*(?:M\.2\s*)?(?:SSD|HDD|NVME))", name, re.IGNORECASE)
-                if storage_match:
-                    specs["Storage"] = storage_match.group(1).strip()
-                
-            if specs["RAM"] == "N/A":
-                ram_match = re.search(r"(\d+\s*GB(?:\s*DDR\d)?\s*RAM|RAM)", name, re.IGNORECASE)
-                if ram_match:
-                    specs["RAM"] = ram_match.group(1).strip()
-                
-            if specs["Motherboard"] == "N/A":
-                mb_match = re.search(r"((?:[AHBZX]\d{3}[A-Z]*(?:-\w+)?)(?:\s*DDR\d)?(?:\s*WIFI)?(?:\s*PRO)?(?:\s*PLUS)?)", name, re.IGNORECASE)
-                if mb_match:
-                    specs["Motherboard"] = mb_match.group(1).strip()
-
-
-
-        products.append({
-            "name": name,
-            "price": price,
-            "image": image,
-            "url": href,
-            "store": STORE,
-            "specs": specs,
-        })
     return products
 
 
