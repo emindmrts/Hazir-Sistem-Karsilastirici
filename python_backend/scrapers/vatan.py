@@ -5,7 +5,7 @@ Vatan Bilgisayar scraper - StealthyFetcher
   * İsim selector: h3 child değil, h3.product-list__product-name kendisi
   * Pagination: .pagination__item yok; toplam ürün sayısından hesaplanıyor
   * Image: data-src öncelikli (lazyload)
-  * Concurrent page fetching with Semaphore(3)
+  * Concurrent page fetching with Semaphore(5)
 """
 import asyncio
 import math
@@ -196,7 +196,7 @@ async def scrape_all_pages_async() -> list[dict]:
     print(f"[Vatan] Sayfa 1: {len(all_products)} urun", flush=True)
 
     if total_pages > 1:
-        sem = asyncio.Semaphore(3)
+        sem = asyncio.Semaphore(5)
 
         async def fetch_n(n):
             url = f"{BASE_URL}?page={n}"
@@ -209,7 +209,7 @@ async def scrape_all_pages_async() -> list[dict]:
                         return products
                     except Exception as e:
                         print(f"[Vatan] Sayfa {n} hata (deneme {attempt+1}): {e}", flush=True)
-                        await asyncio.sleep(3)
+                        pass
                 return []
 
         results = await asyncio.gather(
@@ -234,3 +234,5 @@ if __name__ == "__main__":
     with open("vatan_test.json", "w", encoding="utf-8") as f:
         json.dump(products, f, ensure_ascii=False, indent=2)
     print(f"vatan_test.json kaydedildi - {len(products)} urun")
+
+

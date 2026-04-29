@@ -2,7 +2,7 @@ import re
 """
 Tebilon scraper - StealthyFetcher
 - wait_selector: .showcase__product (pagination degil)
-- Concurrent page fetching with Semaphore(3)
+- Concurrent page fetching with Semaphore(5)
 """
 import asyncio
 from scrapling.fetchers import StealthyFetcher
@@ -58,7 +58,7 @@ async def scrape_all_pages_async() -> list[dict]:
     all_products = _parse_page_products(first_page)
 
     if total_pages > 1:
-        sem = asyncio.Semaphore(3)
+        sem = asyncio.Semaphore(5)
         async def fetch_n(n):
             async with sem:
                 for attempt in range(3):
@@ -66,7 +66,7 @@ async def scrape_all_pages_async() -> list[dict]:
                         return await _fetch_page(f"{BASE_URL}?page={n}")
                     except Exception as e:
                         print(f"[Tebilon] Sayfa {n} hata (deneme {attempt+1}): {e}", flush=True)
-                        await asyncio.sleep(3)
+                        pass
                 return []
         results = await asyncio.gather(*[fetch_n(i) for i in range(2, total_pages + 1)], return_exceptions=True)
         for r in results:
@@ -87,3 +87,5 @@ if __name__ == "__main__":
     with open("tebilon_test.json", "w", encoding="utf-8") as f:
         json.dump(products, f, ensure_ascii=False, indent=2)
     print("tebilon_test.json kaydedildi")
+
+

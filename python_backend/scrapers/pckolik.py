@@ -1,8 +1,8 @@
 import re
-"""
+"""v
 PCKolik scraper - StealthyFetcher
 - wait_selector artik .product-card (pagination degil)
-- Concurrent page fetching with Semaphore(3)
+- Concurrent page fetching with Semaphore(5)
 - Price extraction fix: xpath text() ile nested element dahil
 """
 import asyncio
@@ -252,3 +252,5 @@ if __name__ == "__main__":
     with open("pckolik_test.json", "w", encoding="utf-8") as f:
         json.dump(products, f, ensure_ascii=False, indent=2)
     print("pckolik_test.json kaydedildi")
+
+

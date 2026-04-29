@@ -3,7 +3,7 @@ import re
 InceHesap scraper - StealthyFetcher
 - Selector: #product-grid > div (Node.js route ile eslestirildi)
 - Fiyat: data-product JSON attr veya .text-orange-500
-- Concurrent page fetching with Semaphore(3)
+- Concurrent page fetching with Semaphore(5)
 """
 import asyncio
 import json as json_lib
@@ -136,7 +136,7 @@ async def scrape_all_pages_async() -> list[dict]:
     print(f"[InceHesap] Sayfa 1: {len(all_products)} urun", flush=True)
 
     if total_pages > 1:
-        sem = asyncio.Semaphore(3)
+        sem = asyncio.Semaphore(5)
         async def fetch_n(n):
             url = f"{BASE_URL}sayfa-{n}/"
             async with sem:
@@ -145,7 +145,7 @@ async def scrape_all_pages_async() -> list[dict]:
                         return await _fetch_page(url)
                     except Exception as e:
                         print(f"[InceHesap] Sayfa {n} hata (deneme {attempt+1}): {e}", flush=True)
-                        await asyncio.sleep(3)
+                        pass
                 return []
         results = await asyncio.gather(*[fetch_n(i) for i in range(2, total_pages + 1)], return_exceptions=True)
         for r in results:
@@ -165,3 +165,5 @@ if __name__ == "__main__":
     with open("incehesap_test.json", "w", encoding="utf-8") as f:
         json_lib.dump(products, f, ensure_ascii=False, indent=2)
     print("incehesap_test.json kaydedildi")
+
+

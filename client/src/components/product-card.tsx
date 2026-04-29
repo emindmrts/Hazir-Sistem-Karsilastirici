@@ -6,7 +6,7 @@ import type { Product } from "@/hooks/use-products"
 function getLogoUrl(store: string) {
     const key = store.toLowerCase().replace(/[^a-z]/g, "")
     // Listed stores have a dedicated logo in the /logos/ folder
-    const validStores = ["vatan", "itopya", "gaminggen", "gamegaraj", "pckolik", "sinerji", "incehesap", "tebilon", "gencergaming"]
+    const validStores = ["vatan", "itopya", "gaminggen", "gamegaraj", "pckolik", "sinerji", "incehesap", "tebilon"]
     if (validStores.includes(key)) {
         return `/logos/${key}.png`
     }

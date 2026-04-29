@@ -7,7 +7,6 @@ import vatanRouter from "./vatan.mjs";
 import sinerjiRouter from "./sinerji.mjs";
 import tebilonRouter from "./tebilon.mjs";
 import inceHesapRouter from "./inceHesap.mjs";
-import gencerGamingRouter from "./gencergaming.mjs";
 import getCPUs from "../filter-data/cpus.mjs";
 import getGPUs from "../filter-data/gpus.mjs";
 import getProductsRouter from "./getProducts.mjs";
@@ -25,7 +24,6 @@ router.use("/vatan", vatanRouter);
 router.use("/sinerji", sinerjiRouter);
 router.use("/tebilon", tebilonRouter);
 router.use("/inceHesap", inceHesapRouter);
-router.use("/gencergaming", gencerGamingRouter);
 router.use("/test", testRouter);
 
 router.use("/cpu", getCPUs);

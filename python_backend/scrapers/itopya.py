@@ -1,13 +1,16 @@
-import re
 """
 Itopya scraper - Scrapling StealthyFetcher (JS rendering required)
 Scrapling 0.4.7 API: css().first, el.attrib.get()
 """
+import re
 import asyncio
 from scrapling.fetchers import StealthyFetcher
 
+BASE_DOMAIN = "https://www.itopya.com"
+BASE_URL    = f"{BASE_DOMAIN}/oem-paketler"
+
 async def _fetch_page(url: str) -> list[dict]:
-    # Cloudflare Bypass: networkidle ve uzun timeout kullanıyoruz
+    """Fetch a single listing page and return parsed products."""
     page = await StealthyFetcher.async_fetch(
         url,
         headless=True,
@@ -16,14 +19,22 @@ async def _fetch_page(url: str) -> list[dict]:
         wait_selector=".product",
         wait_selector_state="attached",
     )
+    return page, _parse_page(page)
 
+
+def _parse_page(page) -> list[dict]:
     products = []
     for el in page.css(".product"):
         # İsim & link
         link_els = [a for a in el.css("a") if a.text.strip()]
         name_el = link_els[0] if link_els else None
         name = name_el.text.strip() if name_el else "N/A"
-        link = name_el.attrib.get("href") if name_el else None
+        raw_href = name_el.attrib.get("href") if name_el else None
+        # Make URL absolute
+        if raw_href and raw_href.startswith("/"):
+            link = BASE_DOMAIN + raw_href
+        else:
+            link = raw_href
 
         # Resim
         img_el = el.css("img").first
@@ -108,36 +119,61 @@ async def _fetch_page(url: str) -> list[dict]:
     return products
 
 async def scrape_all_pages_async() -> list[dict]:
-    base_url = "https://www.itopya.com/oem-paketler"
     all_products = []
-    
-    # Concurrency'i 1'e dusuruyoruz (Itopya paralel istekte blokluyor)
-    sem = asyncio.Semaphore(1)
+    seen_urls: set[str] = set()
 
-    async def fetch_with_sem(page_num: int):
-        url = f"{base_url}?pg={page_num}"
-        async with sem:
-            print(f"[Itopya] Sayfa {page_num} taraniyor (Cloudflare Bypass)...", flush=True)
-            for attempt in range(3):
-                try:
-                    # Sayfalar arasinda insansi bir bekleme
-                    await asyncio.sleep(3)
-                    products = await _fetch_page(url)
-                    print(f"[Itopya] Sayfa {page_num} basarili ({len(products)} urun)", flush=True)
-                    return products
-                except Exception as e:
-                    print(f"[Itopya] Sayfa {page_num} Hata (deneme {attempt + 1}): {e}", flush=True)
-                    await asyncio.sleep(10)
-            return []
+    print(f"[Itopya] Ilk sayfa: {BASE_URL}", flush=True)
+    try:
+        first_page, first_products = await _fetch_page(BASE_URL)
+    except Exception as e:
+        print(f"[Itopya] Ilk sayfa hatasi: {e}", flush=True)
+        return []
 
-    # Sadece ilk 5 sayfayi deneyelim (Hizli test icin)
-    tasks = [fetch_with_sem(i) for i in range(1, 6)]
-    results = await asyncio.gather(*tasks)
+    # Toplam sayfa sayisini pagination'dan oku
+    try:
+        page_nums = [
+            int(re.sub(r"[^\d]", "", el.text.strip()))
+            for el in first_page.css(".pagination a, .pager a, [class*='page'] a")
+            if re.sub(r"[^\d]", "", el.text.strip()).isdigit()
+        ]
+        total_pages = max(page_nums) if page_nums else 1
+    except Exception:
+        total_pages = 1
 
-    for products in results:
-        all_products.extend(products)
+    print(f"[Itopya] {total_pages} sayfa tespit edildi", flush=True)
 
-    print(f"[Itopya] Toplam {len(all_products)} urun cekildi", flush=True)
+    # Ilk sayfayi ekle (dedup ile)
+    for p in first_products:
+        if p["url"] and p["url"] not in seen_urls:
+            seen_urls.add(p["url"])
+            all_products.append(p)
+
+    if total_pages > 1:
+        sem = asyncio.Semaphore(1)
+
+        async def fetch_with_sem(page_num: int):
+            url = f"{BASE_URL}?pg={page_num}"
+            async with sem:
+                print(f"[Itopya] Sayfa {page_num} taraniyor...", flush=True)
+                await asyncio.sleep(3)
+                for attempt in range(3):
+                    try:
+                        _, products = await _fetch_page(url)
+                        print(f"[Itopya] Sayfa {page_num}: {len(products)} urun", flush=True)
+                        return products
+                    except Exception as e:
+                        print(f"[Itopya] Sayfa {page_num} hata (deneme {attempt+1}): {e}", flush=True)
+                        await asyncio.sleep(10)
+                return []
+
+        results = await asyncio.gather(*[fetch_with_sem(i) for i in range(2, total_pages + 1)])
+        for batch in results:
+            for p in batch:
+                if p["url"] and p["url"] not in seen_urls:
+                    seen_urls.add(p["url"])
+                    all_products.append(p)
+
+    print(f"[Itopya] Toplam {len(all_products)} benzersiz urun", flush=True)
     return all_products
 
 def scrape_all_pages() -> list[dict]:

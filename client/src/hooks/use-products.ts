@@ -49,14 +49,15 @@ function normalise(raw: Record<string, unknown>): Product {
         ...(raw as unknown as Product),
         sistemAdi: (raw.name as string) ?? "",
         fiyat: price,
-        resimUrl: (raw.image as string) ?? "",
-        siteUrl: (raw.url as string) ?? "",
+        resimUrl: (raw.image as string) ?? (raw.img as string) ?? "",
+        siteUrl: (raw.url as string) ?? (raw.link as string) ?? "",
         magaza: (raw.store as string) ?? "",
         islemci: cpu || undefined,
         islemciMarka: cpuMarka,
         ekranKarti: gpu || undefined,
         ram: ram || undefined,
         ssd: ssd || undefined,
+        gpuKey: gpu.split(" ").slice(0, 3).join(" ").toUpperCase(),
         depolama: storage || undefined,
         stoktaVarMi: (raw.store as string) === "pckolik" ? true : price > 0,
     }
@@ -93,16 +94,50 @@ export function useProducts() {
                 if (!res.ok) throw new Error("Ürünler yüklenirken hata oluştu.")
                 const json = await res.json()
                 const raw: Record<string, unknown>[] = json.data ?? json
-                setAllProducts(raw.map(normalise))
+                
+                setAllProducts(raw.map(p => normalise(p)))
+
+                // Load filters from URL
+                const params = new URLSearchParams(window.location.search)
+                const urlFilters: Partial<FilterState> = {}
+                if (params.get("q")) urlFilters.searchStr = params.get("q") || ""
+                if (params.get("stores")) urlFilters.stores = params.get("stores")?.split(",") || []
+                if (params.get("min")) urlFilters.minPrice = Number(params.get("min")) || ""
+                if (params.get("max")) urlFilters.maxPrice = Number(params.get("max")) || ""
+                if (params.get("cpu")) urlFilters.cpuBrands = params.get("cpu")?.split(",") || []
+                if (params.get("gpu")) urlFilters.gpuBrands = params.get("gpu")?.split(",") || []
+                
+                if (Object.keys(urlFilters).length > 0) {
+                    setFilters(prev => ({ ...prev, ...urlFilters }))
+                }
+
             } catch (err: unknown) {
                 console.error("fetchProducts hatası:", err)
-                setError(`Hata: ${(err as Error).message} | Stack: ${(err as Error).stack}`)
+                setError(`Hata: ${(err as Error).message}`)
             } finally {
                 setIsLoading(false)
             }
         }
         fetchProducts()
     }, [])
+
+    // Sync filters to URL
+    useEffect(() => {
+        const params = new URLSearchParams()
+        if (filters.searchStr) params.set("q", filters.searchStr)
+        if (filters.stores.length) params.set("stores", filters.stores.join(","))
+        if (filters.minPrice) params.set("min", filters.minPrice.toString())
+        if (filters.maxPrice) params.set("max", filters.maxPrice.toString())
+        if (filters.cpuBrands.length) params.set("cpu", filters.cpuBrands.join(","))
+        if (filters.gpuBrands.length) params.set("gpu", filters.gpuBrands.join(","))
+        
+        const newRelativePathQuery = window.location.pathname + '?' + params.toString()
+        if (params.toString()) {
+            window.history.replaceState(null, '', newRelativePathQuery)
+        } else {
+            window.history.replaceState(null, '', window.location.pathname)
+        }
+    }, [filters])
 
     const processedProducts = useMemo(() => {
         let result = [...allProducts]

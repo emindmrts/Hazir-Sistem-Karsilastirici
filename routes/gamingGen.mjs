@@ -10,15 +10,35 @@ async function scrapePage(browser, url) {
   const page = await browser.newPage();
   try {
     console.log(`Navigating to ${url}`);
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 90000 });
+    
+    // Cloudflare bypass wait
+    try {
+        await page.waitForSelector("li.product", { timeout: 15000 });
+    } catch (e) {
+        console.log("Product selector not found, might be blocked or empty page.");
+    }
 
     const products = await page.evaluate(() => {
-      const items = Array.from(document.querySelectorAll("li.product"));
+      // Selector fallbacks for container
+      let items = Array.from(document.querySelectorAll("li.product"));
+      if (items.length === 0) items = Array.from(document.querySelectorAll(".product"));
+      if (items.length === 0) items = Array.from(document.querySelectorAll(".pc-specs-list-container")); // Alternate layout
+
       return items.map(item => {
-        const titleElement = item.querySelector(".pc-specs-title");
-        const name = titleElement ? titleElement.textContent.trim() : "N/A";
+        // Selector fallbacks for title
+        const titleSelectors = [".pc-specs-title", ".woocommerce-loop-product__title", "h2", "h3", ".product-title"];
+        let name = "N/A";
+        for (const sel of titleSelectors) {
+          const el = item.querySelector(sel);
+          if (el && el.textContent.trim()) {
+            name = el.textContent.trim();
+            break;
+          }
+        }
         const link = item.querySelector("a")?.href || null;
-        const image = item.querySelector("img")?.src || null;
+        const imgEl = item.querySelector("img");
+        const image = imgEl ? (imgEl.getAttribute("data-lazy-src") || imgEl.getAttribute("data-src") || imgEl.src) : null;
         
         // Fiyat parse
         const priceElement = item.querySelector(".price");
@@ -30,17 +50,27 @@ async function scrapePage(browser, url) {
         const match = priceText.replace(/[^\d,]/g, "").replace(",", ".");
         const price = parseFloat(match) || 0;
 
-        // Specs
-        const specs = {};
-        const specItems = Array.from(item.querySelectorAll(".pc-specs-list li"));
-        specItems.forEach((li, idx) => {
-            const text = li.textContent.trim();
-            if (idx === 0) specs.CPU = text;
-            else if (idx === 1) specs.Motherboard = text;
-            else if (idx === 2) specs.GPU = text;
-            else if (idx === 3) specs.Ram = text;
-            else if (idx === 4) specs.Storage = text;
-        });
+        // Specs (Smart Finder)
+        const specs = { CPU: "N/A", Motherboard: "N/A", GPU: "N/A", Ram: "N/A", Storage: "N/A" };
+        const specItems = Array.from(item.querySelectorAll(".pc-specs-list li")).map(li => li.textContent.trim());
+        
+        const find = (kws) => specItems.find(x => kws.some(k => x.toLowerCase().includes(k.toLowerCase()))) || "N/A";
+        
+        specs.CPU = find(["islemci", "cpu", "ryzen", "core", "intel", "amd", "i3", "i5", "i7", "i9"]);
+        specs.Motherboard = find(["anakart", "mb", "b450", "b550", "a520", "h610", "b650", "a620", "b760", "z790", "b660", "x670"]);
+        specs.GPU = find(["rtx", "gtx", "rx ", "arc", "radeon", "ekran"]);
+        specs.Ram = find(["mhz", "ram", "ddr", "cl"]);
+        specs.Storage = find(["ssd", "m.2", "nvme", "tb"]);
+
+        // Name fallback for specs
+        if (specs.CPU === "N/A" && name !== "N/A") {
+            const cpuMatch = name.match(/(INTEL[\w\s]+|AMD[\w\s]+|INTE\s+U\d[\w\s]+)/i);
+            if (cpuMatch) specs.CPU = cpuMatch[1].trim();
+        }
+        if (specs.GPU === "N/A" && name !== "N/A") {
+            const gpuMatch = name.match(/((?:RTX|GTX|RX|ARC|RADEON)\s*\d+[\w\s]*)/i);
+            if (gpuMatch) specs.GPU = gpuMatch[1].trim();
+        }
 
         return { name, price, image, link, specs, store: "gamingGen" };
       });
@@ -64,8 +94,15 @@ export async function scrapeAllPages() {
   try {
     const baseUrl = "https://www.gaming.gen.tr/kategori/hazir-sistemler/";
     const page = await browser.newPage();
-    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
-    await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
+    await page.goto(baseUrl, { waitUntil: "networkidle2", timeout: 90000 });
+    
+    // Wait for content or bypass
+    try {
+        await page.waitForSelector("li.product", { timeout: 20000 });
+    } catch(e) {
+        console.log("Initial page load timed out or blocked.");
+    }
     
     // Find total pages
     const totalPages = await page.evaluate(() => {
@@ -88,7 +125,15 @@ export async function scrapeAllPages() {
     for (let i = 1; i <= pagesToScrape; i++) {
         const url = i === 1 ? baseUrl : `${baseUrl}page/${i}/`;
         const pageProducts = await scrapePage(browser, url);
-        results.push(...pageProducts);
+        if (pageProducts.length > 0) {
+            results.push(...pageProducts);
+        } else if (i > 1) {
+            // If we get 0 products on a subpage, maybe we reached the end or got blocked
+            console.log(`No products found on page ${i}, stopping.`);
+            break;
+        }
+        // Random delay to avoid bot detection
+        await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000));
     }
 
     return results;

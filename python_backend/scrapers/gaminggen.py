@@ -2,7 +2,7 @@ import re
 """
 GamingGen scraper - StealthyFetcher
 - wait_selector: li.product (pagination degil)
-- Concurrent page fetching with Semaphore(3)
+- Concurrent page fetching with Semaphore(5)
 """
 import asyncio
 from scrapling.fetchers import StealthyFetcher
@@ -12,26 +12,49 @@ BASE_URL = "https://www.gaming.gen.tr/kategori/hazir-sistemler/"
 PRODUCT_SEL = "li.product"
 
 
+def _normalize(text: str) -> str:
+    """Collapse all whitespace (including newlines) into a single space."""
+    return " ".join(text.split())
+
+
+def _extract_price(item) -> float:
+    """Extract price from WooCommerce .price element (handles <ins><bdi> nesting)."""
+    price_el = item.css(".price").first
+    if not price_el:
+        return 0.0
+    # Prefer discounted price inside <ins>
+    ins_el = price_el.css("ins").first
+    target = ins_el if ins_el else price_el
+    # WooCommerce wraps amount in <bdi>
+    bdi_el = target.css("bdi").first
+    raw_el = bdi_el if bdi_el else target
+    try:
+        price_text = raw_el.get_all_text() if hasattr(raw_el, "get_all_text") else raw_el.text
+    except Exception:
+        price_text = ""
+    # Remove everything except digits and comma; Turkish format: 120.000,00
+    cleaned = re.sub(r"[^\d,]", "", price_text)
+    cleaned = cleaned.replace(",", ".")
+    try:
+        return float(cleaned) if cleaned else 0.0
+    except ValueError:
+        return 0.0
+
+
 def _parse_page_products(page) -> list[dict]:
     products = []
     for item in page.css(PRODUCT_SEL):
         title_el = item.css(".pc-specs-title").first
-        name = title_el.text.strip() if title_el else "N/A"
+        name = _normalize(title_el.text) if title_el else "N/A"
         a_el = item.css("a").first
         link = a_el.attrib.get("href") if a_el else None
         img_el = item.css("img").first
         image = img_el.attrib.get("src") if img_el else None
-        price = 0.0
-        price_el = item.css(".price").first
-        if price_el:
-            ins_el = price_el.css("ins").first
-            price_text = ins_el.text if ins_el else price_el.text
-            raw = re.sub(r"[^\d,]", "", price_text).replace(",", ".")
-            try:
-                price = float(raw)
-            except ValueError:
-                price = 0.0
-        spec_items = [(li.get_all_text() if hasattr(li, 'get_all_text') else li.text).strip() for li in item.css(".pc-specs-list li")]
+        price = _extract_price(item)
+        spec_items = [
+            _normalize(li.get_all_text() if hasattr(li, "get_all_text") else li.text)
+            for li in item.css(".pc-specs-list li")
+        ]
         specs = {
             "CPU": "N/A",
             "Motherboard": "N/A",
@@ -40,14 +63,14 @@ def _parse_page_products(page) -> list[dict]:
             "Storage": "N/A",
         }
 
-        if 'spec_items' in locals() and spec_items:
+        if spec_items:
             def find(*kws):
                 return next((x for x in spec_items if any(k.lower() in x.lower() for k in kws)), "N/A")
-            specs["CPU"] = find("islemci", "cpu", "ryzen", "core", "intel", "amd", "i3", "i5", "i7", "i9", "r3", "r5", "r7", "r9")
+            specs["CPU"]        = find("islemci", "cpu", "ryzen", "core", "intel", "amd", "i3", "i5", "i7", "i9", "r3", "r5", "r7", "r9")
             specs["Motherboard"] = find("anakart", "mb", "b450", "b550", "a520", "h610", "b650", "a620", "b760", "z790", "b660", "x670")
-            specs["GPU"] = find("rtx", "gtx", "rx ", "arc", "radeon", "ekran")
-            specs["RAM"] = find("mhz", "ram", "ddr", "cl")
-            specs["Storage"] = find("ssd", "m.2", "nvme", "tb")
+            specs["GPU"]        = find("rtx", "gtx", "rx ", "arc", "radeon", "ekran")
+            specs["RAM"]        = find("mhz", "ram", "ddr", "cl")
+            specs["Storage"]    = find("ssd", "m.2", "nvme", "tb")
 
         if name:
             if specs["CPU"] == "N/A":
@@ -107,7 +130,7 @@ async def scrape_all_pages_async() -> list[dict]:
     all_products = _parse_page_products(first_page)
 
     if total_pages > 1:
-        sem = asyncio.Semaphore(3)
+        sem = asyncio.Semaphore(5)
         async def fetch_n(n):
             async with sem:
                 for attempt in range(3):
@@ -115,7 +138,7 @@ async def scrape_all_pages_async() -> list[dict]:
                         return await _fetch_page(f"{BASE_URL}page/{n}/")
                     except Exception as e:
                         print(f"[GamingGen] Sayfa {n} hata (deneme {attempt+1}): {e}", flush=True)
-                        await asyncio.sleep(3)
+                        pass
                 return []
         results = await asyncio.gather(*[fetch_n(i) for i in range(2, total_pages + 1)], return_exceptions=True)
         for r in results:
@@ -136,3 +159,5 @@ if __name__ == "__main__":
     with open("gaminggen_test.json", "w", encoding="utf-8") as f:
         json.dump(products, f, ensure_ascii=False, indent=2)
     print("gaminggen_test.json kaydedildi")
+
+
