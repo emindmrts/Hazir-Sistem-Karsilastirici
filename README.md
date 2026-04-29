@@ -1,3 +1,5 @@
+<img width="1920" height="1200" alt="Başlıksız-1-Kurtarıldı" src="https://github.com/user-attachments/assets/ac7d8186-0739-48c8-98d0-9354fe6f6c38" />
+
 # Ucuza Sistem
 
 > Bu repo, orijinal projenin bir fork'udur. Ana fork'taki mevcut hatalar giderilmiş, eksik özellikler tamamlanmış ve proje çalışabilir hale getirilmiştir.
