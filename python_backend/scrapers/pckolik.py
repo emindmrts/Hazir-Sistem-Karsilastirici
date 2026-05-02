@@ -178,8 +178,8 @@ async def _fetch_page(url: str) -> list[dict]:
     page = await StealthyFetcher.async_fetch(
         url,
         headless=True,
-        wait_until="networkidle",
-        timeout=90000,
+        wait_until="domcontentloaded",
+        timeout=180000,
         wait_selector=PRODUCT_SEL,
         wait_selector_state="attached",
     )
@@ -193,8 +193,8 @@ async def scrape_all_pages_async() -> list[dict]:
         first_page = await StealthyFetcher.async_fetch(
             BASE_URL,
             headless=True,
-            wait_until="networkidle",
-            timeout=90000,
+            wait_until="domcontentloaded",
+            timeout=180000,
             wait_selector=PRODUCT_SEL,
             wait_selector_state="attached",
         )
