@@ -1,14 +1,15 @@
 """
 Itopya scraper - Robust & Optimized
 - URL pagination: ?pg=X
-- StealthyFetcher for dynamic content
+- Fetcher for fast fetching
 - Concurrency for speed
 """
 import re
 import math
 import sys
 import asyncio
-from scrapling.fetchers import StealthyFetcher
+from scrapling import Fetcher
+from .utils import extract_specs_from_list
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -18,21 +19,18 @@ BASE_URL    = f"{BASE_DOMAIN}/oem-paketler"
 PRODUCTS_PER_PAGE = 20
 
 async def _fetch_page(url: str):
+    def fetch():
+        fetcher = Fetcher()
+        return fetcher.get(url, stealthy_headers=True)
+
     for attempt in range(2):
         try:
-            page = await StealthyFetcher.async_fetch(
-                url,
-                headless=True,
-                wait_until="domcontentloaded",
-                timeout=120000,
-                wait_selector=".product, .product-card",
-                wait_selector_state="attached",
-            )
-            return page
-        except:
-            if attempt == 1:
-                return await StealthyFetcher.async_fetch(url, headless=True, timeout=120000)
-            await asyncio.sleep(5)
+            page = await asyncio.to_thread(fetch)
+            if page and (page.css(".product") or page.css(".product-card")):
+                return page
+        except Exception as e:
+            print(f"[Itopya] Error fetching {url}: {e}")
+        await asyncio.sleep(2)
     return None
 
 def _parse_products(page) -> list[dict]:
@@ -52,6 +50,7 @@ def _parse_products(page) -> list[dict]:
         # Resim
         img_el = el.css("img").first
         image = (img_el.attrib.get("data-src") or img_el.attrib.get("src")) if img_el else None
+        if image and image.startswith("/"): image = f"{BASE_DOMAIN}{image}"
 
         # Fiyat
         price_el = el.css(".product-price strong").first or el.css(".product-price").first
@@ -60,16 +59,38 @@ def _parse_products(page) -> list[dict]:
         try: price = float(price_clean)
         except: price = 0.0
 
-        # Specs
-        spec_items = [li.get_all_text().strip() for li in el.css(".product-block-feature li, .advice-system-feature p")]
-        specs = {"CPU": "N/A", "Motherboard": "N/A", "GPU": "N/A", "RAM": "N/A", "Storage": "N/A"}
-        def find_spec(*kws):
-            return next((x for x in spec_items if any(k.lower() in x.lower() for k in kws)), "N/A")
-        specs["CPU"] = find_spec("islemci", "cpu", "ryzen", "core", "intel", "amd")
-        specs["Motherboard"] = find_spec("anakart", "mb")
-        specs["GPU"] = find_spec("rtx", "gtx", "rx ", "arc", "radeon")
-        specs["RAM"] = find_spec("mhz", "ram", "ddr", "cl")
-        specs["Storage"] = find_spec("ssd", "m.2", "nvme", "tb")
+        # Specs - Itopya has specific classes for each icon
+        spec_items = []
+        icon_map = {
+            "islemci": "CPU",
+            "anakart": "Motherboard",
+            "ekran-karti": "GPU",
+            "bellek": "RAM",
+            "ssd": "Storage",
+            "kasa": "Case",
+            "guc-kaynagi": "PSU",
+            "sogutucu": "Cooler"
+        }
+        
+        specs = {"CPU": "N/A", "Motherboard": "N/A", "GPU": "N/A", "RAM": "N/A", "Storage": "N/A", "Case": "N/A", "PSU": "N/A", "Cooler": "N/A"}
+        
+        features = el.css(".product-block-feature li, .advice-system-feature p")
+        for feat in features:
+            txt = feat.get_all_text().strip()
+            found_by_icon = False
+            for icon_key, spec_key in icon_map.items():
+                if feat.css(f".itopya-{icon_key}").first:
+                    specs[spec_key] = txt
+                    found_by_icon = True
+                    break
+            
+            if not found_by_icon:
+                spec_items.append(txt)
+        
+        extra_specs = extract_specs_from_list(spec_items)
+        for k, v in specs.items():
+            if v == "N/A" and extra_specs.get(k) != "N/A":
+                specs[k] = extra_specs[k]
 
         products.append({"name": name, "price": price, "image": image, "url": link, "store": "itopya", "specs": specs})
     return products
@@ -81,33 +102,25 @@ async def scrape_all_pages_async() -> list[dict]:
 
     all_products = _parse_products(first_page)
     seen_urls = {p["url"] for p in all_products}
-    seen_names = {p["name"] for p in all_products}
     
-    # Try fetching pages with ?pg= parameter - fetch up to 20 pages
-    total_pages = 20
-    
+    total_pages = 100
     for page_num in range(2, total_pages + 1):
         url = f"{BASE_URL}?pg={page_num}"
         page = await _fetch_page(url)
         batch = _parse_products(page)
         
         if not batch:
-            print(f"[Itopya] Page {page_num} empty, stopping.", flush=True)
             break
             
         new_count = 0
         for p in batch:
             if p["url"] not in seen_urls:
                 seen_urls.add(p["url"])
-                seen_names.add(p["name"])
                 all_products.append(p)
                 new_count += 1
         
         print(f"[Itopya] Page {page_num}: {len(batch)} products ({new_count} new).", flush=True)
-        
-        # If no new products after a few pages, stop early
         if new_count == 0 and page_num > 3:
-            print(f"[Itopya] No new products on page {page_num}, stopping.", flush=True)
             break
 
     print(f"[Itopya] Total {len(all_products)} products fetched.", flush=True)

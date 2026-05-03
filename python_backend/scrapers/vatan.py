@@ -8,6 +8,7 @@ import math
 import sys
 import asyncio
 from scrapling import Fetcher
+from .utils import extract_specs_from_list
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -52,18 +53,45 @@ def _parse_page_products(page) -> list[dict]:
         
         # Specs
         spec_items = [p.get_all_text().strip() for p in el.css(".productlist_spec ul li p")]
-        specs = {"CPU": "N/A", "Motherboard": "N/A", "GPU": "N/A", "RAM": "N/A", "Storage": "N/A"}
-        if spec_items:
-            def find(*kws):
-                return next((x for x in spec_items if any(k.lower() in x.lower() for k in kws)), "N/A")
-            specs["CPU"] = find("islemci", "cpu", "ryzen", "core", "intel", "amd")
-            specs["Motherboard"] = find("anakart", "mb")
-            specs["GPU"] = find("rtx", "gtx", "rx ", "arc")
-            specs["RAM"] = find("mhz", "ram", "ddr", "cl")
-            specs["Storage"] = find("ssd", "m.2", "nvme", "tb")
+        specs = extract_specs_from_list(spec_items)
 
         products.append({"name": name, "price": price, "image": image, "url": url_product, "store": STORE, "specs": specs})
     return products
+
+async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
+    if product["specs"].get("Case") != "N/A" and product["specs"].get("PSU") != "N/A":
+        return product
+        
+    url = product["url"]
+    def sync_fetch():
+        try:
+            return fetcher_instance.get(url, stealthy_headers=True)
+        except:
+            return None
+            
+    for attempt in range(2):
+        try:
+            page = await asyncio.to_thread(sync_fetch)
+            if not page: continue
+            
+            spec_items = []
+            labels = page.css("label.labl")
+            for lbl in labels:
+                p_tags = lbl.css("p")
+                texts = [p.text.strip() for p in p_tags if p.text]
+                if "SEÇİLDİ" in texts:
+                    spec_items.append(texts[0])
+                    
+            if spec_items:
+                extra_specs = extract_specs_from_list(spec_items)
+                for k, v in extra_specs.items():
+                    if product["specs"].get(k, "N/A") == "N/A" and v != "N/A":
+                        product["specs"][k] = v
+            break
+        except Exception as e:
+            await asyncio.sleep(2)
+            
+    return product
 
 async def scrape_all_pages_async() -> list[dict]:
     print(f"[{STORE}] Fetching page 1 (Static)...", flush=True)
@@ -102,6 +130,15 @@ async def scrape_all_pages_async() -> list[dict]:
         tasks = [fetch_page_n(i) for i in range(2, total_pages + 1)]
         results = await asyncio.gather(*tasks)
         for r in results: all_products.extend(r)
+        
+    print(f"[{STORE}] Fetching details for {len(all_products)} products...", flush=True)
+    sem = asyncio.Semaphore(15)
+    async def fetch_with_sem(prod):
+        async with sem:
+            return await _fetch_product_details(prod, fetcher)
+            
+    detail_tasks = [fetch_with_sem(p) for p in all_products]
+    all_products = await asyncio.gather(*detail_tasks)
         
     print(f"[{STORE}] Total {len(all_products)} products.", flush=True)
     return all_products

@@ -1,0 +1,359 @@
+[
+  {
+    "name": "Ferzex Gold | AMD Ryzen 5 9600X | 16 GB DDR5 | MSI RTX 5070 12 GB | 1 TB SSD OEM Paket",
+    "price": 72999.0,
+    "image": "https://www.incehesap.com/resim/urun/202507/688247e051f335.09862019_iphjgfloneqkm_cropped_288.webp",
+    "url": "https://www.incehesap.com/ferzex-gold-oem-paket-fiyati-50710/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 9600X",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5070 12 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Meder Silver | AMD Ryzen 5 5600 | 16 GB DDR4 | Gainward RTX 5060 8 GB | 512 GB SSD OEM Paket",
+    "price": 40799.0,
+    "image": "https://www.incehesap.com/resim/urun/202506/685bafae832d77.55161321_igqehfjpklomn_cropped_288.webp",
+    "url": "https://www.incehesap.com/meder-silver-oem-paket-fiyati-83154/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 5600",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 8 GB",
+      "RAM": "16 GB DDR4",
+      "Storage": "512 GB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Dark Aegis | AMD Ryzen 7 7800X3D | 16 GB DDR5 | Powercolor RX 9060 XT 16 GB | 1 TB SSD OEM Paket",
+    "price": 62999.0,
+    "image": "https://www.incehesap.com/resim/urun/202602/69820079873169.13387312_oiegnqkmjpfhl_cropped_288.webp",
+    "url": "https://www.incehesap.com/dark-aegis-oem-paket-fiyati-35237/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 7 7800X3D",
+      "Motherboard": "N/A",
+      "GPU": "RX 9060 XT 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Rudex Gold | AMD Ryzen 5 9600X | 16 GB DDR5 | Powercolor RX 9060 XT 16 GB | 1 TB SSD OEM Paket",
+    "price": 57999.0,
+    "image": "https://www.incehesap.com/resim/urun/202506/685ba7c3a3e083.39411044_elpniohqkmgjf_cropped_288.webp",
+    "url": "https://www.incehesap.com/rudex-gold-oem-paket-fiyati-85868/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 9600X",
+      "Motherboard": "N/A",
+      "GPU": "RX 9060 XT 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Shadow Sonic | Intel Ultra 5 225F | 16 GB DDR5 | PNY RTX 5060 8 GB | 512 GB SSD OEM Paket",
+    "price": 42999.0,
+    "image": "https://www.incehesap.com/resim/urun/202506/685ba7c3a3e083.39411044_elpniohqkmgjf_cropped_288.webp",
+    "url": "https://www.incehesap.com/shadow-sonic-oem-paket-fiyati-84785/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "Intel Ultra 5 225F",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 8 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "512 GB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Orion Nexus | AMD Ryzen 7 5700 | 16 GB DDR4 | ASUS RTX 5060 8 GB | 512 GB SSD OEM Paket",
+    "price": 41999.0,
+    "image": "https://www.incehesap.com/resim/urun/202506/685ba7c3a3e083.39411044_elpniohqkmgjf_cropped_288.webp",
+    "url": "https://www.incehesap.com/orion-nexus-oem-paket-fiyati-81080/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 7 5700",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 8 GB",
+      "RAM": "16 GB DDR4",
+      "Storage": "512 GB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Viper Blaze | AMD Ryzen 5 7500X3D | 16 GB DDR5 | Sapphire RX 9070 XT 16 GB | 1 TB SSD OEM Paket",
+    "price": 76999.0,
+    "image": "https://www.incehesap.com/resim/urun/202411/672c793e3ab9d0.26045400_gmpqilhefjokn_cropped_288.webp",
+    "url": "https://www.incehesap.com/viper-blaze-oem-paket-fiyati-76594/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7500X3D",
+      "Motherboard": "N/A",
+      "GPU": "RX 9070 XT 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Nihilstein Elite | AMD Ryzen 5 7600 | 16 GB DDR5 | Gainward RTX 5070 12 GB | 1 TB SSD OEM Paket",
+    "price": 69799.0,
+    "image": "https://www.incehesap.com/resim/urun/202512/69456c524a64d1.63533106_gemlhijnfoqkp_cropped_288.webp",
+    "url": "https://www.incehesap.com/nihilstein-elite-oem-paket-fiyati-42332/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7600",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5070 12 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Quantum Max - Boom | AMD Ryzen 5 7500F | 16 GB DDR5 | ASUS RTX 5070 12 GB | 500 GB SSD OEM Paket",
+    "price": 67999.0,
+    "image": "https://www.incehesap.com/resim/urun/202412/674ec0168b0669.13735288_logfjkienphqm_cropped_288.webp",
+    "url": "https://www.incehesap.com/quantum-max-oem-paket-fiyati-83739/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7500F",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5070 12 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "500 GB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Vortex Nova - Boom | AMD Ryzen 5 7500F | 16 GB DDR5 | ASUS RTX 5060 TI 16 GB | 500 GB SSD OEM Paket",
+    "price": 56999.0,
+    "image": "https://www.incehesap.com/resim/urun/202412/674ebe99e790a3.88666243_okjnmelqpfgih_cropped_288.webp",
+    "url": "https://www.incehesap.com/vortex-nova-oem-paket-fiyati-83742/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7500F",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 TI 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "500 GB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Ser-Ce | AMD Ryzen 5 7500F | 16 GB DDR5 | Gainward RTX 5060 TI 16 GB | 1 TB SSD OEM Paket",
+    "price": 55999.0,
+    "image": "https://www.incehesap.com/resim/urun/202506/685ba7c3a3e083.39411044_elpniohqkmgjf_cropped_288.webp",
+    "url": "https://www.incehesap.com/ser-ce-oem-paket-fiyati-35558/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7500F",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 TI 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Kaya-Lee | AMD Ryzen 5 7500X3D | 2 x 16 GB DDR5 | Gainward RTX 5070 Ti 16 GB | 1 TB SSD OEM Paket",
+    "price": 102799.0,
+    "image": "https://www.incehesap.com/resim/urun/202507/68824779dde710.53069591_mfqoilekpnhjg_cropped_288.webp",
+    "url": "https://www.incehesap.com/kaya-lee-oem-paket-fiyati-38391/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7500X3D",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5070 Ti 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Nova APU | Intel i5 12400 | 8 GB DDR4 | 256 GB SSD OEM Paket",
+    "price": 19999.0,
+    "image": "https://www.incehesap.com/resim/urun/202603/frisby-fc-2730b-1x120-mm-fan-300w-usb-2-0-kasa-kasalar-masaustu-217863_cropped_75.webp",
+    "url": "https://www.incehesap.com/nova-apu-oem-paket-fiyati-50965/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "Intel i5 12400",
+      "Motherboard": "N/A",
+      "GPU": "N/A",
+      "RAM": "8 GB DDR4",
+      "Storage": "256 GB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Crimson Infinity | AMD Ryzen 5 7500F | 16 GB DDR5 | Powercolor RX 9060 XT 16 GB | 1 TB SSD OEM Paket",
+    "price": 54999.0,
+    "image": "https://www.incehesap.com/resim/urun/202506/685bafae832d77.55161321_igqehfjpklomn_cropped_75.webp",
+    "url": "https://www.incehesap.com/crimson-infinity-oem-paket-fiyati-81923/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7500F",
+      "Motherboard": "N/A",
+      "GPU": "RX 9060 XT 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "PCH SMOKIN V1 | AMD Ryzen 5 7500F | 16 GB DDR5 | Gainward RTX 5060 TI 16 GB | 1 TB SSD OEM Paket",
+    "price": 58799.0,
+    "image": "https://www.incehesap.com/resim/urun/202401/65b127f6f2e879.38965681_nlpjkeqmfgoih_cropped_75.webp",
+    "url": "https://www.incehesap.com/pch-smokin-v1-oem-paket-fiyati-84855/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7500F",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 TI 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "RRaenee | AMD Ryzen 7 9800X3D | 2 x 16 GB DDR5 | ASUS RTX 5070 12 GB | 1 TB SSD OEM Paket",
+    "price": 99799.0,
+    "image": "https://www.incehesap.com/resim/urun/202602/699333e67ec9a9.67599105_gnqejikfholpm_cropped_75.webp",
+    "url": "https://www.incehesap.com/rraenee-oem-paket-fiyati-39592/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 7 9800X3D",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5070 12 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Brave Lion | Intel Ultra 5 225F | 16 GB DDR5 | MSI RTX 5060 TI 16 GB | 1 TB SSD OEM Paket",
+    "price": 62499.0,
+    "image": "https://www.incehesap.com/resim/urun/202505/6839b0358f8641.79801990_lmpigknqhjofe_cropped_75.webp",
+    "url": "https://www.incehesap.com/brave-lion-oem-paket-fiyati-77244/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "Intel Ultra 5 225F",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 TI 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Zenith 5060 | Intel Ultra 5 245K | 16 GB DDR5 | Gainward RTX 5060 8 GB | 1 TB SSD OEM Paket",
+    "price": 56799.0,
+    "image": "https://www.incehesap.com/resim/urun/202412/674ebe99e790a3.88666243_okjnmelqpfgih_cropped_75.webp",
+    "url": "https://www.incehesap.com/zenith-5060-oem-paket-fiyati-37255/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "Intel Ultra 5 245K",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 8 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "1 TB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Spectrum Nova | AMD Ryzen 5 7500F | 16 GB DDR5 | MSI RTX 5060 TI 16 GB | 500 GB SSD OEM Paket",
+    "price": 58999.0,
+    "image": "https://www.incehesap.com/resim/urun/202506/685bafae832d77.55161321_igqehfjpklomn_cropped_75.webp",
+    "url": "https://www.incehesap.com/spectrum-nova-oem-paket-fiyati-76185/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7500F",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 TI 16 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "500 GB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Alpha Spear | AMD Ryzen 7 5700 | 16 GB DDR4 | Gainward RTX 5060 8 GB | 512 GB SSD OEM Paket",
+    "price": 41799.0,
+    "image": "https://www.incehesap.com/resim/urun/202601/6979be017b5ba8.56146637_finjolmkhepgq_cropped_75.webp",
+    "url": "https://www.incehesap.com/alpha-spear-oem-paket-fiyati-60381/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 7 5700",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5060 8 GB",
+      "RAM": "16 GB DDR4",
+      "Storage": "512 GB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  },
+  {
+    "name": "Negatron Platinum | AMD Ryzen 5 7500F | 16 GB DDR5 | ASUS RTX 5070 12 GB | 500 GB SSD OEM Paket",
+    "price": 65999.0,
+    "image": "https://www.incehesap.com/resim/urun/202501/67866a7523cac4.20498110_epmoqgfjliknh_cropped_75.webp",
+    "url": "https://www.incehesap.com/negatron-platinum-oem-paket-fiyati-46593/",
+    "store": "incehesap",
+    "specs": {
+      "CPU": "AMD Ryzen 5 7500F",
+      "Motherboard": "N/A",
+      "GPU": "RTX 5070 12 GB",
+      "RAM": "16 GB DDR5",
+      "Storage": "500 GB SSD",
+      "Case": "N/A",
+      "PSU": "N/A",
+      "Cooler": "N/A"
+    }
+  }
+]

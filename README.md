@@ -1,137 +1,131 @@
-<img width="1920" height="1200" alt="Başlıksız-1-Kurtarıldı" src="https://github.com/user-attachments/assets/ac7d8186-0739-48c8-98d0-9354fe6f6c38" />
+# 🚀 Hazır Sistem Karşılaştırıcı (Ucuza Sistem)
 
-# Ucuza Sistem
+[![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/Scrapers-Python-3776AB?style=flat-square&logo=python)](https://www.python.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
 
-> Bu repo, orijinal projenin bir fork'udur. Ana fork'taki mevcut hatalar giderilmiş, eksik özellikler tamamlanmış ve proje çalışabilir hale getirilmiştir.
-
-Türkiye'nin önde gelen bilgisayar mağazalarındaki hazır sistemleri tek bir arayüzde karşılaştırmak için geliştirilmiş bir web uygulaması.
-
----
-
-## Özellikler
-
-- Anlık ürün arama
-- Fiyat, mağaza, işlemci ve ekran kartına göre filtreleme
-- Fiyata göre sıralama (artan / azalan)
-- Açık / koyu tema desteği
-- Her gece 03:00'de otomatik veri güncelleme
-  
-**Desteklenen mağazalar:** Vatan, İtopya, Sinerji, PcKolik, Tebilon, İnceHesap, Gencer Gaming, Gaming Gen, Game Garaj
+**Hazır Sistem Karşılaştırıcı**, Türkiye'nin önde gelen teknoloji mağazalarındaki (Vatan, İtopya, Sinerji vb.) hazır bilgisayar sistemlerini tek bir çatı altında toplayan, filtreleyen ve en avantajlı fiyatları bulmanızı sağlayan yüksek performanslı bir web uygulamasıdır.
 
 ---
 
-## Teknoloji Stack'i
+## ✨ Öne Çıkan Özellikler
 
-**Frontend**
-- React 18, Vite, TypeScript
-- Tailwind CSS, shadcn/ui
-- GSAP (ScrollTrigger)
-
-**Backend**
-- Node.js (ESM), Express.js
-- Puppeteer (JS gerektiren siteler için)
-- JSDOM + node-fetch (statik HTML siteler için)
-- node-cron, Morgan, Swagger
+- 🔍 **Anlık Ürün Arama:** Binlerce hazır sistem arasında milisaniyeler içinde arama yapın.
+- 🎭 **Gelişmiş Filtreleme:** CPU, GPU, Mağaza ve Fiyat aralığına göre hassas filtreleme.
+- ⚡ **Hibrit Scraper Mimarisi:** Veri çekme işlemleri Python'un gücüyle, API yönetimi Node.js'in hızıyla gerçekleştirilir.
+- 🌙 **Modern UI/UX:** Karanlık/Aydınlık mod desteği ve GSAP ile güçlendirilmiş akıcı animasyonlar.
+- 🕒 **Otomatik Güncelleme:** Her gece 03:00'te otomatik çalışan veri toplama hattı.
+- 🛠️ **Donanım Detayları:** RAM, Anakart, Kasa ve PSU gibi detaylı teknik özelliklerin otomatik ayrıştırılması.
 
 ---
 
-## Kurulum
+## 🛠️ Teknoloji Yığını
 
-Node.js 18+ ve npm 9+ gereklidir.
+### **Frontend**
+- **Çekirdek:** React 18 + Vite + TypeScript
+- **Stil:** Tailwind CSS + Vanilla CSS (Custom Design System)
+- **Bileşenler:** shadcn/ui + Radix UI
+- **Animasyon:** GSAP (ScrollTrigger)
 
+### **Backend (API Layer)**
+- **Runtime:** Node.js (ESM)
+- **Framework:** Express.js
+- **Araçlar:** Morgan, Swagger UI, node-cron
+- **Veri Saklama:** JSON tabanlı performanslı dosya sistemi (In-memory caching ile)
+
+### **Scraper Layer (Python)**
+- **Dil:** Python 3.10+
+- **Kütüphaneler:** BeautifulSoup4, Requests, Concurrent.futures
+- **Mimari:** Paralel çalışan, merkezi bir merkezden yönetilen 10+ farklı mağaza scraper'ı.
+
+---
+
+## 📂 Proje Yapısı
+
+```text
+├── client/                # React + Vite Frontend uygulaması
+├── python_backend/        # Python tabanlı yüksek performanslı scraperlar
+│   ├── scrapers/          # Mağaza bazlı scraper modülleri (Vatan, Itopya vb.)
+│   └── run_scrapers.py    # Scraper orkestrasyon betiği
+├── routes/                # Node.js API endpointleri
+├── lib/                   # Ortak yardımcı fonksiyonlar
+├── index.mjs              # Node.js Sunucu giriş noktası
+├── mock.json              # Scrape edilmiş normalize veriler
+└── vercel.json            # Deployment konfigürasyonu
+```
+
+---
+
+## 🚀 Hızlı Başlangıç
+
+### **1. Repoyu Klonlayın**
 ```bash
-# Repoyu klonla
 git clone https://github.com/VS-57/hesapli-pc-node-js.git
-cd hesapli-pc-node-js
+cd Hazir-Sistem-Karsilastirici
+```
 
-# Backend bağımlılıkları
-npm install
-
-# Frontend build
+### **2. Frontend Kurulumu**
+```bash
 cd client
 npm install
-npm run build
-cd ..
+npm run dev
+```
 
-# Sunucuyu başlat
+### **3. Backend & API Kurulumu**
+```bash
+# Ana dizine dönün
+cd ..
+npm install
 npm start
 ```
 
-Uygulama `http://localhost:3000` adresinde çalışır.
-
----
-
-## API
-
-| Method | Endpoint | Açıklama |
-|--------|----------|----------|
-| GET | `/api/status` | Sunucu durumu, son güncelleme zamanı, ürün sayısı |
-| POST | `/api/getProducts` | Filtreli, sıralı ve sayfalı ürün listesi |
-| GET | `/api/combined` | Tüm scraperları paralel çalıştırır, `mock.json` günceller |
-| GET | `/api/itopya` | İtopya ürünleri |
-| GET | `/api/vatan` | Vatan ürünleri |
-| GET | `/api/sinerji` | Sinerji ürünleri |
-| GET | `/api/pckolik` | PcKolik ürünleri |
-| GET | `/api/tebilon` | Tebilon ürünleri |
-| GET | `/api/inceHesap` | İnceHesap ürünleri |
-| GET | `/api-docs` | Swagger UI |
-
-### POST /api/getProducts
-
-```json
-{
-  "searchTerm": "ryzen 5",
-  "startPrice": 10000,
-  "endPrice": 30000,
-  "selectedCPUs": ["AMD", "Intel"],
-  "selectedGPUs": ["RTX", "RX"],
-  "stores": ["vatan", "itopya"],
-  "isStocked": true,
-  "orderBy": "lowToHigh",
-  "page": 1,
-  "pageSize": 60
-}
+### **4. Scraperları Çalıştırma (Veri Toplama)**
+```bash
+cd python_backend
+pip install -r requirements.txt
+python run_scrapers.py
 ```
 
 ---
 
-## Proje Yapısı
+## 🔗 API Referansı
 
-```
-├── index.mjs
-├── lib/
-│   ├── scraper-utils.mjs   # Ortak yardımcılar: parsePrice, fetchHtml, normalise, batchMap
-│   └── scheduler.mjs       # node-cron otomatik güncelleme
-├── routes/
-│   ├── api.mjs
-│   ├── getProducts.mjs     # Filtreli ürün endpoint + in-memory cache
-│   ├── combined.mjs        # Tüm scraperları paralel çalıştırır
-│   ├── itopya.mjs          # Puppeteer
-│   ├── sinerji.mjs         # Puppeteer
-│   ├── gamingGen.mjs       # Puppeteer
-│   ├── vatan.mjs           # node-fetch + JSDOM
-│   ├── pckolik.mjs         # node-fetch + JSDOM
-│   ├── tebilon.mjs         # node-fetch + JSDOM
-│   ├── inceHesap.mjs       # node-fetch + JSDOM
-│   └── gencergaming.mjs    # node-fetch + JSDOM
-├── mock.json               # Son scrape sonucu
-└── client/                 # React + Vite frontend
-```
+| Metot | Endpoint | Açıklama |
+| :--- | :--- | :--- |
+| `GET` | `/api/status` | Sistem durumu ve son veri güncelleme zamanı |
+| `POST` | `/api/getProducts` | Gelişmiş filtreleme ile ürün listeleme |
+| `GET` | `/api/combined` | Manuel veri güncelleme tetikleyicisi |
+| `GET` | `/api-docs` | İnteraktif Swagger API dökümantasyonu |
 
 ---
 
-## Veri Güncelleme
+## 🏪 Desteklenen Mağazalar
 
-Veriler `mock.json` dosyasında saklanır. Manuel olarak `GET /api/combined` isteğiyle veya otomatik olarak her gece 03:00'de (scheduler aracılığıyla) güncellenir.
-
-Son güncelleme bilgisi için:
-
-```
-GET /api/status
-```
+- ✅ **Vatan Bilgisayar**
+- ✅ **İtopya**
+- ✅ **Sinerji**
+- ✅ **PCKolik**
+- ✅ **İnceHesap**
+- ✅ **Gaming.Gen.TR**
+- ✅ **Game Garaj**
+- ✅ **Tebilon**
 
 ---
 
-## Lisans
+## 🤝 Katkıda Bulunma
 
-MIT
+1. Bu projeyi forklayın.
+2. Özellik dalınızı oluşturun (`git checkout -b feature/yeniozellik`).
+3. Değişikliklerinizi commit edin (`git commit -am 'Yeni özellik eklendi'`).
+4. Dalınıza push yapın (`git push origin feature/yeniozellik`).
+5. Bir Pull Request açın.
+
+---
+
+## 📄 Lisans
+
+Bu proje **MIT Lisansı** altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakabilirsiniz.
+
+---
+<p align="center">Made with ❤️ for Hardware Enthusiasts</p>

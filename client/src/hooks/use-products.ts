@@ -14,6 +14,10 @@ export interface Product {
         RAM?: string
         SSD?: string
         Storage?: string
+        Motherboard?: string
+        Case?: string
+        PSU?: string
+        Cooler?: string
     }
     // Normalised fields we expose to components
     sistemAdi: string
@@ -27,6 +31,10 @@ export interface Product {
     ram?: string
     ssd?: string
     depolama?: string
+    anakart?: string
+    kasa?: string
+    psu?: string
+    sogutucu?: string
     stoktaVarMi: boolean
 }
 
@@ -37,6 +45,10 @@ function normalise(raw: Record<string, unknown>): Product {
     const ram = ((raw.specs as Record<string, string>)?.RAM) ?? ""
     const ssd = ((raw.specs as Record<string, string>)?.SSD) ?? ""
     const storage = ((raw.specs as Record<string, string>)?.Storage) ?? ""
+    const motherboard = ((raw.specs as Record<string, string>)?.Motherboard) ?? ""
+    const pc_case = ((raw.specs as Record<string, string>)?.Case) ?? ""
+    const psu = ((raw.specs as Record<string, string>)?.PSU) ?? ""
+    const cooler = ((raw.specs as Record<string, string>)?.Cooler) ?? ""
 
     const cpuLower = cpu.toLowerCase()
     const cpuMarka = cpuLower.includes("intel") || cpuLower.includes("core") || cpuLower.includes("i3") || cpuLower.includes("i5") || cpuLower.includes("i7") || cpuLower.includes("i9")
@@ -58,7 +70,12 @@ function normalise(raw: Record<string, unknown>): Product {
         ram: ram || undefined,
         ssd: ssd || undefined,
         gpuKey: gpu.split(" ").slice(0, 3).join(" ").toUpperCase(),
+
         depolama: storage || undefined,
+        anakart: motherboard || undefined,
+        kasa: pc_case || undefined,
+        psu: psu || undefined,
+        sogutucu: cooler || undefined,
         stoktaVarMi: (raw.store as string) === "pckolik" ? true : price > 0,
     }
 }
@@ -74,6 +91,7 @@ export function useProducts() {
         stores: [],
         cpuBrands: [],
         gpuBrands: [],
+        gpuSeries: [],
         inStock: true,
         searchStr: "",
     })
@@ -173,6 +191,14 @@ export function useProducts() {
             })
         }
 
+        if (filters.gpuSeries.length > 0) {
+            result = result.filter(p => {
+                if (!p.ekranKarti) return false
+                const t = p.ekranKarti.toUpperCase()
+                return filters.gpuSeries.some(s => t.includes(s))
+            })
+        }
+
         if (filters.minPrice !== "") result = result.filter(p => p.fiyat >= (filters.minPrice as number))
         if (filters.maxPrice !== "") result = result.filter(p => p.fiyat <= (filters.maxPrice as number))
 
@@ -191,7 +217,7 @@ export function useProducts() {
     }, [totalPages, page])
 
     const resetFilters = () => {
-        setFilters({ minPrice: "", maxPrice: "", stores: [], cpuBrands: [], gpuBrands: [], inStock: true, searchStr: "" })
+        setFilters({ minPrice: "", maxPrice: "", stores: [], cpuBrands: [], gpuBrands: [], gpuSeries: [], inStock: true, searchStr: "" })
         setPage(1)
     }
 

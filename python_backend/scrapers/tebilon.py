@@ -6,6 +6,8 @@ Tebilon scraper - StealthyFetcher
 """
 import asyncio
 from scrapling.fetchers import StealthyFetcher
+from scrapling import Fetcher
+from .utils import extract_specs_from_name, extract_specs_from_list
 
 STORE = "tebilon"
 BASE_URL = "https://www.tebilon.com/hazir-sistemler/"
@@ -29,7 +31,9 @@ def _parse_page_products(page) -> list[dict]:
             price = 0.0
         img_el = el.css(".showcase__image img").first
         image = img_el.attrib.get("src") if img_el else None
-        products.append({"name": name, "price": price, "image": image, "url": link, "store": STORE, "specs": {}})
+        
+        specs = extract_specs_from_name(name)
+        products.append({"name": name, "price": price, "image": image, "url": link, "store": STORE, "specs": specs})
     return products
 
 
@@ -37,6 +41,42 @@ async def _fetch_page(url: str) -> list[dict]:
     page = await StealthyFetcher.async_fetch(url, headless=True, wait_until="domcontentloaded",
                                               timeout=60000, wait_selector=PRODUCT_SEL, wait_selector_state="attached")
     return _parse_page_products(page)
+
+async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
+    if product["specs"].get("Case") != "N/A" and product["specs"].get("PSU") != "N/A":
+        return product
+        
+    url = product["url"]
+    def sync_fetch():
+        try:
+            return fetcher_instance.get(url, stealthy_headers=True)
+        except:
+            return None
+            
+    for attempt in range(2):
+        try:
+            page = await asyncio.to_thread(sync_fetch)
+            if not page: continue
+            
+            checked = page.css("input:checked")
+            if checked:
+                spec_items = []
+                for c in checked:
+                    gp = c.xpath("../..")
+                    if gp:
+                        text = gp[0].get_all_text().strip()
+                        if text: spec_items.append(text)
+                        
+                if spec_items:
+                    extra_specs = extract_specs_from_list(spec_items)
+                    for k, v in extra_specs.items():
+                        if product["specs"].get(k, "N/A") == "N/A" and v != "N/A":
+                            product["specs"][k] = v
+            break
+        except Exception as e:
+            await asyncio.sleep(2)
+            
+    return product
 
 
 async def scrape_all_pages_async() -> list[dict]:
@@ -73,7 +113,17 @@ async def scrape_all_pages_async() -> list[dict]:
             if isinstance(r, list):
                 all_products.extend(r)
 
-    print(f"[Tebilon] Toplam {len(all_products)} urun", flush=True)
+    print(f"[{STORE}] Fetching details for {len(all_products)} products...", flush=True)
+    static_fetcher = Fetcher()
+    detail_sem = asyncio.Semaphore(15)
+    async def fetch_detail_with_sem(prod):
+        async with detail_sem:
+            return await _fetch_product_details(prod, static_fetcher)
+            
+    detail_tasks = [fetch_detail_with_sem(p) for p in all_products]
+    all_products = await asyncio.gather(*detail_tasks)
+
+    print(f"[{STORE}] Toplam {len(all_products)} urun", flush=True)
     return all_products
 
 

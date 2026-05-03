@@ -26,6 +26,7 @@ function AppContent() {
     filters.stores.length +
     filters.cpuBrands.length +
     filters.gpuBrands.length +
+    filters.gpuSeries.length +
     (filters.minPrice !== "" ? 1 : 0) +
     (filters.maxPrice !== "" ? 1 : 0) +
     (filters.inStock ? 1 : 0)

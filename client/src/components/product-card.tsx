@@ -1,6 +1,6 @@
 import { Card, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, Cpu, HardDrive, LayoutGrid, MemoryStick } from "lucide-react"
+import { ExternalLink, Cpu, HardDrive, LayoutGrid, MemoryStick, Zap, Box, Wind, Thermometer } from "lucide-react"
 import type { Product } from "@/hooks/use-products"
 
 function getLogoUrl(store: string) {
@@ -100,7 +100,7 @@ export function ProductCard({ product }: { product: Product }) {
                                 <span className="truncate line-clamp-1">{product.ekranKarti}</span>
                             </div>
                         )}
-                        <div className="flex gap-3 mt-0.5">
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-0.5">
                             {product.ram && (
                                 <div className="flex items-center gap-1">
                                     <MemoryStick className="w-3 h-3 shrink-0" />
@@ -111,6 +111,12 @@ export function ProductCard({ product }: { product: Product }) {
                                 <div className="flex items-center gap-1">
                                     <HardDrive className="w-3 h-3 shrink-0" />
                                     <span className="whitespace-nowrap">{product.ssd ?? product.depolama}</span>
+                                </div>
+                            )}
+                            {product.psu && (
+                                <div className="flex items-center gap-1">
+                                    <Zap className="w-3 h-3 shrink-0" />
+                                    <span className="whitespace-nowrap">{product.psu}</span>
                                 </div>
                             )}
                         </div>
@@ -180,17 +186,35 @@ export function ProductCard({ product }: { product: Product }) {
                                 <span className="truncate">{product.ekranKarti}</span>
                             </div>
                         )}
-                        <div className="flex gap-4 pt-0.5">
+                        {product.anakart && (
+                            <div className="flex items-center gap-2">
+                                <Thermometer className="w-3.5 h-3.5 shrink-0 text-primary/60" />
+                                <span className="truncate">{product.anakart}</span>
+                            </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-0.5">
                             {product.ram && (
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-1.5 min-w-0">
                                     <MemoryStick className="w-3 h-3 shrink-0" />
-                                    <span>{product.ram}</span>
+                                    <span className="truncate">{product.ram}</span>
                                 </div>
                             )}
                             {(product.ssd ?? product.depolama) && (
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-1.5 min-w-0">
                                     <HardDrive className="w-3 h-3 shrink-0" />
-                                    <span>{product.ssd ?? product.depolama}</span>
+                                    <span className="truncate">{product.ssd ?? product.depolama}</span>
+                                </div>
+                            )}
+                            {product.kasa && (
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <Box className="w-3 h-3 shrink-0" />
+                                    <span className="truncate">{product.kasa}</span>
+                                </div>
+                            )}
+                            {product.psu && (
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <Zap className="w-3 h-3 shrink-0" />
+                                    <span className="truncate">{product.psu}</span>
                                 </div>
                             )}
                         </div>
