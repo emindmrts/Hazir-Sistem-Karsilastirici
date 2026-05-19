@@ -26,7 +26,6 @@ const corsOptions = {
     "https://ucuzasistem.com",
     "https://www.ucuzasistem.com",
     "https://ucuzasistem.up.railway.app",
-    "http://localhost:3000",
   ],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,

@@ -3,8 +3,8 @@ import asyncio
 
 async def test():
     f = StealthyFetcher()
-    p1 = await f.async_fetch('https://www.itopya.com/oem-paketler', wait_until='domcontentloaded')
-    p2 = await f.async_fetch('https://www.itopya.com/oem-paketler?page=2', wait_until='domcontentloaded')
+    p1 = await f.async_fetch('https://www.itopya.com/oem-paketler')
+    p2 = await f.async_fetch('https://www.itopya.com/oem-paketler?page=2')
     
     def get_names(page):
         cards = page.css(".product") or page.css(".product-card")

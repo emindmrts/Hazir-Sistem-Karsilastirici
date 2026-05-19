@@ -38,7 +38,7 @@ def _parse_page_products(page) -> list[dict]:
 
 
 async def _fetch_page(url: str) -> list[dict]:
-    page = await StealthyFetcher.async_fetch(url, headless=True, wait_until="domcontentloaded",
+    page = await StealthyFetcher.async_fetch(url, headless=True,
                                               timeout=60000, wait_selector=PRODUCT_SEL, wait_selector_state="attached")
     return _parse_page_products(page)
 
@@ -49,7 +49,7 @@ async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
     url = product["url"]
     def sync_fetch():
         try:
-            return fetcher_instance.get(url, stealthy_headers=True)
+            return fetcher_instance.get(url)
         except:
             return None
             
@@ -82,7 +82,7 @@ async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
 async def scrape_all_pages_async() -> list[dict]:
     print(f"[Tebilon] Ilk sayfa: {BASE_URL}", flush=True)
     try:
-        first_page = await StealthyFetcher.async_fetch(BASE_URL, headless=True, wait_until="domcontentloaded",
+        first_page = await StealthyFetcher.async_fetch(BASE_URL, headless=True,
                                                         timeout=60000, wait_selector=PRODUCT_SEL, wait_selector_state="attached")
     except Exception as e:
         print(f"[Tebilon] Ilk sayfa hatasi: {e}", flush=True)

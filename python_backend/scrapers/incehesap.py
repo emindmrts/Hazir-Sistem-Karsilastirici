@@ -59,7 +59,7 @@ def _parse_page_products(page) -> list[dict]:
 async def scrape_all_pages_async():
     print(f"[{STORE}] Fetching OEM Paketler...", flush=True)
     fetcher = Fetcher()
-    def fetch_sync(url): return fetcher.get(url, stealthy_headers=True)
+    def fetch_sync(url): return fetcher.get(url)
     
     all_products = []
     seen_urls = set()

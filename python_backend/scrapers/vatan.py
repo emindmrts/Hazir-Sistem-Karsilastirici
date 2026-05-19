@@ -65,7 +65,7 @@ async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
     url = product["url"]
     def sync_fetch():
         try:
-            return fetcher_instance.get(url, stealthy_headers=True)
+            return fetcher_instance.get(url)
         except:
             return None
             

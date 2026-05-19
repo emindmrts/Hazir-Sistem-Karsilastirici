@@ -1,13 +1,12 @@
 """
-Itopya scraper - Robust & Optimized
-- URL pagination: ?pg=X
-- Fetcher for fast fetching
-- Concurrency for speed
+Itopya scraper - Hyper-Fast Version (Optimized)
+- Uses ?pg=100 to fetch ALL products in a single request instantly!
+- No need for complex pagination logic anymore!
+- Fetcher configured for speed
 """
 import re
-import math
-import sys
 import asyncio
+import sys
 from scrapling import Fetcher
 from .utils import extract_specs_from_list
 
@@ -15,28 +14,33 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 BASE_DOMAIN = "https://www.itopya.com"
-BASE_URL    = f"{BASE_DOMAIN}/oem-paketler"
-PRODUCTS_PER_PAGE = 20
+# By using pg=100 (or any high number), Itopya returns ALL items cumulatively in one go!
+BASE_URL    = f"{BASE_DOMAIN}/oem-paketler?pg=100"
 
-async def _fetch_page(url: str):
+async def scrape_all_pages_async() -> list[dict]:
+    print(f"[Itopya] Fetching all products in a single request (?pg=100)...", flush=True)
+    
     def fetch():
         fetcher = Fetcher()
-        return fetcher.get(url, stealthy_headers=True)
+        return fetcher.get(BASE_URL)
 
+    page = None
     for attempt in range(2):
         try:
             page = await asyncio.to_thread(fetch)
             if page and (page.css(".product") or page.css(".product-card")):
-                return page
+                break
         except Exception as e:
-            print(f"[Itopya] Error fetching {url}: {e}")
+            print(f"[Itopya] Error fetching {BASE_URL}: {e}")
         await asyncio.sleep(2)
-    return None
 
-def _parse_products(page) -> list[dict]:
-    if not page: return []
+    if not page:
+        print("[Itopya] Failed to fetch products.", flush=True)
+        return []
+
     products = []
     cards = page.css(".product") or page.css(".product-card")
+    
     for el in cards:
         # Link & Name
         link_el = el.css(".product-block-top h1 a").first or el.css("a").first
@@ -93,38 +97,17 @@ def _parse_products(page) -> list[dict]:
                 specs[k] = extra_specs[k]
 
         products.append({"name": name, "price": price, "image": image, "url": link, "store": "itopya", "specs": specs})
-    return products
 
-async def scrape_all_pages_async() -> list[dict]:
-    print(f"[Itopya] Fetching page 1...", flush=True)
-    first_page = await _fetch_page(BASE_URL)
-    if not first_page: return []
+    # Removing duplicates if any exist
+    unique_products = []
+    seen = set()
+    for p in products:
+        if p["url"] not in seen:
+            seen.add(p["url"])
+            unique_products.append(p)
 
-    all_products = _parse_products(first_page)
-    seen_urls = {p["url"] for p in all_products}
-    
-    total_pages = 100
-    for page_num in range(2, total_pages + 1):
-        url = f"{BASE_URL}?pg={page_num}"
-        page = await _fetch_page(url)
-        batch = _parse_products(page)
-        
-        if not batch:
-            break
-            
-        new_count = 0
-        for p in batch:
-            if p["url"] not in seen_urls:
-                seen_urls.add(p["url"])
-                all_products.append(p)
-                new_count += 1
-        
-        print(f"[Itopya] Page {page_num}: {len(batch)} products ({new_count} new).", flush=True)
-        if new_count == 0 and page_num > 3:
-            break
-
-    print(f"[Itopya] Total {len(all_products)} products fetched.", flush=True)
-    return all_products
+    print(f"[Itopya] Total {len(unique_products)} products fetched instantly.", flush=True)
+    return unique_products
 
 def scrape_all_pages():
     return asyncio.run(scrape_all_pages_async())

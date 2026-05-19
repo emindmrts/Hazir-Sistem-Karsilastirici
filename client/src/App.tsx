@@ -1,15 +1,18 @@
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { Router, Route, Switch } from "wouter"
 import { ThemeProvider } from "./components/theme-provider"
 import { Layout } from "./components/layout"
 import { ProductCard } from "./components/product-card"
 import { FilterSidebar } from "./components/filter-sidebar"
+import { DetailPage } from "./components/detail-page"
 import { SEO } from "./components/seo"
 import { useProducts } from "./hooks/use-products"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, SearchX, SlidersHorizontal } from "lucide-react"
+import { findBySlug } from "./hooks/use-slugs"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -20,11 +23,14 @@ function AppContent() {
     page, setPage, totalPages,
     pageSize, setPageSize,
     sortOrder, setSortOrder,
+    availableCpuModels,
   } = useProducts()
 
   const activeFilterCount =
     filters.stores.length +
     filters.cpuBrands.length +
+    filters.cpuSeries.length +
+    (filters.cpuModels?.length || 0) +
     filters.gpuBrands.length +
     filters.gpuSeries.length +
     (filters.minPrice !== "" ? 1 : 0) +
@@ -84,19 +90,19 @@ function AppContent() {
       "position": i + 1,
       "item": {
         "@type": "Product",
-        "name": p.name,
-        "description": p.description || `${p.cpu} işlemci ve ${p.gpu} ekran kartına sahip hazır sistem.`,
-        "image": p.imageUrl,
+        "name": p.sistemAdi || p.name,
+        "description": `${p.islemci || "Yüksek performanslı"} işlemci ve ${p.ekranKarti || "güçlü"} ekran kartına sahip hazır sistem.`,
+        "image": p.resimUrl || p.image,
         "offers": {
           "@type": "Offer",
-          "price": p.price,
+          "price": p.fiyat || p.price,
           "priceCurrency": "TRY",
-          "availability": p.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-          "url": p.url
+          "availability": p.stoktaVarMi ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          "url": p.siteUrl || p.url
         },
         "brand": {
           "@type": "Brand",
-          "name": p.store
+          "name": p.magaza || p.store
         }
       }
     }))
@@ -112,7 +118,7 @@ function AppContent() {
       onSearchChange={handleSearchChange}
       activeFilterCount={activeFilterCount}
       sidebarContent={
-        <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} />
+        <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} availableCpuModels={availableCpuModels} />
       }
     >
       <SEO 
@@ -254,10 +260,32 @@ function AppContent() {
   )
 }
 
+function DetailRoute({ params }: { params: { slug: string } }) {
+  const { allProducts } = useProducts()
+  const product = findBySlug(allProducts, params.slug)
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4 text-center px-4">
+        <p className="text-6xl font-black text-muted/40">404</p>
+        <p className="text-lg font-bold">Sistem bulunamadı.</p>
+        <Button variant="outline" onClick={() => window.history.back()}>Geri Dön</Button>
+      </div>
+    )
+  }
+  return <DetailPage product={product} allProducts={allProducts} />
+}
+
 export default function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="sistem-ui-theme">
-      <AppContent />
+      <Router>
+        <Switch>
+          <Route path="/sistem/:slug" component={DetailRoute} />
+          <Route path="/">
+            <AppContent />
+          </Route>
+        </Switch>
+      </Router>
     </ThemeProvider>
   )
 }

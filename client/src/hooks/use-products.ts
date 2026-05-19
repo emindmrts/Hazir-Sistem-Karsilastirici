@@ -36,6 +36,84 @@ export interface Product {
     psu?: string
     sogutucu?: string
     stoktaVarMi: boolean
+    gpuKey?: string
+    islemciModel?: string
+}
+
+function parseCpuModel(cpuStr: string): string {
+    if (!cpuStr) return ""
+    if (/^(n\/a|intel|amd|ryzen|core|i3|i5|i7|i9|ultra)$/i.test(cpuStr.trim())) return ""
+
+    const cleaned = cpuStr
+        .replace(/İşlemci/gi, "")
+        .replace(/INTEL-/gi, "")
+        .replace(/AMD-/gi, "")
+        .replace(/Intel/gi, "")
+        .replace(/AMD/gi, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const parts = cleaned.split(" ");
+    for (let i = parts.length - 1; i >= 0; i--) {
+        const part = parts[i].trim();
+        
+        // Skip general socket/cooler specs
+        if (/ghz|lga|am\d|soket|box|kutulu|kutusuz|tray|fan|mpk/i.test(part)) continue;
+        
+        // Skip cache specs (e.g. 16mb, 32mb, önbellek)
+        if (/mb|önbellek|onbellek/i.test(part)) continue;
+        
+        // Skip nanometer specs (e.g. 3nm, 5nm, 7nm, 10nm, 10nmm)
+        if (/nm|nmm/i.test(part)) continue;
+        
+        // Skip core/thread specs
+        if (/çekirdek|cekirdek|thread|pcie/i.test(part)) continue;
+
+        // Skip storage/SSD specifications that leaked in
+        if (/m\.?2|ssd|sata|nvme/i.test(part)) continue;
+
+        // Skip motherboard chipsets (e.g. H610, B760, Z790, A620, X870)
+        if (/^[hbzax]\d{3}/i.test(part)) continue;
+
+        // Skip generic hardware words
+        if (/anakart|motherboard|ram|gpu|ekran|kartı|karti|ddr/i.test(part)) continue;
+
+        // Skip single/double digit numbers (cores/threads/series fallbacks)
+        if (/^\d+$/.test(part) && part.length <= 2) continue;
+
+        // Skip wattages (e.g., 65w, 105w, 120w, 170w)
+        if (/^\d+w$/i.test(part)) continue;
+
+        // Skip frequencies/version numbers with decimals/dots (e.g. 3.70, 4.2, 12., 14.)
+        if (/\./.test(part)) continue;
+
+        // Skip specific sockets like 1700 or 1851
+        if (part === "1700" || part === "1851") continue;
+
+        // Skip generation spec words (e.g. 14.nesil)
+        if (/nesil|nesıl/i.test(part)) continue;
+
+        // Skip frequency / memory clocks (e.g. 5600mhz)
+        if (/mhz|hz/i.test(part)) continue;
+
+        // Skip generic series names
+        if (/^(ryzen|core|i3|i5|i7|i9|ultra|dual)$/i.test(part)) continue;
+
+        if (/\d/.test(part)) {
+            return part.toUpperCase();
+        }
+    }
+    const fallback = parts[parts.length - 1]?.toUpperCase() || "";
+    if (/^(ryzen|core|i3|i5|i7|i9|ultra|dual|n\/a|intel|amd|anakart|motherboard|ram|ssd)$/i.test(fallback)) {
+        return "";
+    }
+    if (/^\d+$/.test(fallback) && fallback.length <= 2) {
+        return "";
+    }
+    if (/\./.test(fallback) || /w$/i.test(fallback) || /nm$/i.test(fallback) || fallback === "1700" || fallback === "1851" || /^[hbzax]\d{3}/i.test(fallback)) {
+        return "";
+    }
+    return fallback;
 }
 
 function normalise(raw: Record<string, unknown>): Product {
@@ -57,6 +135,8 @@ function normalise(raw: Record<string, unknown>): Product {
             ? "AMD"
             : undefined
 
+    const parsedModel = parseCpuModel(cpu);
+
     return {
         ...(raw as unknown as Product),
         sistemAdi: (raw.name as string) ?? "",
@@ -66,6 +146,7 @@ function normalise(raw: Record<string, unknown>): Product {
         magaza: (raw.store as string) ?? "",
         islemci: cpu || undefined,
         islemciMarka: cpuMarka,
+        islemciModel: parsedModel || undefined,
         ekranKarti: gpu || undefined,
         ram: ram || undefined,
         ssd: ssd || undefined,
@@ -92,6 +173,8 @@ export function useProducts() {
         cpuBrands: [],
         gpuBrands: [],
         gpuSeries: [],
+        cpuSeries: [],
+        cpuModels: [],
         inStock: true,
         searchStr: "",
     })
@@ -123,6 +206,8 @@ export function useProducts() {
                 if (params.get("min")) urlFilters.minPrice = Number(params.get("min")) || ""
                 if (params.get("max")) urlFilters.maxPrice = Number(params.get("max")) || ""
                 if (params.get("cpu")) urlFilters.cpuBrands = params.get("cpu")?.split(",") || []
+                if (params.get("cpuSeries")) urlFilters.cpuSeries = params.get("cpuSeries")?.split(",") || []
+                if (params.get("cpuModels")) urlFilters.cpuModels = params.get("cpuModels")?.split(",") || []
                 if (params.get("gpu")) urlFilters.gpuBrands = params.get("gpu")?.split(",") || []
                 
                 if (Object.keys(urlFilters).length > 0) {
@@ -147,6 +232,8 @@ export function useProducts() {
         if (filters.minPrice) params.set("min", filters.minPrice.toString())
         if (filters.maxPrice) params.set("max", filters.maxPrice.toString())
         if (filters.cpuBrands.length) params.set("cpu", filters.cpuBrands.join(","))
+        if (filters.cpuSeries.length) params.set("cpuSeries", filters.cpuSeries.join(","))
+        if (filters.cpuModels && filters.cpuModels.length) params.set("cpuModels", filters.cpuModels.join(","))
         if (filters.gpuBrands.length) params.set("gpu", filters.gpuBrands.join(","))
         
         const newRelativePathQuery = window.location.pathname + '?' + params.toString()
@@ -156,6 +243,46 @@ export function useProducts() {
             window.history.replaceState(null, '', window.location.pathname)
         }
     }, [filters])
+
+    const availableCpuModels = useMemo(() => {
+        const amdModels = new Set<string>()
+        const intelModels = new Set<string>()
+        allProducts.forEach(p => {
+            if (p.islemciModel && p.islemciMarka) {
+                // If brand filter is active, only include models from that brand
+                if (filters.cpuBrands.length > 0 && !filters.cpuBrands.includes(p.islemciMarka)) {
+                    return
+                }
+                // If series filter is active, only include models from that series
+                if (filters.cpuSeries.length > 0 && p.islemci) {
+                    const matchesSeries = filters.cpuSeries.some(s => {
+                        const t = p.islemci!.toUpperCase()
+                        const upperS = s.toUpperCase()
+                        if (upperS === "CORE I3") return t.includes("I3")
+                        if (upperS === "CORE I5") return t.includes("I5")
+                        if (upperS === "CORE I7") return t.includes("I7")
+                        if (upperS === "CORE I9") return t.includes("I9")
+                        if (upperS === "RYZEN 3") return t.includes("RYZEN 3") || t.includes("R3")
+                        if (upperS === "RYZEN 5") return t.includes("RYZEN 5") || t.includes("R5")
+                        if (upperS === "RYZEN 7") return t.includes("RYZEN 7") || t.includes("R7")
+                        if (upperS === "RYZEN 9") return t.includes("RYZEN 9") || t.includes("R9")
+                        return t.includes(upperS)
+                    })
+                    if (!matchesSeries) return
+                }
+                
+                if (p.islemciMarka === "AMD") {
+                    amdModels.add(p.islemciModel)
+                } else if (p.islemciMarka === "Intel") {
+                    intelModels.add(p.islemciModel)
+                }
+            }
+        })
+        return {
+            AMD: Array.from(amdModels).sort(),
+            Intel: Array.from(intelModels).sort()
+        }
+    }, [allProducts, filters.cpuBrands, filters.cpuSeries])
 
     const processedProducts = useMemo(() => {
         let result = [...allProducts]
@@ -177,6 +304,29 @@ export function useProducts() {
 
         if (filters.cpuBrands.length > 0) {
             result = result.filter(p => p.islemciMarka && filters.cpuBrands.includes(p.islemciMarka))
+        }
+
+        if (filters.cpuSeries.length > 0) {
+            result = result.filter(p => {
+                if (!p.islemci) return false
+                const t = p.islemci.toUpperCase()
+                return filters.cpuSeries.some(s => {
+                    const upperS = s.toUpperCase()
+                    if (upperS === "CORE I3") return t.includes("I3")
+                    if (upperS === "CORE I5") return t.includes("I5")
+                    if (upperS === "CORE I7") return t.includes("I7")
+                    if (upperS === "CORE I9") return t.includes("I9")
+                    if (upperS === "RYZEN 3") return t.includes("RYZEN 3") || t.includes("R3")
+                    if (upperS === "RYZEN 5") return t.includes("RYZEN 5") || t.includes("R5")
+                    if (upperS === "RYZEN 7") return t.includes("RYZEN 7") || t.includes("R7")
+                    if (upperS === "RYZEN 9") return t.includes("RYZEN 9") || t.includes("R9")
+                    return t.includes(upperS)
+                })
+            })
+        }
+
+        if (filters.cpuModels && filters.cpuModels.length > 0) {
+            result = result.filter(p => p.islemciModel && filters.cpuModels!.includes(p.islemciModel))
         }
 
         if (filters.gpuBrands.length > 0) {
@@ -217,12 +367,13 @@ export function useProducts() {
     }, [totalPages, page])
 
     const resetFilters = () => {
-        setFilters({ minPrice: "", maxPrice: "", stores: [], cpuBrands: [], gpuBrands: [], gpuSeries: [], inStock: true, searchStr: "" })
+        setFilters({ minPrice: "", maxPrice: "", stores: [], cpuBrands: [], gpuBrands: [], gpuSeries: [], cpuSeries: [], cpuModels: [], inStock: true, searchStr: "" })
         setPage(1)
     }
 
     return {
         products: paginatedProducts,
+        allProducts,
         totalCount: processedProducts.length,
         isLoading,
         error,
@@ -235,6 +386,7 @@ export function useProducts() {
         pageSize,
         setPageSize,
         sortOrder,
-        setSortOrder
+        setSortOrder,
+        availableCpuModels
     }
 }

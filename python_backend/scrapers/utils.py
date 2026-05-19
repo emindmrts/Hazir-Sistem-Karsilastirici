@@ -31,9 +31,9 @@ def extract_specs_from_list(spec_items: list[str]) -> dict:
 
     specs["CPU"] = find(["islemci", "cpu", "ryzen", "intel", "core i", " r3 ", " r5 ", " r7 ", " r9 ", " ultra "])
     specs["Motherboard"] = find(["anakart", "mb", "b450", "b550", "a520", "h610", "b650", "a620", "b760", "z790", "b660", "x670", "h510", "h810", "b840", "b850", "x870"])
-    specs["GPU"] = find(["rtx", "gtx", "rx ", "arc", "radeon", "ekran karti", " 5070", " 5080", " 5090", " 5060"])
-    specs["RAM"] = find(["mhz", "ram", "ddr", "cl1", "cl2", "bellek", " 8gb", " 16gb", " 32gb", " 64gb"], exclude=["ekran kart", "rtx", "rx ", "gtx"])
-    specs["Storage"] = find(["ssd", "m.2", "nvme", "tb", "gb hdd", "sata3", " 500gb", " 512gb", " 1tb", " 2tb"], exclude=["ekran kart", "rtx", "rx ", "gtx"])
+    specs["GPU"] = find(["rtx", "gtx", "rx", "arc", "radeon", "ekran kart", " 5070", " 5080", " 5090", " 5060"])
+    specs["RAM"] = find(["mhz", "ram", "ddr", "cl1", "cl2", "bellek", " 8gb", " 16gb", " 32gb", " 64gb"], exclude=["ekran kart", "rtx", "rx", "gtx", "arc", "radeon"])
+    specs["Storage"] = find(["ssd", "m.2", "nvme", "tb", "gb hdd", "sata3", " 500gb", " 512gb", " 1tb", " 2tb"], exclude=["ekran kart", "rtx", "rx", "gtx", "arc", "radeon"])
     specs["Case"] = find(["kasa", "case", "tower"])
     specs["PSU"] = find(["psu", "power supply", "guc kaynagi", " 80+", "watt", "750w", "650w", "600w", "550w", "500w", "850w"])
     specs["Cooler"] = find(["sogutucu", "cooler", "fan", "sivi sogutma", "liquid cooling"])

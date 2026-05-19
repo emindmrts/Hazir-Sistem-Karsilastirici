@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { Header } from "./header.tsx";
+import { Footer } from "./footer.tsx";
 import {
   Sheet,
   SheetContent,
@@ -40,6 +41,8 @@ export function Layout({
           {children}
         </main>
       </div>
+
+      <Footer />
 
       {/* ── MOBILE: Floating Filter Button ── */}
       <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40">

@@ -1,7 +1,9 @@
 import { Card, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, Cpu, HardDrive, LayoutGrid, MemoryStick, Zap, Box, Wind, Thermometer } from "lucide-react"
+import { ExternalLink, Cpu, HardDrive, LayoutGrid, MemoryStick, Zap, Box, Thermometer } from "lucide-react"
+import { useLocation } from "wouter"
 import type { Product } from "@/hooks/use-products"
+import { createSlug } from "@/hooks/use-slugs"
 
 function getLogoUrl(store: string) {
     const key = store.toLowerCase().replace(/[^a-z]/g, "")
@@ -52,6 +54,9 @@ function shortenName(name: string) {
 
 export function ProductCard({ product }: { product: Product }) {
     const displayName = shortenName(product.sistemAdi)
+    const [, setLocation] = useLocation()
+    const slug = createSlug(product.name || product.sistemAdi, product.magaza)
+    const goToDetail = () => setLocation(`/sistem/${slug}`)
     return (
         <Card className="group flex flex-col sm:flex-col overflow-hidden border-border/60 bg-card transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/30">
 
@@ -84,7 +89,10 @@ export function ProductCard({ product }: { product: Product }) {
 
                 {/* Details — right column */}
                 <div className="flex flex-col flex-1 min-w-0 p-3 gap-2 justify-between">
-                    <h3 className="font-semibold text-xs leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                    <h3
+                        onClick={goToDetail}
+                        className="font-semibold text-xs leading-snug line-clamp-2 group-hover:text-primary transition-colors cursor-pointer hover:underline underline-offset-2"
+                    >
                         {displayName}
                     </h3>
                     <div className="space-y-0.5 text-[10px] text-muted-foreground">
@@ -123,20 +131,33 @@ export function ProductCard({ product }: { product: Product }) {
                     </div>
                     {/* Price + CTA */}
                     <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
-                        <p className="text-base font-bold text-primary leading-none">
+                        <p
+                            onClick={goToDetail}
+                            className="text-base font-bold text-primary leading-none cursor-pointer hover:underline underline-offset-2"
+                        >
                             {product.fiyat.toLocaleString("tr-TR")} ₺
                         </p>
-                        <Button
-                            size="sm"
-                            className="rounded-full shrink-0 gap-1 text-xs h-7 px-3 font-semibold shadow-sm"
-                            disabled={!product.stoktaVarMi}
-                            asChild
-                        >
-                            <a href={product.siteUrl} target="_blank" rel="noopener noreferrer">
-                                İncele
-                                <ExternalLink className="h-3 w-3 opacity-75" />
-                            </a>
-                        </Button>
+                        <div className="flex items-center gap-1.5">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="rounded-full shrink-0 gap-1 text-xs h-7 px-2 font-semibold text-muted-foreground hover:text-foreground"
+                                onClick={goToDetail}
+                            >
+                                Detay
+                            </Button>
+                            <Button
+                                size="sm"
+                                className="rounded-full shrink-0 gap-1 text-xs h-7 px-3 font-semibold shadow-sm"
+                                disabled={!product.stoktaVarMi}
+                                asChild
+                            >
+                                <a href={product.siteUrl} target="_blank" rel="noopener noreferrer">
+                                    İncele
+                                    <ExternalLink className="h-3 w-3 opacity-75" />
+                                </a>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -170,7 +191,10 @@ export function ProductCard({ product }: { product: Product }) {
 
                 {/* Details */}
                 <CardHeader className="flex-1 p-4 pb-3 space-y-3">
-                    <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                    <h3
+                        onClick={goToDetail}
+                        className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors cursor-pointer hover:underline underline-offset-2"
+                    >
                         {displayName}
                     </h3>
                     <div className="space-y-1.5 text-xs text-muted-foreground">
@@ -224,21 +248,34 @@ export function ProductCard({ product }: { product: Product }) {
                 <CardFooter className="p-4 pt-3 border-t border-border/50 flex items-center justify-between gap-2 bg-muted/20">
                     <div>
                         <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-0.5">Fiyat</p>
-                        <p className="text-xl font-bold text-primary leading-none">
+                        <p
+                            onClick={goToDetail}
+                            className="text-xl font-bold text-primary leading-none cursor-pointer hover:underline underline-offset-2"
+                        >
                             {product.fiyat.toLocaleString("tr-TR")} ₺
                         </p>
                     </div>
-                    <Button
-                        size="sm"
-                        className="rounded-full shrink-0 gap-1.5 font-semibold shadow-sm hover:shadow-primary/25 transition-all"
-                        disabled={!product.stoktaVarMi}
-                        asChild
-                    >
-                        <a href={product.siteUrl} target="_blank" rel="noopener noreferrer">
-                            İncele
-                            <ExternalLink className="h-3.5 w-3.5 opacity-75" />
-                        </a>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full shrink-0 font-semibold text-xs"
+                            onClick={goToDetail}
+                        >
+                            Detay
+                        </Button>
+                        <Button
+                            size="sm"
+                            className="rounded-full shrink-0 gap-1.5 font-semibold shadow-sm hover:shadow-primary/25 transition-all"
+                            disabled={!product.stoktaVarMi}
+                            asChild
+                        >
+                            <a href={product.siteUrl} target="_blank" rel="noopener noreferrer">
+                                İncele
+                                <ExternalLink className="h-3.5 w-3.5 opacity-75" />
+                            </a>
+                        </Button>
+                    </div>
                 </CardFooter>
             </div>
         </Card>

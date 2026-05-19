@@ -7,6 +7,11 @@
 
 **Hazır Sistem Karşılaştırıcı**, Türkiye'nin önde gelen teknoloji mağazalarındaki (Vatan, İtopya, Sinerji vb.) hazır bilgisayar sistemlerini tek bir çatı altında toplayan, filtreleyen ve en avantajlı fiyatları bulmanızı sağlayan yüksek performanslı bir web uygulamasıdır.
 
+## 📱 Mobil Görünüm
+<p align="center">
+  <img src="screenshots/mobile.png" width="300" alt="Mobil Arayüz Önizleme">
+</p>
+
 ---
 
 ## ✨ Öne Çıkan Özellikler

@@ -8,7 +8,7 @@ if sys.platform == "win32":
 
 async def test_incehesap_stealth():
     url = "https://www.incehesap.com/ferzex-gold-oem-paket-fiyati-50710/"
-    page = await StealthyFetcher.async_fetch(url, headless=True, wait_until="networkidle", timeout=30000)
+    page = await StealthyFetcher.async_fetch(url, headless=True, network_idle=True, timeout=30000)
     if not page: return
         
     text = page.get_all_text()

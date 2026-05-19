@@ -55,7 +55,7 @@ def scrape_all_pages() -> list[dict]:
     base_url = "https://www.gamegaraj.com/oem-paketler/"
 
     print(f"[GameGaraj] Fetching {base_url}")
-    page = fetcher.get(base_url, stealthy_headers=True)
+    page = fetcher.get(base_url)
 
     all_products = []
     seen_urls = set()
@@ -65,7 +65,7 @@ def scrape_all_pages() -> list[dict]:
         url = f"{base_url}?page={page_num}" if page_num > 1 else base_url
         print(f"[GameGaraj] Sayfa {page_num}: {url}")
         
-        page = fetcher.get(url, stealthy_headers=True)
+        page = fetcher.get(url)
         if not page:
             break
             

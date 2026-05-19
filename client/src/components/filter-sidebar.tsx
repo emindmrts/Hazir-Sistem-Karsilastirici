@@ -12,6 +12,8 @@ export interface FilterState {
     maxPrice: number | ""
     stores: string[]
     cpuBrands: string[]
+    cpuSeries: string[]
+    cpuModels?: string[]
     gpuBrands: string[]
     gpuSeries: string[]
     inStock: boolean
@@ -22,6 +24,7 @@ interface FilterSidebarProps {
     filters: FilterState
     setFilters: Dispatch<SetStateAction<FilterState>>
     onReset: () => void
+    availableCpuModels?: { AMD: string[]; Intel: string[] }
 }
 
 const STORES = [
@@ -42,49 +45,85 @@ const GPU_BRANDS = [
     { id: "RX", label: "AMD RX" },
     { id: "ARC", label: "Intel ARC" },
 ]
-const GPU_SERIES_GROUPS = [
+const CPU_SERIES_GROUPS = [
     {
-        gen: "RTX 50",
-        items: ["5090", "5080", "5070 TI", "5070", "5060 TI", "5060"],
+        brand: "Intel",
+        items: ["Core Ultra", "Core i9", "Core i7", "Core i5", "Core i3"],
     },
     {
-        gen: "RTX 40",
-        items: ["4090", "4080", "4070 TI", "4070", "4060 TI", "4060"],
-    },
-    {
-        gen: "RTX 30",
-        items: ["3090", "3080", "3070", "3060 TI", "3060"],
-    },
-    {
-        gen: "AMD RX",
-        items: ["9060 XT", "7900 XTX", "7900 XT", "7800 XT", "7700 XT", "7600"],
+        brand: "AMD",
+        items: ["Ryzen 9", "Ryzen 7", "Ryzen 5", "Ryzen 3"],
     },
 ]
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+const GPU_SERIES_GROUPS = [
+    {
+        gen: "RTX 50",
+        items: ["5090", "5080", "5070 TI", "5070", "5060 TI", "5060", "5050"],
+    },
+    {
+        gen: "RTX 40",
+        items: ["4090", "4080 S", "4080", "4070 TI S", "4070 TI", "4070 S", "4070", "4060 TI", "4060"],
+    },
+    {
+        gen: "RTX 30 & 20",
+        items: ["3090", "3080", "3070", "3060 TI", "3060", "3050", "2060"],
+    },
+    {
+        gen: "AMD RX",
+        items: ["9070 XT", "9070", "7900 XTX", "7900 XT", "7900 GRE", "7800 XT", "7700 XT", "7600 XT", "7600", "6700 XT", "6600"],
+    },
+]
+
+
+
+
+interface SectionToggleProps {
+    sectionKey: string
+    label: string
+    badge?: number
+    collapsed: Record<string, boolean>
+    onToggle: (key: string) => void
+}
+
+function SectionToggle({ sectionKey, label, badge, collapsed, onToggle }: SectionToggleProps) {
     return (
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary/70 mb-2.5">
-            {children}
-        </p>
+        <button
+            onClick={() => onToggle(sectionKey)}
+            className="flex items-center justify-between w-full group/sec"
+        >
+            <span className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary/70 group-hover/sec:text-primary transition-colors">{label}</span>
+                {badge != null && badge > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold px-1">
+                        {badge}
+                    </span>
+                )}
+            </span>
+            <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/50 transition-transform duration-200 ${collapsed[sectionKey] ? "-rotate-90" : ""}`} />
+        </button>
     )
 }
 
-export function FilterSidebar({ filters, setFilters, onReset }: FilterSidebarProps) {
+export function FilterSidebar({ filters, setFilters, onReset, availableCpuModels }: FilterSidebarProps) {
     const activeCount =
         filters.stores.length +
         filters.cpuBrands.length +
+        filters.cpuSeries.length +
+        (filters.cpuModels?.length || 0) +
         filters.gpuBrands.length +
         filters.gpuSeries.length +
         (filters.minPrice !== "" ? 1 : 0) +
         (filters.maxPrice !== "" ? 1 : 0) +
         (filters.inStock ? 1 : 0)
 
-    const toggle = (group: "stores" | "cpuBrands" | "gpuBrands" | "gpuSeries") => (id: string, checked: boolean) => {
+    const toggle = (group: "stores" | "cpuBrands" | "cpuSeries" | "cpuModels" | "gpuBrands" | "gpuSeries") => (id: string, checked: boolean) => {
+        const list = filters[group] || [];
         setFilters(prev => ({
             ...prev,
             [group]: checked
-                ? [...prev[group], id]
-                : prev[group].filter(x => x !== id),
+                ? [...list, id]
+                : list.filter(x => x !== id),
         }))
     }
 
@@ -94,28 +133,9 @@ export function FilterSidebar({ filters, setFilters, onReset }: FilterSidebarPro
     const toggleGen = (gen: string) => setCollapsedGens(prev => ({ ...prev, [gen]: !prev[gen] }))
 
     const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-        stock: false, price: false, stores: false, cpu: false, gpuSeries: false, gpuBrand: false,
+        stock: false, price: false, stores: false, cpu: false, cpuSeries: false, cpuModel: false, gpuSeries: false, gpuBrand: false,
     })
     const toggleSection = (key: string) => setCollapsed(prev => ({ ...prev, [key]: !prev[key] }))
-
-    function SectionToggle({ sectionKey, label, badge }: { sectionKey: string; label: string; badge?: number }) {
-        return (
-            <button
-                onClick={() => toggleSection(sectionKey)}
-                className="flex items-center justify-between w-full group/sec"
-            >
-                <span className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary/70 group-hover/sec:text-primary transition-colors">{label}</span>
-                    {badge != null && badge > 0 && (
-                        <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold px-1">
-                            {badge}
-                        </span>
-                    )}
-                </span>
-                <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/50 transition-transform duration-200 ${collapsed[sectionKey] ? "-rotate-90" : ""}`} />
-            </button>
-        )
-    }
 
     return (
         <div className="flex flex-col h-full">
@@ -148,7 +168,7 @@ export function FilterSidebar({ filters, setFilters, onReset }: FilterSidebarPro
 
                     {/* Stock */}
                     <div className="space-y-2">
-                        <SectionToggle sectionKey="stock" label="Stok Durumu" badge={filters.inStock ? 1 : 0} />
+                        <SectionToggle sectionKey="stock" label="Stok Durumu" badge={filters.inStock ? 1 : 0} collapsed={collapsed} onToggle={toggleSection} />
                         {!collapsed.stock && (
                             <div
                                 className={`
@@ -180,7 +200,7 @@ export function FilterSidebar({ filters, setFilters, onReset }: FilterSidebarPro
 
                     {/* Price */}
                     <div className="space-y-2">
-                        <SectionToggle sectionKey="price" label="Fiyat Aralığı (₺)" badge={(filters.minPrice !== "" ? 1 : 0) + (filters.maxPrice !== "" ? 1 : 0)} />
+                        <SectionToggle sectionKey="price" label="Fiyat Aralığı (₺)" badge={(filters.minPrice !== "" ? 1 : 0) + (filters.maxPrice !== "" ? 1 : 0)} collapsed={collapsed} onToggle={toggleSection} />
                         {!collapsed.price && (
                             <div className="flex items-center gap-2">
                                 <Input
@@ -206,7 +226,7 @@ export function FilterSidebar({ filters, setFilters, onReset }: FilterSidebarPro
 
                     {/* Stores */}
                     <div className="space-y-2">
-                        <SectionToggle sectionKey="stores" label="Mağaza" badge={filters.stores.length} />
+                        <SectionToggle sectionKey="stores" label="Mağaza" badge={filters.stores.length} collapsed={collapsed} onToggle={toggleSection} />
                         {!collapsed.stores && (
                             <div className="grid grid-cols-2 gap-2">
                                 {STORES.map(s => {
@@ -240,7 +260,7 @@ export function FilterSidebar({ filters, setFilters, onReset }: FilterSidebarPro
 
                     {/* CPU Brand */}
                     <div className="space-y-2">
-                        <SectionToggle sectionKey="cpu" label="İşlemci Markası" badge={filters.cpuBrands.length} />
+                        <SectionToggle sectionKey="cpu" label="İşlemci Markası" badge={filters.cpuBrands.length} collapsed={collapsed} onToggle={toggleSection} />
                         {!collapsed.cpu && (
                             <div className="flex gap-2">
                                 {CPU_BRANDS.map(b => (
@@ -264,9 +284,125 @@ export function FilterSidebar({ filters, setFilters, onReset }: FilterSidebarPro
 
                     <Separator className="bg-border/50" />
 
+                    {/* CPU Series */}
+                    <div className="space-y-2">
+                        <SectionToggle sectionKey="cpuSeries" label="İşlemci Serisi" badge={filters.cpuSeries.length} collapsed={collapsed} onToggle={toggleSection} />
+                        {!collapsed.cpuSeries && (
+                            <div className="space-y-3">
+                                {CPU_SERIES_GROUPS.map(group => {
+                                    // Sadece seçili CPU markası varsa veya marka seçili değilse göster
+                                    if (filters.cpuBrands.length > 0 && !filters.cpuBrands.includes(group.brand)) {
+                                        return null;
+                                    }
+                                    return (
+                                        <div key={group.brand} className="grid grid-cols-2 gap-1.5">
+                                            {group.items.map(id => {
+                                                const sel = filters.cpuSeries.includes(id)
+                                                return (
+                                                    <button
+                                                        key={id}
+                                                        onClick={() => toggle("cpuSeries")(id, !sel)}
+                                                        className={`
+                                                            py-1 px-2 rounded-lg text-xs font-medium border transition-all duration-150 text-center truncate
+                                                            ${sel
+                                                                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                                                : "bg-muted/40 border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                                                            }
+                                                        `}
+                                                        title={id}
+                                                    >
+                                                        {id}
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    <Separator className="bg-border/50" />
+
+                    {/* CPU Model */}
+                    <div className="space-y-2">
+                        <SectionToggle sectionKey="cpuModel" label="İşlemci Modeli" badge={filters.cpuModels?.length} collapsed={collapsed} onToggle={toggleSection} />
+                        {!collapsed.cpuModel && (
+                            <div className="space-y-3">
+                                {availableCpuModels && (Object.keys(availableCpuModels) as Array<keyof typeof availableCpuModels>).map(brand => {
+                                    // Sadece seçili CPU markası varsa veya marka seçili değilse göster
+                                    if (filters.cpuBrands.length > 0 && !filters.cpuBrands.includes(brand)) {
+                                        return null;
+                                    }
+                                    const models = availableCpuModels[brand] || [];
+                                    if (models.length === 0) return null;
+                                    return (
+                                        <div key={brand} className="space-y-1">
+                                            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 block px-0.5">{brand}</span>
+                                            <div className="grid grid-cols-3 gap-1.5 max-h-[120px] overflow-y-auto pr-1">
+                                                {models.map(model => {
+                                                    const sel = filters.cpuModels?.includes(model)
+                                                    return (
+                                                        <button
+                                                            key={model}
+                                                            onClick={() => toggle("cpuModels")(model, !sel)}
+                                                            className={`
+                                                                py-1 px-1.5 rounded-lg text-[10px] font-semibold border transition-all duration-150 text-center truncate
+                                                                ${sel
+                                                                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                                                    : "bg-muted/40 border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                                                                }
+                                                            `}
+                                                            title={model}
+                                                        >
+                                                            {model}
+                                                        </button>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                                {(!availableCpuModels || (availableCpuModels.AMD.length === 0 && availableCpuModels.Intel.length === 0)) && (
+                                    <p className="text-[11px] text-muted-foreground text-center py-2">
+                                        Uyumlu işlemci modeli bulunamadı.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <Separator className="bg-border/50" />
+
+                    {/* GPU Brand */}
+                    <div className="space-y-2">
+                        <SectionToggle sectionKey="gpuBrand" label="Ekran Kartı Markası" badge={filters.gpuBrands.length} collapsed={collapsed} onToggle={toggleSection} />
+                        {!collapsed.gpuBrand && (
+                            <div className="grid grid-cols-2 gap-2">
+                                {GPU_BRANDS.map(g => (
+                                    <button
+                                        key={g.id}
+                                        onClick={() => toggle("gpuBrands")(g.id, !filters.gpuBrands.includes(g.id))}
+                                        className={`
+                                            py-2 px-3 rounded-xl text-xs font-semibold border transition-all duration-200 text-center
+                                            ${filters.gpuBrands.includes(g.id)
+                                                ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/30"
+                                                : "bg-muted/40 border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                                            }
+                                        `}
+                                    >
+                                        {g.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <Separator className="bg-border/50" />
+
                     {/* GPU Series */}
                     <div className="space-y-2">
-                        <SectionToggle sectionKey="gpuSeries" label="Ekran Kartı Serisi" badge={filters.gpuSeries.length} />
+                        <SectionToggle sectionKey="gpuSeries" label="Ekran Kartı Serisi" badge={filters.gpuSeries.length} collapsed={collapsed} onToggle={toggleSection} />
                         {!collapsed.gpuSeries && (
                             <div className="space-y-3">
                                 {GPU_SERIES_GROUPS.map(group => {
@@ -314,32 +450,6 @@ export function FilterSidebar({ filters, setFilters, onReset }: FilterSidebarPro
                                         </div>
                                     )
                                 })}
-                            </div>
-                        )}
-                    </div>
-
-                    <Separator className="bg-border/50" />
-
-                    {/* GPU Brand */}
-                    <div className="space-y-2">
-                        <SectionToggle sectionKey="gpuBrand" label="Ekran Kartı Markası" badge={filters.gpuBrands.length} />
-                        {!collapsed.gpuBrand && (
-                            <div className="grid grid-cols-2 gap-2">
-                                {GPU_BRANDS.map(g => (
-                                    <button
-                                        key={g.id}
-                                        onClick={() => toggle("gpuBrands")(g.id, !filters.gpuBrands.includes(g.id))}
-                                        className={`
-                                            py-2 px-3 rounded-xl text-xs font-semibold border transition-all duration-200 text-center
-                                            ${filters.gpuBrands.includes(g.id)
-                                                ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/30"
-                                                : "bg-muted/40 border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                                            }
-                                        `}
-                                    >
-                                        {g.label}
-                                    </button>
-                                ))}
                             </div>
                         )}
                     </div>
