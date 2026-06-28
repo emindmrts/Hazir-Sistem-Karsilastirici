@@ -14,18 +14,18 @@
 
 ---
 
-## ✨ Öne Çıkan Özellikler
+## ✨Özellikler
 
 - 🔍 **Anlık Ürün Arama:** Binlerce hazır sistem arasında milisaniyeler içinde arama yapın.
 - 🎭 **Gelişmiş Filtreleme:** CPU, GPU, Mağaza ve Fiyat aralığına göre hassas filtreleme.
 - ⚡ **Hibrit Scraper Mimarisi:** Veri çekme işlemleri Python'un gücüyle, API yönetimi Node.js'in hızıyla gerçekleştirilir.
-- 🌙 **Modern UI/UX:** Karanlık/Aydınlık mod desteği ve GSAP ile güçlendirilmiş akıcı animasyonlar.
+- 🌙 **Modern UI/UX:** Modern ve Güzel arayüz
 - 🕒 **Otomatik Güncelleme:** Her gece 03:00'te otomatik çalışan veri toplama hattı.
 - 🛠️ **Donanım Detayları:** RAM, Anakart, Kasa ve PSU gibi detaylı teknik özelliklerin otomatik ayrıştırılması.
 
 ---
 
-## 🛠️ Teknoloji Yığını
+## 🛠️ TechStack
 
 ### **Frontend**
 - **Çekirdek:** React 18 + Vite + TypeScript
@@ -62,22 +62,21 @@
 
 ---
 
-## 🚀 Hızlı Başlangıç
+##  Locale Kurulum
 
 ### **1. Repoyu Klonlayın**
 ```bash
-git clone https://github.com/VS-57/hesapli-pc-node-js.git
-cd Hazir-Sistem-Karsilastirici
+git clone https://github.com/emindmrts/Hazir-Sistem-Karsilastirici
 ```
 
-### **2. Frontend Kurulumu**
+### **2. Frontend Başlatma*
 ```bash
 cd client
 npm install
 npm run dev
 ```
 
-### **3. Backend & API Kurulumu**
+### **3. Backend & API Başlatma**
 ```bash
 # Ana dizine dönün
 cd ..
@@ -94,7 +93,7 @@ python run_scrapers.py
 
 ---
 
-## 🔗 API Referansı
+## 🔗 API Detay
 
 | Metot | Endpoint | Açıklama |
 | :--- | :--- | :--- |
@@ -107,30 +106,20 @@ python run_scrapers.py
 
 ## 🏪 Desteklenen Mağazalar
 
-- ✅ **Vatan Bilgisayar**
-- ✅ **İtopya**
-- ✅ **Sinerji**
-- ✅ **PCKolik**
-- ✅ **İnceHesap**
-- ✅ **Gaming.Gen.TR**
-- ✅ **Game Garaj**
-- ✅ **Tebilon**
+-  **Vatan Bilgisayar**
+-  **İtopya**
+-  **Sinerji**
+-  **PCKolik**
+-  **İnceHesap**
+-  **Gaming.Gen.TR**
+-  **Game Garaj**
+-  **Tebilon**
 
 ---
-
-## 🤝 Katkıda Bulunma
-
-1. Bu projeyi forklayın.
-2. Özellik dalınızı oluşturun (`git checkout -b feature/yeniozellik`).
-3. Değişikliklerinizi commit edin (`git commit -am 'Yeni özellik eklendi'`).
-4. Dalınıza push yapın (`git push origin feature/yeniozellik`).
-5. Bir Pull Request açın.
-
----
-
 ## 📄 Lisans
 
 Bu proje **MIT Lisansı** altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakabilirsiniz.
-
+ 
+ Not: Readme oluşturmak için AI kullandım
 ---
-<p align="center">Made with ❤️ for Hardware Enthusiasts</p>
+<p align="center">Made with ❤️ </p>
