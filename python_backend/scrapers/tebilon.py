@@ -1,11 +1,5 @@
 import re
-"""
-Tebilon scraper - StealthyFetcher
-- wait_selector: .showcase__product (pagination degil)
-- Concurrent page fetching with Semaphore(5)
-"""
 import asyncio
-from scrapling.fetchers import StealthyFetcher
 from scrapling import Fetcher
 from .utils import extract_specs_from_name, extract_specs_from_list
 
@@ -16,6 +10,8 @@ PRODUCT_SEL = ".showcase__product"
 
 def _parse_page_products(page) -> list[dict]:
     products = []
+    if not page:
+        return products
     for el in page.css(PRODUCT_SEL):
         name_el = el.css(".showcase__title a").first
         name = name_el.text.strip() if name_el else "N/A"
@@ -37,27 +33,44 @@ def _parse_page_products(page) -> list[dict]:
     return products
 
 
-async def _fetch_page(url: str) -> list[dict]:
-    page = await StealthyFetcher.async_fetch(url, headless=True,
-                                              timeout=60000, wait_selector=PRODUCT_SEL, wait_selector_state="attached")
+async def _fetch_page(url: str, fetcher_instance) -> list[dict]:
+    def fetch_sync():
+        try:
+            return fetcher_instance.get(url)
+        except:
+            return None
+    page = await asyncio.to_thread(fetch_sync)
     return _parse_page_products(page)
+
 
 async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
     if product["specs"].get("Case") != "N/A" and product["specs"].get("PSU") != "N/A":
         return product
         
     url = product["url"]
+    if not url:
+        return product
+
     def sync_fetch():
         try:
             return fetcher_instance.get(url)
         except:
             return None
             
-    for attempt in range(2):
+    for attempt in range(3):
         try:
             page = await asyncio.to_thread(sync_fetch)
-            if not page: continue
+            if not page:
+                await asyncio.sleep(1 + attempt)
+                continue
             
+            # Handle rate limiting / 429
+            status = getattr(page, "status_code", 200)
+            if status == 429:
+                # Backoff longer
+                await asyncio.sleep(4 + attempt * 4)
+                continue
+
             checked = page.css("input:checked")
             if checked:
                 spec_items = []
@@ -65,7 +78,8 @@ async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
                     gp = c.xpath("../..")
                     if gp:
                         text = gp[0].get_all_text().strip()
-                        if text: spec_items.append(text)
+                        if text:
+                            spec_items.append(text)
                         
                 if spec_items:
                     extra_specs = extract_specs_from_list(spec_items)
@@ -73,7 +87,7 @@ async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
                         if product["specs"].get(k, "N/A") == "N/A" and v != "N/A":
                             product["specs"][k] = v
             break
-        except Exception as e:
+        except Exception:
             await asyncio.sleep(2)
             
     return product
@@ -81,11 +95,18 @@ async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
 
 async def scrape_all_pages_async() -> list[dict]:
     print(f"[Tebilon] Ilk sayfa: {BASE_URL}", flush=True)
-    try:
-        first_page = await StealthyFetcher.async_fetch(BASE_URL, headless=True,
-                                                        timeout=60000, wait_selector=PRODUCT_SEL, wait_selector_state="attached")
-    except Exception as e:
-        print(f"[Tebilon] Ilk sayfa hatasi: {e}", flush=True)
+    fetcher = Fetcher()
+
+    def fetch_sync(url):
+        try:
+            return fetcher.get(url)
+        except Exception as e:
+            print(f"[Tebilon] Fetch hatasi: {e}", flush=True)
+            return None
+
+    first_page = await asyncio.to_thread(fetch_sync, BASE_URL)
+    if not first_page:
+        print("[Tebilon] Ilk sayfa hatasi", flush=True)
         return []
 
     try:
@@ -98,12 +119,12 @@ async def scrape_all_pages_async() -> list[dict]:
     all_products = _parse_page_products(first_page)
 
     if total_pages > 1:
-        sem = asyncio.Semaphore(5)
+        sem = asyncio.Semaphore(3)
         async def fetch_n(n):
             async with sem:
                 for attempt in range(3):
                     try:
-                        return await _fetch_page(f"{BASE_URL}?page={n}")
+                        return await _fetch_page(f"{BASE_URL}?page={n}", fetcher)
                     except Exception as e:
                         print(f"[Tebilon] Sayfa {n} hata (deneme {attempt+1}): {e}", flush=True)
                         pass
@@ -114,11 +135,15 @@ async def scrape_all_pages_async() -> list[dict]:
                 all_products.extend(r)
 
     print(f"[{STORE}] Fetching details for {len(all_products)} products...", flush=True)
-    static_fetcher = Fetcher()
-    detail_sem = asyncio.Semaphore(15)
+    
+    # Lower concurrency to prevent 429
+    detail_sem = asyncio.Semaphore(3)
     async def fetch_detail_with_sem(prod):
         async with detail_sem:
-            return await _fetch_product_details(prod, static_fetcher)
+            res = await _fetch_product_details(prod, fetcher)
+            # Add a small delay between requests
+            await asyncio.sleep(0.5)
+            return res
             
     detail_tasks = [fetch_detail_with_sem(p) for p in all_products]
     all_products = await asyncio.gather(*detail_tasks)
@@ -132,10 +157,9 @@ def scrape_all_pages() -> list[dict]:
 
 
 if __name__ == "__main__":
-    import json
     products = scrape_all_pages()
-    with open("tebilon_test.json", "w", encoding="utf-8") as f:
-        json.dump(products, f, ensure_ascii=False, indent=2)
-    print("tebilon_test.json kaydedildi")
+    print(f"Bitti: {len(products)} urun.")
+
+
 
 

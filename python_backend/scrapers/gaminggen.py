@@ -1,11 +1,6 @@
 import re
-"""
-GamingGen scraper - StealthyFetcher
-- wait_selector: li.product (pagination degil)
-- Concurrent page fetching with Semaphore(5)
-"""
 import asyncio
-from scrapling.fetchers import StealthyFetcher
+from scrapling import Fetcher
 from .utils import extract_specs_from_list, extract_specs_from_name
 
 STORE = "gamingGen"
@@ -14,26 +9,21 @@ PRODUCT_SEL = "li.product"
 
 
 def _normalize(text: str) -> str:
-    """Collapse all whitespace (including newlines) into a single space."""
     return " ".join(text.split())
 
 
 def _extract_price(item) -> float:
-    """Extract price from WooCommerce .price element (handles <ins><bdi> nesting)."""
     price_el = item.css(".price").first
     if not price_el:
         return 0.0
-    # Prefer discounted price inside <ins>
     ins_el = price_el.css("ins").first
     target = ins_el if ins_el else price_el
-    # WooCommerce wraps amount in <bdi>
     bdi_el = target.css("bdi").first
     raw_el = bdi_el if bdi_el else target
     try:
         price_text = raw_el.get_all_text() if hasattr(raw_el, "get_all_text") else raw_el.text
     except Exception:
         price_text = ""
-    # Remove everything except digits and comma; Turkish format: 120.000,00
     cleaned = re.sub(r"[^\d,]", "", price_text)
     cleaned = cleaned.replace(",", ".")
     try:
@@ -44,6 +34,8 @@ def _extract_price(item) -> float:
 
 def _parse_page_products(page) -> list[dict]:
     products = []
+    if not page:
+        return products
     for item in page.css(PRODUCT_SEL):
         title_el = item.css(".pc-specs-title").first
         name = _normalize(title_el.text) if title_el else "N/A"
@@ -74,43 +66,38 @@ def _parse_page_products(page) -> list[dict]:
                 if v == "N/A" and name_specs.get(k) != "N/A":
                     specs[k] = name_specs[k]
 
-
         products.append({"name": name, "price": price, "image": image, "url": link, "store": STORE, "specs": specs})
     return products
 
 
-async def _fetch_page(url: str) -> list[dict]:
-    page = await StealthyFetcher.async_fetch(url, headless=True, network_idle=True,
-                                               timeout=90000, wait_selector=PRODUCT_SEL, wait_selector_state="attached")
-    return _parse_page_products(page)
-
-
 async def scrape_all_pages_async() -> list[dict]:
     print(f"[GamingGen] Ilk sayfa: {BASE_URL}", flush=True)
-    try:
-        first_page = await StealthyFetcher.async_fetch(
-            BASE_URL, 
-            headless=True, 
-            network_idle=True,
-            timeout=90000, 
-            wait_selector=PRODUCT_SEL, 
-            wait_selector_state="attached"
-        )
-    except Exception as e:
-        print(f"[GamingGen] Ilk sayfa hatasi: {e}", flush=True)
+    fetcher = Fetcher()
+
+    def fetch_sync(url):
+        try:
+            return fetcher.get(url)
+        except Exception as e:
+            print(f"[GamingGen] Fetch hatasi: {e}", flush=True)
+            return None
+
+    first_page = await asyncio.to_thread(fetch_sync, BASE_URL)
+    if not first_page:
+        print("[GamingGen] Ilk sayfa hatasi", flush=True)
         return []
 
     all_products = _parse_page_products(first_page)
     seen_urls = {p["url"] for p in all_products if p.get("url")}
+    print(f"[GamingGen] Sayfa 1: {len(all_products)} urun", flush=True)
     
     page_num = 2
     while True:
-        print(f"[GamingGen] Sayfa {page_num} basliyor...", flush=True)
         url = f"{BASE_URL}page/{page_num}/"
         batch = []
         for attempt in range(3):
             try:
-                batch = await _fetch_page(url)
+                page = await asyncio.to_thread(fetch_sync, url)
+                batch = _parse_page_products(page)
                 if batch:
                     break
             except Exception as e:
@@ -127,6 +114,7 @@ async def scrape_all_pages_async() -> list[dict]:
                 all_products.append(p)
                 new_count += 1
                 
+        print(f"[GamingGen] Sayfa {page_num}: {new_count} yeni urun", flush=True)
         if new_count == 0:
             break
             
@@ -143,8 +131,7 @@ def scrape_all_pages() -> list[dict]:
 if __name__ == "__main__":
     import json
     products = scrape_all_pages()
-    with open("gaminggen_test.json", "w", encoding="utf-8") as f:
-        json.dump(products, f, ensure_ascii=False, indent=2)
-    print("gaminggen_test.json kaydedildi")
+    print(f"Bitti: {len(products)} urun.")
+
 
 
