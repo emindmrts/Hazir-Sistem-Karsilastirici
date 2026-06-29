@@ -1,0 +1,1170 @@
+[
+  {
+    "value": "A750",
+    "label": "A750"
+  },
+  {
+    "value": "GTX 1660",
+    "label": "Afox GTX 1660 SUPER 6 GB"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "Afox RTX 3050 8 GB"
+  },
+  {
+    "value": "RX 5500",
+    "label": "Afox RX 5500 XT 8 GB"
+  },
+  {
+    "value": "RX 580",
+    "label": "Afox RX 580 8 GB"
+  },
+  {
+    "value": "AMD APU",
+    "label": "AMD APU"
+  },
+  {
+    "value": "RX 6750",
+    "label": "AMD Radeon RX6750XT"
+  },
+  {
+    "value": "RX 7800",
+    "label": "AMD Radeon RX7800XT"
+  },
+  {
+    "value": "RX 7900",
+    "label": "AMD Radeon RX7900GRE"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "ASUS DUAL GeForce RTX 3050 OC 6GB GDDR6 96 Bit Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS DUAL GeForce RTX 4060 EVO OC 8GB GDDR6 128 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS Dual GeForce RTX 4060 OC 8GB GDDR6 128 Bit Beyaz DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS DUAL GeForce RTX 4060 Ti EVO OC 8GB GDDR6 128 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS Dual GeForce RTX 4060 Ti OC 8GB GDDR6 128 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS Dual GeForce RTX 4060 V2 BULK OC 8GB GDDR6 128 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS DUAL GeForce RTX 4070 EVO OC 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı – Star Wars Outlaws Hediyeli"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS Dual GeForce RTX 4070 OC 12GB GDDR6X 192 Bit Beyaz DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS DUAL GeForce RTX 4070 SUPER EVO 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS DUAL GeForce RTX 4070 SUPER EVO OC 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS Dual GeForce RTX 4070 SUPER OC 12GB GDDR6X 192 Bit DLSS 3 Beyaz Ekran Kartı"
+  },
+  {
+    "value": "RX 6600",
+    "label": "ASUS Dual Radeon RX 6600 V2 8GB GDDR6 128 Bit Ekran Kartı"
+  },
+  {
+    "value": "RX 7600",
+    "label": "ASUS DUAL Radeon RX 7600 XT OC 16GB GDDR6 128 Bit Ekran Kartı"
+  },
+  {
+    "value": "RX 7600",
+    "label": "ASUS DUAL RADEON RX 7600XT OC 16GB GDDR6 128BIT EKRAN KARTI"
+  },
+  {
+    "value": "RX 7700",
+    "label": "ASUS DUAL Radeon RX 7700 XT OC 12GB GDDR6 192 Bit Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS DUAL RTX 4070 Ti Super OC 16GB GDDR6X 256 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS DUAL RTX 4070 Ti Super OC 16GB GDDR6X 256 Bit DLSS 3 Ekran Kartı – Star Wars Outlaws Hediyeli"
+  },
+  {
+    "value": "RX 7600",
+    "label": "ASUS DUAL RX7600 O8G 8GB 128Bit"
+  },
+  {
+    "value": "RTX 2060",
+    "label": "Asus DUAL-RTX2060-O6G-EVO 6GB GDDR6"
+  },
+  {
+    "value": "RTX 3070",
+    "label": "Asus DUAL-RTX3070-O8G-V2 8GB 256Bit GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS DUAL-RTX4060-08G 8GB GDDR6 128Bit"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS DUAL-RTX4060-O8G 8GB 128Bit"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS DUAL-RTX4060-O8G 8GB GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS DUAL-RTX4060-O8G 8GB GDDR6 128Bit"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Asus DUAL-RTX4060-O8GD6 8GB 128Bit"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS DUAL-RTX4060TI-O8G 8GB GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS DUAL-RTX4060TI-O8G 8GB GDDR6 128Bit"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS DUAL-RTX4070S-12G SUPER 12GB GDDR6X"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS DUAL-RTX4070S-12G SUPER S12GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS DUAL-RTX4070S-O12G SUPER OC 12GB"
+  },
+  {
+    "value": "RX 6600",
+    "label": "Asus DUAL-RX6600-8G-V2 8GB GDDR6"
+  },
+  {
+    "value": "RX 6600",
+    "label": "Asus DUAL-RX6600-8G-V2 8GB GDDR6 128Bit"
+  },
+  {
+    "value": "RX 7600",
+    "label": "Asus DUAL-RX7600XT-O16G 16GB OC GDDR6"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "ASUS GEFORCE RTX 3060 DUAL 8GB GDDR6 128BIT OC EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS GEFORCE RTX 4060 DUAL EVO O8G OC 8GB GDDR6 128BIT DLSS 3 EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS GEFORCE RTX 4070 DUAL EVO O12G 12GB GDDR6X 192 BIT DLSS 3 GAMING EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS GEFORCE RTX 4070 DUAL WHITE 12GB GDDR6X 192BIT OC EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS GEFORCE RTX 4070 SUPER DUAL 12GB GDDR6X 192BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS GEFORCE RTX 4070 SUPER EVO DUAL O12G 12GB GDDR6X 192 BIT DLSS 3 EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS GEFORCE RTX 4070 TI SUPER DUAL O16G 16GB GDDR6X 256 BIT DLSS 3 EKRAN KARTI"
+  },
+  {
+    "value": "GTX 1650",
+    "label": "Asus PH-GTX1650-O4G  4GB 128Bit GDDR5"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "Asus PH-RTX3050-8G 8GB 128Bit GDDR6 LHR"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS PROART GEFORCE RTX4060TI 16GB GDDR6 128BIT 2565MHZ EKRAN KARTI"
+  },
+  {
+    "value": "RX 6600",
+    "label": "ASUS RADEON RX6600 DUAL V2 8GB GDDR6 128BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "ASUS ROG STRIX GeForce RTX 4090 OC WHITE 24GB GDDR6X 384 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RX 7600",
+    "label": "Asus ROG STRIX RX7600 O8G GAMING 8GB"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "ASUS ROG Strix GeForce RTX 4080 SUPER OC 16GB GDDR6X 256 Bit DLSS 3 Ekran Kartı – Star Wars Outlaws Hediyeli"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS ROG-STRIX-RTX4070S-12G-GAMING"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "Asus RTX 3060 12 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Asus RTX 4060 8 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Asus RTX 4060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Asus RTX 4060 Ti 8 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Asus RTX 4060Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Asus RTX 4070 12 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Asus RTX 4070 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Asus RTX 4070 Super 12 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Asus RTX 4070 Ti Super 16 GB"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "Asus RTX 4080 Super 16 GB"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "Asus RTX 4090 24 GB"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "Asus RTX 4090 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "ASUS RTX4080S-O16G-NOCTUA SUPER OC"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "ASUS RTX4080S-O16G-NOCTUA SUPER OC 16GB"
+  },
+  {
+    "value": "RX 7600",
+    "label": "Asus RX 7600 8 GB"
+  },
+  {
+    "value": "RX 7600",
+    "label": "Asus RX 7600 XT 16 GB"
+  },
+  {
+    "value": "RX 7900",
+    "label": "Asus RX 7900 XT 20 GB"
+  },
+  {
+    "value": "RX 7900",
+    "label": "Asus RX 7900 XTX 24 GB"
+  },
+  {
+    "value": "RX 7900",
+    "label": "Asus RX7900XT Ekran Kartı"
+  },
+  {
+    "value": "RX 7900",
+    "label": "ASUS TUF GAMING RADEON RX 7900 XT 20GB OC GDDR6 320 Bit Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS Tuf Gaming GeForce RTX 4060 Ti OC 8GB GDDR6 128 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS TUF Gaming GeForce RTX 4070 Ti SUPER OG OC 16GB GDDR6X 256 Bit Ekran Kartı"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "ASUS Tuf Gaming GeForce RTX 4090 OC 24GB OG GDDR6X 384 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "ASUS TUF GEFORCE RTX 4090 24GB OG OC GDDR6X 384BIT 2595MHZ RGB EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS TUF GEFORCE RTX4060TI 8GB GDDR6 128BIT OC EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "ASUS TUF RTX4090 O24G-OG-GAMING 24GB"
+  },
+  {
+    "value": "RX 7800",
+    "label": "ASUS TUF RX 7800 XT O16G OG GAMING 16GB GDDR6 256 Bit Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS TUF-RTX4060TI-O8G-GAMING 8GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS TUF-RTX4070TIS-16G-GAMING SUPER"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "ASUS TUF-RTX4090-O24G-GAMING"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "ASUS TUF-RTX4090-O24G-GAMING 384 Bit"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "ASUS TUF-RTX4090-O24G-GAMING 384Bit"
+  },
+  {
+    "value": "RX 7700",
+    "label": "Asus TUF-RX7700XT-O12G-GAMING 192bit"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "ASUS-GeForce RTX 3050 Ekran Kartı"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "ASUS-GeForce RTX 3060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS-GeForce RTX 4060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "ASUS-GeForce RTX 4060 Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS-GeForce RTX 4070 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS-GeForce RTX 4070 SUPER Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS-GeForce RTX 4070 Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "ASUS-GeForce RTX 4070 Ti SUPER Ekran Kartı"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "ASUS-GeForce RTX 4090 Ekran Kartı"
+  },
+  {
+    "value": "RX 6600",
+    "label": "ASUS-Radeon RX 6600 Ekran Kartı"
+  },
+  {
+    "value": "RX 6750",
+    "label": "ASUS-Radeon RX 6750 XT Ekran Kartı"
+  },
+  {
+    "value": "RX 7600",
+    "label": "ASUS-Radeon RX 7600  Ekran Kartı"
+  },
+  {
+    "value": "RTX 2060",
+    "label": "Axle RTX 2060S 8 GB"
+  },
+  {
+    "value": "RX 5700",
+    "label": "Axle RX 5700 XT  8 GB"
+  },
+  {
+    "value": "RX 550",
+    "label": "Biostar RX550 4GB 128Bit GDDR5"
+  },
+  {
+    "value": "RX 580",
+    "label": "Biostar RX580 2048SP 8GB 256Bit GDDR5"
+  },
+  {
+    "value": "GTX 1650",
+    "label": "Colorful GTX 1650 4 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Colorful RTX 4060 8 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Colorful RTX 4060 Ti 8 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Colorful RTX 4070 12 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Colorful RTX 4070 Super 12 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Colorful RTX 4070 Ti Super 16 GB"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "Colorful RTX 4080 Super 16 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GAINWARD GEFORCE RTX 4060TI GHOST OC 8GB GDDR6X 128 BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GAINWARD GEFORCE RTX 4070 SUPER GHOST 12GB GDDR6X 192BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GAINWARD GEFORCE RTX 4070 SUPER PANTHER OC 12GB GDDR6X 192BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GAINWARD GEFORCE RTX 4070TI SUPER PANTHER 16GB GDDR6X 256BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GAINWARD GEFORCE RTX 4070TI SUPER PHOENIX 16GB GDDR6X 256BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "GAINWARD GEFORCE RTX 4080 PHANTOM GS 16GB GDDR6X 256 BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "GAINWARD GEFORCE RTX 4080 SUPER PHANTER OC 16GB GDDR6X 256BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "GAINWARD GEFORCE RTX 4080 SUPER PHOENIX 16GB GDDR6X 256BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "GAINWARD GEFORCE RTX 4090 PHANTOM 24GB GDDR6X 384BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Gainward GeForce RTX 4070 Super"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "Gainward RTX 3050 6 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Gainward RTX 4060 8 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Gainward RTX 4060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Gainward RTX 4060 Ti 8 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Gainward RTX 4070 Super 12 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Gainward RTX 4070 Ti Super 16 GB"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "Gainward RTX 4080 Super 16 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GALAX 1-Click OC 2X GeForce RTX 4070 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı (47NOM7MD8DDF)"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GALAX GeForce RTX 4060 1-Click OC 2X V2 8GB GDDR6 128 Bit DLSS 3 Ekran Kartı (46NSL8MD9NXV) – 2 Yıl Birebir Değişim Garantili"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GALAX GeForce RTX 4060 Ti 1-Click OC 8GB GDDR6 128 Bit DLSS 3 Ekran Kartı (46ISL8MD8COC) – 2 Yıl Birebir Değişim Garantili"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GALAX GeForce RTX 4070 1-Click OC 2X 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı (47NOM7MD8DDF)"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GALAX GeForce RTX 4070 1-Click OC 2X 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı (47NOM7MD8DDF) – 2 Yıl Birebir Değişim Garantili"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GALAX GeForce RTX 4070 SUPER 1-Click OC 2X V2 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı (47SOM7MDABCD) – 2 Yıl Birebir Değişim Garantili"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GALAX GeForce RTX 4070 Ti SUPER EX Gamer 1-Click OC V2 16GB GDDR6X 256 Bit DLSS 3 Ekran Kartı (47UZM6MD7JDL) – 2 Yıl Birebir Değişim Garantili"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "GALAX GeForce RTX 4080 SUPER SG 1-Click OC 16GB GDDR6X 256 Bit DLSS 3 Ekran Kartı (48SZM6MD9RSG) – 2 Yıl Birebir Değişim Garantili"
+  },
+  {
+    "value": "GeForce GT 1030",
+    "label": "GeForce GT 1030"
+  },
+  {
+    "value": "GeForce GT 730",
+    "label": "GeForce GT 730"
+  },
+  {
+    "value": "GTX 1650",
+    "label": "GeForce GTX 1650"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "GeForce RTX 3050"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "GeForce RTX 3060"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GeForce RTX 4060"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GeForce RTX 4060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GeForce RTX 4060 Ti"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GeForce RTX 4060 Ti 16GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GeForce RTX 4070"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GeForce RTX 4070 SUPER"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GeForce RTX 4070 TI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GeForce RTX 4070 Ti Super"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GeForce RTX 4070Ti SUPER"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "GeForce RTX 4080"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "GeForce RTX 4080 SUPER"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "GeForce RTX 4090"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "GeForce RTX 4090 Ekran Kartı"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "GeForce RTX3060"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GIGABYTE GEFORCE RTX 4060 GAMING OC 8GB GDDR6 128BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GIGABYTE GEFORCE RTX 4060TI EAGLE OC 8GB GDDR6 128BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GIGABYTE GEFORCE RTX 4070 WINDFORCE OC 12 GB GDDR6X 192 BIT RGB LED NVIDIA EKRAN KARTI"
+  },
+  {
+    "value": "RX 7700",
+    "label": "GIGABYTE RADEON RX 7700 XT GAMING OC 12GB GDDR6 192 BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GIGABYTE-GeForce RTX 4060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "GIGABYTE-GeForce RTX 4060 Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GIGABYTE-GeForce RTX 4070 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GIGABYTE-GeForce RTX 4070 SUPER Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GIGABYTE-GeForce RTX 4070 Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "GIGABYTE-GeForce RTX 4070 Ti SUPER Ekran Kartı"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "GIGABYTE-GeForce RTX 4080 SUPER Ekran Kartı"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "GIGABYTE-GeForce RTX 4090 Ekran Kartı"
+  },
+  {
+    "value": "RX 7600",
+    "label": "GIGABYTE-Radeon RX 7600  Ekran Kartı"
+  },
+  {
+    "value": "RX 7600",
+    "label": "GIGABYTE-Radeon RX 7600 XT Ekran Kartı"
+  },
+  {
+    "value": "RX 7700",
+    "label": "GIGABYTE-Radeon RX 7700 XT Ekran Kartı"
+  },
+  {
+    "value": "RX 7800",
+    "label": "GIGABYTE-Radeon RX 7800 XT Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Gigabyte RTX 4060 8 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Gigabyte RTX 4060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Gigabyte RTX 4070 Super Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Gigabyte RTX 4070 Ti Super 16 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Gigabyte RTX 4070Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "Gigabyte RTX 4080 Super 16 GB"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "Gigabyte RTX 4090 24 GB"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "Inno3D RTX3050 Twin x2 6GB 96Bit GDDR6"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "Inno3D RTX3060 Twin x2 12GB 192Bit"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "Inno3D RTX3060 Twin x2 12GB 192Bit GDDR6"
+  },
+  {
+    "value": "RTX 3070",
+    "label": "Inno3D RTX3070 ICHILL x4 8GB 256Bit GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Inno3D RTX4060Ti Twin x2 8GB 128Bit GDDR6"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Inno3D RTX4070Ti SUPER X3 OC 16GB 256Bit GDDR6X"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "Inno3D RTX4080 SUPER ICHILL x3 16GB"
+  },
+  {
+    "value": "ARC A750",
+    "label": "INTEL ARC A750 8GB GDDR6 256BIT PCI EXPRESS 4.0 EKRAN KARTI"
+  },
+  {
+    "value": "ARC 750",
+    "label": "INTEL-INTEL ARC 750 Ekran Kartı"
+  },
+  {
+    "value": "İşlemciye Entegre",
+    "label": "İşlemciye Entegre"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "MSI GEFORCE RTX 3060 VENTUS 2X 12GB OC GDDR6 192BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI GeForce RTX 4060 OC Ventus 2X Black 8GB GDDR6 128 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI GEFORCE RTX 4060 TI VENTUS 3X 16GB OC GDDR6 DLSS 3 128 BIT GAMING EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI GeForce RTX 4060 Ti Ventus 2X Black 16GB OC GDDR6 128 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI GeForce RTX 4060 Ti VENTUS 2X BLACK 8GB OC GDDR6 128 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI GEFORCE RTX 4060 VENTUS 2X BLACK 8GB OC GDDR6 DLSS 3 128 BIT EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI GeForce RTX 4070 SUPER 12G Ventus 3X OC 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI GeForce RTX 4070 SUPER 12G Ventus 3X OC 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı – Star Wars Outlaws Hediyeli"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI GeForce RTX 4070 Ti SUPER 16G Ventus 3X OC 16GB GDDR6X 256 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI GEFORCE RTX 4070 VENTUS 2X E 12G OC 12G GDDR6X 192 BIT DLSS 3 EKRAN KARTI"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI GeForce RTX 4070 VENTUS 2X E 12G OC 12GB GDDR6X 192 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "MSI GeForce RTX 4080 SUPER Gaming X Slim 16GB GDDR6X 256 Bit DLSS 3 Ekran kartı"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "MSI GeForce RTX 4090 SUPRIM LIQUID X 24G 24GB GDDR6X 384 Bit DLSS 3 Sıvı Soğutuculu Ekran Kartı"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "MSI GeForce RTX 4090 VENTUS 3X E 24G OC 24GB GDDR6X 384 Bit DLSS 3 Ekran Kartı"
+  },
+  {
+    "value": "GTX 1650",
+    "label": "MSI GTX 1650 Ekran Kartı"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "MSI RTX 3050 6 GB"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "MSI RTX 3050 Ekran Kartı"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "MSI RTX 3060 12 GB"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "MSI RTX 3060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI RTX 4060 8 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI RTX 4060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI RTX 4060 Ti 16 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI RTX 4060 Ti 8 GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI RTX 4060 VENTUS 2X OC 8GB GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI RTX 4060 VENTUS 2X OC 8GB GDDR6 128B"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI RTX 4060Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI RTX 4060Ti GAMING X 8G GDDR6 128Bit"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI RTX 4060Ti VENTUS 2X OC 8GB GDDR6"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI RTX 4070 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI RTX 4070 Super 12 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI RTX 4070 SUPER 12G VENTUS 2X OC 12GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI RTX 4070 Super Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI RTX 4070 TI SUPER 16G VENTUS 3X OC"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI RTX 4070 Ti Super 16 GB"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "MSI RTX 4080 Super 16 GB"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "MSI RTX 4080 Super Ekran Kartı"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "MSI RTX 4080 SUPER VENTUS 3X OC 16GB"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "MSI RTX 4080 VENTUS 3X OC 16GB"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "MSI RTX 4090 24 GB"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "MSI RTX 4090 Ekran Kartı"
+  },
+  {
+    "value": "RX 6750",
+    "label": "MSI RX6750XT Ekran Kartı"
+  },
+  {
+    "value": "RTX 3050",
+    "label": "MSI-GeForce RTX 3050 Ekran Kartı"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "MSI-GeForce RTX 3060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI-GeForce RTX 4060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "MSI-GeForce RTX 4060 Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI-GeForce RTX 4070 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI-GeForce RTX 4070 SUPER Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI-GeForce RTX 4070 Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "MSI-GeForce RTX 4070 Ti SUPER Ekran Kartı"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "MSI-GeForce RTX 4080 SUPER Ekran Kartı"
+  },
+  {
+    "value": "N/A",
+    "label": "N/A"
+  },
+  {
+    "value": "NVIDIA® GeForce® RTX™ 3060 6GB",
+    "label": "NVIDIA® GeForce® RTX™ 3060 6GB"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX 4060 Ekran Kartı"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX 4060Ti Ekran Kartı"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Palit RTX 4070 Super Ekran Kartı"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "Palit RTX3060 DUAL 12GB 192Bit GDDR6"
+  },
+  {
+    "value": "RTX 3060",
+    "label": "Palit RTX3060 DUAL 12GB 192Bit GDDR6 LHR"
+  },
+  {
+    "value": "RTX 3080",
+    "label": "Palit RTX3080 GAMINGPRO 10GB GDDR6X(LHR)"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX4060 INFINITY Dual 8GB 128Bit"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX4060 INFINITY Dual 8GB 128Bit GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX4060Ti Dual 8GB 128Bit GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX4060Ti Dual 8GB 128Bit GDDR6X"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX4060Ti Jetstream 16GB 128Bit"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX4060Ti Jetstream 16GB 128Bit GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX4060Ti Jetstream 16GB 3x Fan 128Bit GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX4060Ti Jetstream 16GB GDDR6"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "Palit RTX4060Ti Jetstream X3 16GB GDDR6"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Palit RTX4070 Dual 12GB 192Bit GDDR6X"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Palit RTX4070 SUPER Dual 12GB 192Bit GDDR6X"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Palit RTX4070 SUPER Jetstream OC 12GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Palit RTX4070Ti SUPER Jetstream OC 16GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "Palit RTX4070Ti SUPER JetStream OC 16GB 256Bit"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "Palit RTX4090 GAMEROCK 24GB 384Bit GDDR6X"
+  },
+  {
+    "value": "RTX 4090",
+    "label": "Palit RTX4090 GAMEROCK 24GB GDDR6X"
+  },
+  {
+    "value": "RTX 4060",
+    "label": "PNY RTX 4060 Ti 8 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "PNY RTX 4070 Super 12 GB"
+  },
+  {
+    "value": "RTX 4070",
+    "label": "PNY RTX 4070 Ti Super 16 GB"
+  },
+  {
+    "value": "RTX 4080",
+    "label": "PNY RTX 4080 Super 16 GB"
+  },
+  {
+    "value": "RX 6500",
+    "label": "PowerColor Fighter RX6500XT OC 4GB GDDR6"
+  },
+  {
+    "value": "RX 7600",
+    "label": "Powercolor RX 7600 8 GB"
+  },
+  {
+    "value": "RX 7800",
+    "label": "Powercolor RX 7800 XT 16 GB"
+  },
+  {
+    "value": "RX 7900",
+    "label": "Powercolor RX 7900 GRE 16 GB"
+  },
+  {
+    "value": "RX 7900",
+    "label": "PowerColor RX7900GRE Ekran Kartı"
+  },
+  {
+    "value": "RX 6400",
+    "label": "Radeon RX 6400"
+  },
+  {
+    "value": "RX 6600",
+    "label": "Radeon RX 6600"
+  },
+  {
+    "value": "RX 6600",
+    "label": "Radeon RX 6600 XT"
+  },
+  {
+    "value": "RX 6650",
+    "label": "Radeon RX 6650 XT"
+  },
+  {
+    "value": "RX 6700",
+    "label": "Radeon RX 6700"
+  },
+  {
+    "value": "RX 6750",
+    "label": "RADEON RX 6750XT"
+  },
+  {
+    "value": "RX 7600",
+    "label": "Radeon RX 7600"
+  },
+  {
+    "value": "RX 7600",
+    "label": "Radeon RX 7600 XT"
+  },
+  {
+    "value": "RX 7600",
+    "label": "Radeon RX 7600 XT 16GB"
+  },
+  {
+    "value": "RX 7700",
+    "label": "Radeon RX 7700 XT"
+  },
+  {
+    "value": "RX 7800",
+    "label": "Radeon RX 7800 XT"
+  },
+  {
+    "value": "RX 7900",
+    "label": "Radeon RX 7900"
+  },
+  {
+    "value": "RX 7900",
+    "label": "Radeon RX 7900 XT"
+  },
+  {
+    "value": "RX 7900",
+    "label": "Radeon RX 7900 XTX"
+  },
+  {
+    "value": "RX 6500",
+    "label": "RADEON RX6500XT"
+  },
+  {
+    "value": "RX 7800",
+    "label": "Sapphire RX7800XT Ekran Kartı"
+  },
+  {
+    "value": "ARC A750",
+    "label": "Sparkle Intel Arc A750 8 GB"
+  },
+  {
+    "value": "RX 6750",
+    "label": "XFX Radeon RX6750XT Ekran Kartı"
+  },
+  {
+    "value": "Yok",
+    "label": "Yok"
+  }
+]

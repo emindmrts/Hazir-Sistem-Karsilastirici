@@ -1,0 +1,1002 @@
+[
+  {
+    "value": "12100F",
+    "label": "12100F"
+  },
+  {
+    "value": "12400F",
+    "label": "12400F"
+  },
+  {
+    "value": "13100F",
+    "label": "13100F"
+  },
+  {
+    "value": "13400F",
+    "label": "13400F"
+  },
+  {
+    "value": "13700KF",
+    "label": "13700KF"
+  },
+  {
+    "value": "14100F",
+    "label": "14100F"
+  },
+  {
+    "value": "14400F",
+    "label": "14400F"
+  },
+  {
+    "value": "14600KF",
+    "label": "14600KF"
+  },
+  {
+    "value": "14700F",
+    "label": "14700F"
+  },
+  {
+    "value": "4300G",
+    "label": "4300G"
+  },
+  {
+    "value": "5500",
+    "label": "5500"
+  },
+  {
+    "value": "5700G",
+    "label": "5700G"
+  },
+  {
+    "value": "7500F",
+    "label": "7500F"
+  },
+  {
+    "value": "8600G",
+    "label": "8600G"
+  },
+  {
+    "value": "R5 5600",
+    "label": "AMD R5 5600X"
+  },
+  {
+    "value": "AMD Ryzen 3 4300G",
+    "label": "AMD Ryzen 3 4300G"
+  },
+  {
+    "value": "AMD Ryzen 5 13400",
+    "label": "AMD Ryzen 5 13400"
+  },
+  {
+    "value": "AMD Ryzen 5 3600",
+    "label": "AMD Ryzen 5 3600"
+  },
+  {
+    "value": "AMD Ryzen 5 5500",
+    "label": "AMD Ryzen 5 5500"
+  },
+  {
+    "value": "AMD Ryzen 5 5500 3.6GHz 4.2GHz 19MB AM4",
+    "label": "AMD Ryzen 5 5500 3.6GHz 4.2GHz 19MB AM4"
+  },
+  {
+    "value": "AMD Ryzen 5 5500 MPK 3.6GHz 16MB Önbellek 6 Çekirdek AM4 7nm İşlemci",
+    "label": "AMD Ryzen 5 5500 MPK 3.6GHz 16MB Önbellek 6 Çekirdek AM4 7nm İşlemci"
+  },
+  {
+    "value": "AMD RYZEN 5 5500 MPK 3.6GHZ 6 ÇEKIRDEK 16MB AM4 7NM İŞLEMCİ",
+    "label": "AMD RYZEN 5 5500 MPK 3.6GHZ 6 ÇEKIRDEK 16MB AM4 7NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 5 5600",
+    "label": "AMD Ryzen 5 5600"
+  },
+  {
+    "value": "AMD Ryzen 5 5600 3.5GHz 32MB Önbellek 6 Çekirdek AM4 7nm İşlemci",
+    "label": "AMD Ryzen 5 5600 3.5GHz 32MB Önbellek 6 Çekirdek AM4 7nm İşlemci"
+  },
+  {
+    "value": "AMD Ryzen 5 5600 3.5GHz 4.4GHz 35MB",
+    "label": "AMD Ryzen 5 5600 3.5GHz 4.4GHz 35MB"
+  },
+  {
+    "value": "AMD Ryzen 5 5600 MPK 3.5GHz 32MB Önbellek 6 Çekirdek AM4 7nm İşlemci",
+    "label": "AMD Ryzen 5 5600 MPK 3.5GHz 32MB Önbellek 6 Çekirdek AM4 7nm İşlemci"
+  },
+  {
+    "value": "AMD RYZEN 5 5600 MPK 3.5GHZ 6 ÇEKİRDEK 32MB AM4 7NM I·ŞLEMCİ",
+    "label": "AMD RYZEN 5 5600 MPK 3.5GHZ 6 ÇEKİRDEK 32MB AM4 7NM I·ŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 5 5600 MPK 4.4GHz 32MB Önbellek 6 Çekirdek AM4 7nm İşlemci",
+    "label": "AMD Ryzen 5 5600 MPK 4.4GHz 32MB Önbellek 6 Çekirdek AM4 7nm İşlemci"
+  },
+  {
+    "value": "AMD Ryzen 5 5600GT",
+    "label": "AMD Ryzen 5 5600GT"
+  },
+  {
+    "value": "AMD Ryzen 5 5600GT 3.6GHZ 4.6GHz 19MB AM4 65W",
+    "label": "AMD Ryzen 5 5600GT 3.6GHZ 4.6GHz 19MB AM4 65W"
+  },
+  {
+    "value": "AMD Ryzen 5 5600X",
+    "label": "AMD Ryzen 5 5600X"
+  },
+  {
+    "value": "AMD RYZEN 5 5600X MPK 3.7GHZ 6 ÇEKİRDEK 32MB AM4 7NM İŞLEMCİ",
+    "label": "AMD RYZEN 5 5600X MPK 3.7GHZ 6 ÇEKİRDEK 32MB AM4 7NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 5 7500F",
+    "label": "AMD Ryzen 5 7500F"
+  },
+  {
+    "value": "AMD Ryzen 5 7500F 3.7GHZ 5.0GHZ 32MB",
+    "label": "AMD Ryzen 5 7500F 3.7GHZ 5.0GHZ 32MB"
+  },
+  {
+    "value": "AMD RYZEN 5 7500F MPK 3.70 GHZ 6 ÇEKİRDEK 38MB AM5 5NM İŞLEMCİ",
+    "label": "AMD RYZEN 5 7500F MPK 3.70 GHZ 6 ÇEKİRDEK 38MB AM5 5NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 5 7500F MPK 3.7GHz 32MB 6 Çekirdek AM5 işlemci",
+    "label": "AMD Ryzen 5 7500F MPK 3.7GHz 32MB 6 Çekirdek AM5 işlemci"
+  },
+  {
+    "value": "AMD Ryzen 5 7500F MPK 5.0GHz 32MB 6 Çekirdek AM5 işlemci",
+    "label": "AMD Ryzen 5 7500F MPK 5.0GHz 32MB 6 Çekirdek AM5 işlemci"
+  },
+  {
+    "value": "AMD Ryzen 5 7600",
+    "label": "AMD Ryzen 5 7600"
+  },
+  {
+    "value": "AMD RYZEN 5 7600 MPK 3.80 GHZ 6 ÇEKİRDEK 38MB AM5 5NM İŞLEMCİ",
+    "label": "AMD RYZEN 5 7600 MPK 3.80 GHZ 6 ÇEKİRDEK 38MB AM5 5NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 5 7600 MPK 3.80GHz 6 Çekirdek 32MB Önbellek Soket AM5 İşlemci",
+    "label": "AMD Ryzen 5 7600 MPK 3.80GHz 6 Çekirdek 32MB Önbellek Soket AM5 İşlemci"
+  },
+  {
+    "value": "AMD Ryzen 5 7600 MPK 5.1GHz 6 Çekirdek 32MB Önbellek Soket AM5 İşlemci",
+    "label": "AMD Ryzen 5 7600 MPK 5.1GHz 6 Çekirdek 32MB Önbellek Soket AM5 İşlemci"
+  },
+  {
+    "value": "AMD RYZEN 5 7600 TRAY 3.80 GHZ 6 ÇEKİRDEK 38MB AM5 5NM İŞLEMCİ",
+    "label": "AMD RYZEN 5 7600 TRAY 3.80 GHZ 6 ÇEKİRDEK 38MB AM5 5NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 5 7600 Tray 5.1GHz 6 Çekirdek 32MB Önbellek Soket AM5 İşlemci",
+    "label": "AMD Ryzen 5 7600 Tray 5.1GHz 6 Çekirdek 32MB Önbellek Soket AM5 İşlemci"
+  },
+  {
+    "value": "AMD Ryzen 5 7600X",
+    "label": "AMD Ryzen 5 7600X"
+  },
+  {
+    "value": "AMD Ryzen 5 8400F",
+    "label": "AMD Ryzen 5 8400F"
+  },
+  {
+    "value": "AMD Ryzen 5 8400F 4.2GHz 4.7GHz 22MB",
+    "label": "AMD Ryzen 5 8400F 4.2GHz 4.7GHz 22MB"
+  },
+  {
+    "value": "AMD Ryzen 5 8400F MPK 4.7GHz 16MB Önbellek 6 Çekirdek AM5 İşlemci",
+    "label": "AMD Ryzen 5 8400F MPK 4.7GHz 16MB Önbellek 6 Çekirdek AM5 İşlemci"
+  },
+  {
+    "value": "AMD Ryzen 5 8500G",
+    "label": "AMD Ryzen 5 8500G"
+  },
+  {
+    "value": "AMD Ryzen 5 8600G",
+    "label": "AMD Ryzen 5 8600G"
+  },
+  {
+    "value": "AMD Ryzen 7 5700X",
+    "label": "AMD Ryzen 7 5700X"
+  },
+  {
+    "value": "AMD Ryzen 7 5700X Tray 3.4GHz 32MB Önbellek 8 Çekirdek AM4 7nm İşlemci",
+    "label": "AMD Ryzen 7 5700X Tray 3.4GHz 32MB Önbellek 8 Çekirdek AM4 7nm İşlemci"
+  },
+  {
+    "value": "AMD Ryzen 7 5700X3D 3.0GHZ 4.1GHz 100MB",
+    "label": "AMD Ryzen 7 5700X3D 3.0GHZ 4.1GHz 100MB"
+  },
+  {
+    "value": "AMD Ryzen 7 5700X3D 3.0GHZ 4.1GHz 100MB AM4",
+    "label": "AMD Ryzen 7 5700X3D 3.0GHZ 4.1GHz 100MB AM4"
+  },
+  {
+    "value": "AMD Ryzen 7 7600",
+    "label": "AMD Ryzen 7 7600"
+  },
+  {
+    "value": "AMD Ryzen 7 7600 3.8GHZ 5.1GHZ 38MB",
+    "label": "AMD Ryzen 7 7600 3.8GHZ 5.1GHZ 38MB"
+  },
+  {
+    "value": "AMD Ryzen 7 7600X",
+    "label": "AMD Ryzen 7 7600X"
+  },
+  {
+    "value": "AMD RYZEN 7 7700 MPK 3.8GHZ 8 ÇEKİRDEK 40MB AM5 5NM İŞLEMCİ",
+    "label": "AMD RYZEN 7 7700 MPK 3.8GHZ 8 ÇEKİRDEK 40MB AM5 5NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 7 7700X",
+    "label": "AMD Ryzen 7 7700X"
+  },
+  {
+    "value": "AMD Ryzen 7 7700X 4.5GHz 5.4GHz 40MB",
+    "label": "AMD Ryzen 7 7700X 4.5GHz 5.4GHz 40MB"
+  },
+  {
+    "value": "AMD RYZEN 7 7700X 4.5GHZ 8 ÇEKİRDEK 40MB AM5 6NM İŞLEMCİ",
+    "label": "AMD RYZEN 7 7700X 4.5GHZ 8 ÇEKİRDEK 40MB AM5 6NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 7 7700X 4.70GHz 40MB",
+    "label": "AMD Ryzen 7 7700X 4.70GHz 40MB"
+  },
+  {
+    "value": "AMD Ryzen 7 7800X",
+    "label": "AMD Ryzen 7 7800X"
+  },
+  {
+    "value": "AMD Ryzen 7 7800X3D",
+    "label": "AMD Ryzen 7 7800X3D"
+  },
+  {
+    "value": "AMD RYZEN 7 7800X3D TRAY 4.2GHZ 8 ÇEKİRDEK 104MB AM5 5NM İŞLEMCİ",
+    "label": "AMD RYZEN 7 7800X3D TRAY 4.2GHZ 8 ÇEKİRDEK 104MB AM5 5NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 7 7800X3D Tray 5.0GHz 8 Çekirdek 96MB Önbellek Soket AM5 İşlemci",
+    "label": "AMD Ryzen 7 7800X3D Tray 5.0GHz 8 Çekirdek 96MB Önbellek Soket AM5 İşlemci"
+  },
+  {
+    "value": "AMD Ryzen 7 8700F 4.1GHz 5GHz 24MB",
+    "label": "AMD Ryzen 7 8700F 4.1GHz 5GHz 24MB"
+  },
+  {
+    "value": "AMD Ryzen 9 7900",
+    "label": "AMD Ryzen 9 7900"
+  },
+  {
+    "value": "AMD RYZEN 9 7900 3.7GHZ 12 ÇEKİRDEK 76MB AM5 5NM İŞLEMCİ",
+    "label": "AMD RYZEN 9 7900 3.7GHZ 12 ÇEKİRDEK 76MB AM5 5NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 9 7900X 5.6GHz 12 Çekirdek 64MB Önbellek Soket AM5 İşlemci",
+    "label": "AMD Ryzen 9 7900X 5.6GHz 12 Çekirdek 64MB Önbellek Soket AM5 İşlemci"
+  },
+  {
+    "value": "AMD RYZEN 9 7900X TRAY 5.60 GHZ 12 ÇEKİRDEK 64MB AM5 NM5 İŞLEMCİ",
+    "label": "AMD RYZEN 9 7900X TRAY 5.60 GHZ 12 ÇEKİRDEK 64MB AM5 NM5 İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 9 7900X3D 4.4GHZ 5.6GHZ 128MB",
+    "label": "AMD Ryzen 9 7900X3D 4.4GHZ 5.6GHZ 128MB"
+  },
+  {
+    "value": "AMD RYZEN 9 7900X3D TRAY 4.4GHZ 12 ÇEKİRDEK 128MB AM5 5NM İŞLEMCİ",
+    "label": "AMD RYZEN 9 7900X3D TRAY 4.4GHZ 12 ÇEKİRDEK 128MB AM5 5NM İŞLEMCİ"
+  },
+  {
+    "value": "AMD Ryzen 9 7950X3D Tray 5.7GHz 128MB Önbellek 16 Çekirdek AM5 6nm İşlemci",
+    "label": "AMD Ryzen 9 7950X3D Tray 5.7GHz 128MB Önbellek 16 Çekirdek AM5 6nm İşlemci"
+  },
+  {
+    "value": "AMD Ryzen™ 5 5500 3.6GHZ 19MB AM4 65W",
+    "label": "AMD Ryzen™ 5 5500 3.6GHZ 19MB AM4 65W"
+  },
+  {
+    "value": "AMD Ryzen™ 5 5500 3.6GHz 4.2GHz 19MB",
+    "label": "AMD Ryzen™ 5 5500 3.6GHz 4.2GHz 19MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 5600 3.5GHZ 35MB",
+    "label": "AMD Ryzen™ 5 5600 3.5GHZ 35MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 5600 3.5GHZ 35MB AM4",
+    "label": "AMD Ryzen™ 5 5600 3.5GHZ 35MB AM4"
+  },
+  {
+    "value": "AMD Ryzen™ 5 5600 3.5GHZ 35MB AM4 65W",
+    "label": "AMD Ryzen™ 5 5600 3.5GHZ 35MB AM4 65W"
+  },
+  {
+    "value": "AMD Ryzen™ 5 5600 3.5GHz 4.4GHz 35MB",
+    "label": "AMD Ryzen™ 5 5600 3.5GHz 4.4GHz 35MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 5600 3.5GHz 4.4GHz 35MB AM4",
+    "label": "AMD Ryzen™ 5 5600 3.5GHz 4.4GHz 35MB AM4"
+  },
+  {
+    "value": "AMD Ryzen™ 5 5600X 3.7GHZ 4.6GHZ 35MB",
+    "label": "AMD Ryzen™ 5 5600X 3.7GHZ 4.6GHZ 35MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 7500F 3.7GHZ 5.0GHZ 32MB",
+    "label": "AMD Ryzen™ 5 7500F 3.7GHZ 5.0GHZ 32MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 7500F 3.7GHZ 5.GHZ 32MB",
+    "label": "AMD Ryzen™ 5 7500F 3.7GHZ 5.GHZ 32MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 7600 3.8GHZ 5.1GHZ 38MB",
+    "label": "AMD Ryzen™ 5 7600 3.8GHZ 5.1GHZ 38MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 7600 3.8GHZ 5.1GHZ 38MB",
+    "label": "AMD Ryzen™ 5 7600 3.8GHZ 5.1GHZ 38MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 7700X 4.5GHz 5.4GHz 40MB",
+    "label": "AMD Ryzen™ 5 7700X 4.5GHz 5.4GHz 40MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 8400F 4.2GHz 4.7GHz 22MB",
+    "label": "AMD Ryzen™ 5 8400F 4.2GHz 4.7GHz 22MB"
+  },
+  {
+    "value": "AMD Ryzen™ 5 8600G 4.3GHZ 5.0GHZ 22MB",
+    "label": "AMD Ryzen™ 5 8600G 4.3GHZ 5.0GHZ 22MB"
+  },
+  {
+    "value": "AMD Ryzen™ 7 5700X3D 3.0GHZ 4.1GHz 100MB",
+    "label": "AMD Ryzen™ 7 5700X3D 3.0GHZ 4.1GHz 100MB"
+  },
+  {
+    "value": "AMD Ryzen™ 7 5800X3D 3.4GHz 4.5GHz 96MB",
+    "label": "AMD Ryzen™ 7 5800X3D 3.4GHz 4.5GHz 96MB"
+  },
+  {
+    "value": "AMD Ryzen™ 7 7600 3.8GHZ 5.1GHZ 32MB",
+    "label": "AMD Ryzen™ 7 7600 3.8GHZ 5.1GHZ 32MB"
+  },
+  {
+    "value": "AMD Ryzen™ 7 7700X 4.5GHZ 5.4GHZ 32MB",
+    "label": "AMD Ryzen™ 7 7700X 4.5GHZ 5.4GHZ 32MB"
+  },
+  {
+    "value": "AMD Ryzen™ 7 7700X 4.5GHz 5.4GHz 40MB",
+    "label": "AMD Ryzen™ 7 7700X 4.5GHz 5.4GHz 40MB"
+  },
+  {
+    "value": "AMD Ryzen™ 7 7700X 4.70GHz 8 Çekirdek 40MB",
+    "label": "AMD Ryzen™ 7 7700X 4.70GHz 8 Çekirdek 40MB"
+  },
+  {
+    "value": "AMD Ryzen™ 7 7700X 4.7GHz 40MB",
+    "label": "AMD Ryzen™ 7 7700X 4.7GHz 40MB"
+  },
+  {
+    "value": "AMD Ryzen™ 9 7900X3D 4.4GHZ 5.6GHZ 128MB",
+    "label": "AMD Ryzen™ 9 7900X3D 4.4GHZ 5.6GHZ 128MB"
+  },
+  {
+    "value": "AMD-Ryzen 5 5500 İşlemci",
+    "label": "AMD-Ryzen 5 5500 İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 5 5600 İşlemci",
+    "label": "AMD-Ryzen 5 5600 İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 5 5600G İşlemci",
+    "label": "AMD-Ryzen 5 5600G İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 5 5600X İşlemci",
+    "label": "AMD-Ryzen 5 5600X İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 5 7500F İşlemci",
+    "label": "AMD-Ryzen 5 7500F İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 5 7600 İşlemci",
+    "label": "AMD-Ryzen 5 7600 İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 5 8400F İşlemci",
+    "label": "AMD-Ryzen 5 8400F İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 5 9600X İşlemci",
+    "label": "AMD-Ryzen 5 9600X İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 7 5700 İşlemci",
+    "label": "AMD-Ryzen 7 5700 İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 7 5700X İşlemci",
+    "label": "AMD-Ryzen 7 5700X İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 7 7700X İşlemci",
+    "label": "AMD-Ryzen 7 7700X İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 7 7800X3D İşlemci",
+    "label": "AMD-Ryzen 7 7800X3D İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 9 7900X İşlemci",
+    "label": "AMD-Ryzen 9 7900X İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 9 7900X3D İşlemci",
+    "label": "AMD-Ryzen 9 7900X3D İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 9 7950X3D İşlemci",
+    "label": "AMD-Ryzen 9 7950X3D İşlemci"
+  },
+  {
+    "value": "AMD-Ryzen 9 9950X İşlemci",
+    "label": "AMD-Ryzen 9 9950X İşlemci"
+  },
+  {
+    "value": "i3 13100",
+    "label": "INTEL CORE I3 13100F 3.3GHZ 12MB ONBELLEK 4 CEKIRDEK SOKET 1700 10NM ISLEMCI"
+  },
+  {
+    "value": "i3 14100",
+    "label": "INTEL CORE I3 14100F 3.5GHZ 12MB ONBELLEK 4 CEKIRDEK 1700 10NM ISLEMCI"
+  },
+  {
+    "value": "i5 12400",
+    "label": "INTEL CORE I5 12400F 4.40GHZ 18MB ÖNBELLEK 6 ÇEKIRDEK 1700 10NM İŞLEMCİ"
+  },
+  {
+    "value": "i5 13400",
+    "label": "INTEL CORE I5 13400F 2.5GHZ 20MB ONBELLEK 10 CEKIRDEK SOKET 1700 10NM ISLEMCI"
+  },
+  {
+    "value": "i5 14400",
+    "label": "INTEL CORE I5 14400F 2.5GHZ 20MB ONBELLEK 10 CEKIRDEK 1700 10NM ISLEMCI"
+  },
+  {
+    "value": "i7 13700",
+    "label": "INTEL CORE I7 13700F 2.1GHZ 30MB ÖNBELLEK 16 CEKİRDEK 1700 10NM ISLEMCI"
+  },
+  {
+    "value": "i7 14700",
+    "label": "INTEL CORE I7 14700F 2.1GHZ 33MB ONBELLEK 20 CEKIRDEK 1700 10NM ISLEMCI"
+  },
+  {
+    "value": "i3 12100",
+    "label": "INTEL CORE i3 12100F 4.3GHZ 12MB ÖNBELLEK 4 ÇEKİRDEK SOKET 1700 10NM İŞLEMCİ"
+  },
+  {
+    "value": "i3 13100",
+    "label": "Intel Core i3 13100F"
+  },
+  {
+    "value": "Intel Core i3-12100F",
+    "label": "Intel Core i3-12100F"
+  },
+  {
+    "value": "Intel Core i3-12100F 4.3GHz 12MB Önbellek 4 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i3-12100F 4.3GHz 12MB Önbellek 4 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "Intel Core i3-13100F",
+    "label": "Intel Core i3-13100F"
+  },
+  {
+    "value": "Intel Core i3-13100F 3.4GHz 12MB Önbellek 1700 İşlemci (BX8071513100F)",
+    "label": "Intel Core i3-13100F 3.4GHz 12MB Önbellek 1700 İşlemci (BX8071513100F)"
+  },
+  {
+    "value": "Intel Core i3-13100F 4.5GHz 12MB Önbellek 4 Çekirdek 1700 İşlemci (BX8071513100F)",
+    "label": "Intel Core i3-13100F 4.5GHz 12MB Önbellek 4 Çekirdek 1700 İşlemci (BX8071513100F)"
+  },
+  {
+    "value": "Intel Core i3-14100F 4.7GHz 12MB Önbellek 4 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i3-14100F 4.7GHz 12MB Önbellek 4 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "i5 12400",
+    "label": "Intel Core i5 12400"
+  },
+  {
+    "value": "i5 12400",
+    "label": "Intel Core i5 12400F"
+  },
+  {
+    "value": "i5 12400",
+    "label": "Intel Core i5 12400F 2.5 GHz 4.4 GHz 18MB"
+  },
+  {
+    "value": "i5 13400",
+    "label": "Intel Core i5 13400"
+  },
+  {
+    "value": "i5 13400",
+    "label": "Intel Core i5 13400F"
+  },
+  {
+    "value": "i5 14400",
+    "label": "Intel Core i5 14400F"
+  },
+  {
+    "value": "i5 14600",
+    "label": "Intel Core i5 14600K"
+  },
+  {
+    "value": "Intel Core i5-12400F",
+    "label": "Intel Core i5-12400F"
+  },
+  {
+    "value": "Intel Core i5-12400F 2.5GHz 18MB Önbellek 12 Çekirdek 1700 10nm İşlemci",
+    "label": "Intel Core i5-12400F 2.5GHz 18MB Önbellek 12 Çekirdek 1700 10nm İşlemci"
+  },
+  {
+    "value": "Intel Core i5-12400F 2.5GHz 18MB Önbellek 6 Çekirdek 1700 10nm İşlemci",
+    "label": "Intel Core i5-12400F 2.5GHz 18MB Önbellek 6 Çekirdek 1700 10nm İşlemci"
+  },
+  {
+    "value": "Intel Core i5-13400F",
+    "label": "Intel Core i5-13400F"
+  },
+  {
+    "value": "Intel Core i5-13400F 4.6GHz 20MB Önbellek 10 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i5-13400F 4.6GHz 20MB Önbellek 10 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "Intel Core i5-13400F 4.6GHz 20MB Önbellek 10 Çekirdek 1700 İşlemci (BX8071513400F)",
+    "label": "Intel Core i5-13400F 4.6GHz 20MB Önbellek 10 Çekirdek 1700 İşlemci (BX8071513400F)"
+  },
+  {
+    "value": "Intel Core i5-13600KF",
+    "label": "Intel Core i5-13600KF"
+  },
+  {
+    "value": "Intel Core i5-13600KF 5.1GHz 20MB Önbellek 14 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i5-13600KF 5.1GHz 20MB Önbellek 14 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "Intel Core i5-14400F 4.7GHz 20MB Önbellek 10 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i5-14400F 4.7GHz 20MB Önbellek 10 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "Intel Core i5-14600K 5.3GHz 24MB Önbellek 14 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i5-14600K 5.3GHz 24MB Önbellek 14 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "Intel Core i5-14600KF 5.3GHz 24MB Önbellek 14 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i5-14600KF 5.3GHz 24MB Önbellek 14 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "i7 13700",
+    "label": "Intel Core i7 13700K"
+  },
+  {
+    "value": "i7 14700",
+    "label": "Intel Core i7 14700K"
+  },
+  {
+    "value": "Intel Core i7-13700KF",
+    "label": "Intel Core i7-13700KF"
+  },
+  {
+    "value": "Intel Core i7-14700K 5.6GHz 28MB Önbellek 20 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i7-14700K 5.6GHz 28MB Önbellek 20 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "Intel Core i7-14700KF 5.6GHz 33MB Önbellek 20 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i7-14700KF 5.6GHz 33MB Önbellek 20 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "i9 14900",
+    "label": "Intel Core i9 14900K"
+  },
+  {
+    "value": "Intel Core i9-14900K 6.0GHz 36MB Önbellek 24 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i9-14900K 6.0GHz 36MB Önbellek 24 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "Intel Core i9-14900KF 6.0GHz 36MB Önbellek 24 Çekirdek 1700 İşlemci",
+    "label": "Intel Core i9-14900KF 6.0GHz 36MB Önbellek 24 Çekirdek 1700 İşlemci"
+  },
+  {
+    "value": "Intel Core™ İ3 13100F 3.4 GHz, 4.5 GHz 12MB",
+    "label": "Intel Core™ İ3 13100F 3.4 GHz, 4.5 GHz 12MB"
+  },
+  {
+    "value": "Intel i3-12100",
+    "label": "Intel i3-12100"
+  },
+  {
+    "value": "Intel i3-12100F",
+    "label": "Intel i3-12100F"
+  },
+  {
+    "value": "Intel i3-13100F",
+    "label": "Intel i3-13100F"
+  },
+  {
+    "value": "i5 12400",
+    "label": "Intel i5 12400"
+  },
+  {
+    "value": "i5 12600",
+    "label": "Intel i5 12600K"
+  },
+  {
+    "value": "i5 12600",
+    "label": "Intel i5 12600KF"
+  },
+  {
+    "value": "Intel i5-12400F",
+    "label": "Intel i5-12400F"
+  },
+  {
+    "value": "Intel i5-13400F",
+    "label": "Intel i5-13400F"
+  },
+  {
+    "value": "Intel i5-14400F",
+    "label": "Intel i5-14400F"
+  },
+  {
+    "value": "i7 12700",
+    "label": "Intel i7 12700"
+  },
+  {
+    "value": "Intel İ7-14700K",
+    "label": "Intel İ7-14700K"
+  },
+  {
+    "value": "Intel i7-14700KF",
+    "label": "Intel i7-14700KF"
+  },
+  {
+    "value": "i9 12900",
+    "label": "Intel i9 12900KF"
+  },
+  {
+    "value": "i3 12100",
+    "label": "INTEL-i3 12100F İşlemci"
+  },
+  {
+    "value": "i3 13100",
+    "label": "INTEL-i3 13100 İşlemci"
+  },
+  {
+    "value": "i3 13100",
+    "label": "INTEL-i3 13100F İşlemci"
+  },
+  {
+    "value": "i3 14100",
+    "label": "INTEL-i3 14100F İşlemci"
+  },
+  {
+    "value": "i5 12400",
+    "label": "INTEL-i5 12400F İşlemci"
+  },
+  {
+    "value": "i5 13400",
+    "label": "INTEL-i5 13400F İşlemci"
+  },
+  {
+    "value": "i5 13600",
+    "label": "INTEL-i5 13600K İşlemci"
+  },
+  {
+    "value": "i5 14400",
+    "label": "INTEL-i5 14400F İşlemci"
+  },
+  {
+    "value": "i5 14600",
+    "label": "INTEL-i5 14600KF İşlemci"
+  },
+  {
+    "value": "i7 12700",
+    "label": "INTEL-i7 12700F İşlemci"
+  },
+  {
+    "value": "i7 12700",
+    "label": "INTEL-i7 12700KF İşlemci"
+  },
+  {
+    "value": "i7 13700",
+    "label": "INTEL-i7 13700F İşlemci"
+  },
+  {
+    "value": "i7 14700",
+    "label": "INTEL-i7 14700K  İşlemci"
+  },
+  {
+    "value": "i7 14700",
+    "label": "INTEL-i7 14700KF İşlemci"
+  },
+  {
+    "value": "i9 14900",
+    "label": "INTEL-i9 14900 İşlemci"
+  },
+  {
+    "value": "i9 14900",
+    "label": "INTEL-i9 14900K  İşlemci"
+  },
+  {
+    "value": "i9 14900",
+    "label": "INTEL-i9 14900KF İşlemci"
+  },
+  {
+    "value": "Intel® Core™ 14600KF 3.5 GHz 5.3 GHz 24MB",
+    "label": "Intel® Core™ 14600KF 3.5 GHz 5.3 GHz 24MB"
+  },
+  {
+    "value": "i3 12100",
+    "label": "Intel® Core™ i3 12100F 3.3 GHz 12MB"
+  },
+  {
+    "value": "i3 12100",
+    "label": "Intel® Core™ i3 12100F 3.3 GHz 12MB LGA1700P"
+  },
+  {
+    "value": "i3 12100",
+    "label": "Intel® Core™ i3 12100F 3.3 GHz 4.3 GHz 12MB"
+  },
+  {
+    "value": "i3 13100",
+    "label": "Intel® Core™ i3 13100F 3.4GHz 4.5GHz 12MB"
+  },
+  {
+    "value": "i3 14100",
+    "label": "Intel® Core™ i3 14100F 3.5 GHz 4.7 GHz 12MB"
+  },
+  {
+    "value": "i3 14100",
+    "label": "Intel® Core™ i3 14100F 3.5GHz 4.7GHz"
+  },
+  {
+    "value": "i3 14100",
+    "label": "Intel® Core™ i3 14100F 3.5GHz 4.7GHz 12MB"
+  },
+  {
+    "value": "Intel® Core™ İ3 14100F 3.5GHz 4.7GHz 12MB",
+    "label": "Intel® Core™ İ3 14100F 3.5GHz 4.7GHz 12MB"
+  },
+  {
+    "value": "i5 12400",
+    "label": "Intel® Core™ i5 12400F 2.5 GHz 4.4 GHz"
+  },
+  {
+    "value": "i5 12400",
+    "label": "Intel® Core™ i5 12400F 2.5 GHz 4.4 GHz 18MB"
+  },
+  {
+    "value": "i5 13400",
+    "label": "Intel® Core™ i5 13400F 2.5 GHz 4.6 GHz 20MB"
+  },
+  {
+    "value": "i5 13400",
+    "label": "Intel® Core™ i5 13400F 2.5GHz 4.6GHz 20MB"
+  },
+  {
+    "value": "i5 13600",
+    "label": "Intel® Core™ i5 13600KF 2.6 GHz 5.1 GHz 24MB"
+  },
+  {
+    "value": "i5 14100",
+    "label": "Intel® Core™ i5 14100F 3.5GHz 4.7GHz 12MB"
+  },
+  {
+    "value": "i5 14400",
+    "label": "Intel® Core™ i5 14400F 2.5GHz 4.7GHz 20MB"
+  },
+  {
+    "value": "i5 14600",
+    "label": "Intel® Core™ i5 14600KF 3.5 GHz 5.3 GHz 24MB"
+  },
+  {
+    "value": "i5 14600",
+    "label": "Intel® Core™ i5 14600KF 3.5GHz 5.3GHz 24MB"
+  },
+  {
+    "value": "i5 14700",
+    "label": "Intel® Core™ i5 14700KF 3.4 GHz 5.6 GHz 33MB"
+  },
+  {
+    "value": "Intel® Core™ i5-13400F 2.5 GHz 4.6 GHz 20MB",
+    "label": "Intel® Core™ i5-13400F 2.5 GHz 4.6 GHz 20MB"
+  },
+  {
+    "value": "Intel® Core™ i5-14600KF 3.5 GHz 5.3 GHz 24MB",
+    "label": "Intel® Core™ i5-14600KF 3.5 GHz 5.3 GHz 24MB"
+  },
+  {
+    "value": "i7 13700",
+    "label": "Intel® Core™ i7 13700KF 2.5GHz 5.4GHz 36MB"
+  },
+  {
+    "value": "i7 13700",
+    "label": "Intel® Core™ i7 13700KF 3.4 GHz 5.4 GHz 30MB"
+  },
+  {
+    "value": "i7 14700",
+    "label": "Intel® Core™ i7 14700KF 3.4 GHz 5.6 GHz 33MB"
+  },
+  {
+    "value": "i9 14900",
+    "label": "Intel® Core™ i9 14900KS 3.2GHz 6.0GHz 36MB"
+  },
+  {
+    "value": "Intel® Core™ İ9 14900KS 3.2GHz 6.2GHz 36MB",
+    "label": "Intel® Core™ İ9 14900KS 3.2GHz 6.2GHz 36MB"
+  },
+  {
+    "value": "i7 13700",
+    "label": "Intel® Core™i7 13700KF 3.4 GHz 5.4 GHz 30MB"
+  },
+  {
+    "value": "i3 12100",
+    "label": "i3 12100F"
+  },
+  {
+    "value": "i3 13100",
+    "label": "i3 13100F"
+  },
+  {
+    "value": "i3 13100",
+    "label": "i3 13100F İşlemci"
+  },
+  {
+    "value": "i3 14100",
+    "label": "i3 14100F"
+  },
+  {
+    "value": "i5 12400",
+    "label": "i5 12400F"
+  },
+  {
+    "value": "i5 13400",
+    "label": "i5 13400F"
+  },
+  {
+    "value": "i5 14400",
+    "label": "i5 14400F"
+  },
+  {
+    "value": "i5 14600",
+    "label": "i5 14600KF"
+  },
+  {
+    "value": "i5 14600",
+    "label": "i5 14600KF, i7 14700F"
+  },
+  {
+    "value": "i7 13700",
+    "label": "i7 13700K"
+  },
+  {
+    "value": "i7 14700",
+    "label": "i7 14700"
+  },
+  {
+    "value": "i7 14700",
+    "label": "i7 14700F"
+  },
+  {
+    "value": "i7 14700",
+    "label": "i7 14700F İşlemci"
+  },
+  {
+    "value": "i7 14700",
+    "label": "i7 14700K, i7 14700"
+  },
+  {
+    "value": "i7 14700",
+    "label": "i7 14700KF"
+  },
+  {
+    "value": "i9 14900",
+    "label": "i9 14900K"
+  },
+  {
+    "value": "i9 14900",
+    "label": "i9 14900KF"
+  },
+  {
+    "value": "N/A",
+    "label": "N/A"
+  },
+  {
+    "value": "R3 3200G",
+    "label": "R3 3200G"
+  },
+  {
+    "value": "R3 4300G",
+    "label": "R3 4300G"
+  },
+  {
+    "value": "R5 5500",
+    "label": "R5 5500"
+  },
+  {
+    "value": "R5 5600",
+    "label": "R5 5600"
+  },
+  {
+    "value": "i7 14700",
+    "label": "R5 5600, i7 14700F"
+  },
+  {
+    "value": "R5 5600GT",
+    "label": "R5 5600GT"
+  },
+  {
+    "value": "R5 5600X",
+    "label": "R5 5600X"
+  },
+  {
+    "value": "R5 7500F",
+    "label": "R5 7500F"
+  },
+  {
+    "value": "i7 14700",
+    "label": "R5 7500F, i7 14700F"
+  },
+  {
+    "value": "R5 7600",
+    "label": "R5 7600"
+  },
+  {
+    "value": "R5 7600X",
+    "label": "R5 7600X"
+  },
+  {
+    "value": "R5 8400F",
+    "label": "R5 8400F"
+  },
+  {
+    "value": "R5 9600X",
+    "label": "R5 9600X"
+  },
+  {
+    "value": "R7 5700",
+    "label": "R7 5700"
+  },
+  {
+    "value": "R7 5700X",
+    "label": "R7 5700X"
+  },
+  {
+    "value": "R7 5700X3D",
+    "label": "R7 5700X3D"
+  },
+  {
+    "value": "R7 7700X",
+    "label": "R7 7700X"
+  },
+  {
+    "value": "R7 7800X3D",
+    "label": "R7 7800X3D"
+  },
+  {
+    "value": "R7 9700X",
+    "label": "R7 9700X"
+  },
+  {
+    "value": "R9 7900X3D",
+    "label": "R9 7900X3D"
+  },
+  {
+    "value": "R9 7950X3D",
+    "label": "R9 7950X3D"
+  }
+]
