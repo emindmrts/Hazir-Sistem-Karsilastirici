@@ -2,13 +2,11 @@
   "version": 2,
   "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/dist",
+  "framework": "vite",
   "rewrites": [
-    { "source": "/api/products", "destination": "/api/products" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/products.js": {
-      "includeFiles": "mock.json"
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  }
+  ]
 }
