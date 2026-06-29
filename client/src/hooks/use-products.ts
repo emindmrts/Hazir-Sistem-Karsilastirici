@@ -187,14 +187,9 @@ export function useProducts() {
         async function fetchProducts() {
             try {
                 setIsLoading(true)
-                const res = await fetch("/api/getProducts", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ pageSize: 99999, page: 1 }),
-                })
+                const res = await fetch("/mock.json")
                 if (!res.ok) throw new Error("Ürünler yüklenirken hata oluştu.")
-                const json = await res.json()
-                const raw: Record<string, unknown>[] = json.data ?? json
+                const raw: Record<string, unknown>[] = await res.json()
                 
                 setAllProducts(raw.map(p => normalise(p)))
 
