@@ -37,25 +37,19 @@ function AppContent() {
     (filters.maxPrice !== "" ? 1 : 0) +
     (filters.inStock ? 1 : 0)
 
-  // Top bar ref – animates in on mount
   const topBarRef = useRef<HTMLDivElement>(null)
-
-  // Grid container – used as ScrollTrigger parent
   const gridRef = useRef<HTMLDivElement>(null)
 
-  // Animate top bar on first render (Removed for production stability)
   useEffect(() => {
-    // Top bar is now visible by default to prevent issues on Vercel
+    // Top bar visible by default
   }, [])
 
-  // Re-run card animation whenever products change (page change / filter change)
   useEffect(() => {
     if (!gridRef.current || isLoading) return
 
     const cards = gridRef.current.querySelectorAll<HTMLElement>(".product-card")
     if (!cards.length) return
 
-    // Kill any existing ScrollTriggers from previous renders
     ScrollTrigger.getAll().forEach(t => t.kill())
 
     gsap.fromTo(
@@ -81,36 +75,41 @@ function AppContent() {
   // Generate JSON-LD for SEO
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": "Hazır Sistem Karşılaştırma",
-    "description": "En ucuz ve en güçlü hazır sistem bilgisayarların karşılaştırmalı listesi.",
-    "numberOfItems": totalCount,
-    "itemListElement": products.slice(0, 10).map((p, i) => ({
-      "@type": "ListItem",
-      "position": i + 1,
-      "item": {
-        "@type": "Product",
-        "name": p.sistemAdi || p.name,
-        "description": `${p.islemci || "Yüksek performanslı"} işlemci ve ${p.ekranKarti || "güçlü"} ekran kartına sahip hazır sistem.`,
-        "image": p.resimUrl || p.image,
-        "offers": {
-          "@type": "Offer",
-          "price": p.fiyat || p.price,
-          "priceCurrency": "TRY",
-          "availability": p.stoktaVarMi ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-          "url": p.siteUrl || p.url
-        },
-        "brand": {
-          "@type": "Brand",
-          "name": p.magaza || p.store
+    "@type": "CollectionPage",
+    "name": "PcKarşılaştır.com - Hızır Sistem Karşılaştırma",
+    "description": "Türkiye'nin tüm bilgisayar mağazalarındaki hızır sistem bilgisayarlarını karşılaştırın.",
+    "url": "https://pckarsilastir.com",
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "Hızır Sistemler",
+      "numberOfItems": totalCount,
+      "itemListElement": products.slice(0, 10).map((p, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "item": {
+          "@type": "Product",
+          "name": p.sistemAdi || p.name,
+          "description": `${p.islemci || "Yüksek performanslı"} işlemci ve ${p.ekranKarti || "güçlü"} ekran kartına sahip hızır sistem.",
+          "image": p.resimUrl || p.image,
+          "offers": {
+            "@type": "Offer",
+            "price": p.fiyat || p.price,
+            "priceCurrency": "TRY",
+            "availability": p.stoktaVarMi ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            "url": p.siteUrl || p.url
+          },
+          "brand": {
+            "@type": "Brand",
+            "name": p.magaza || p.store
+          }
         }
-      }
-    }))
+      }))
+    }
   }
 
   const dynamicTitle = filters.searchStr 
-    ? `"${filters.searchStr}" İçin Hazır Sistemler` 
-    : "En Uygun Hazır Sistemleri Karşılaştırın"
+    ? `\"${filters.searchStr}\" İçin Hızır Sistemler` 
+    : "En Uygun Hızır Sistemleri Karşılaştırın"
 
   return (
     <Layout
@@ -127,7 +126,7 @@ function AppContent() {
       />
       <div className="flex flex-col gap-6">
         {/* Top bar / Filter Bar */}
-        <div ref={topBarRef} className="sticky top-[56px] md:static z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 py-3 border-b border-border/40 md:border-0 md:p-0 md:bg-transparent md:mx-0 md:mb-2">
+        <div ref={topBarRef} className="sticky top-[56px] md:static z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 py-3 border-b border-border/40 md:border-0 md:p-0 md:bg-transparent md:mx-0">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-70">Sonuç</span>
