@@ -2,5 +2,10 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
+Disallow: /*.json$
 
-Sitemap: https://ucuzasistem.com/sitemap.xml
+Crawl-delay: 1
+User-agent: Googlebot
+Crawl-delay: 0
+
+Sitemap: https://www.pckarsilastir.com/sitemap.xml

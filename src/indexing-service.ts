@@ -5,6 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 
 const CREDENTIALS_PATH = process.env.GOOGLE_APPLICATION_CREDENTIALS || './service-account-key.json';
+const BASE_URL = 'https://www.pckarsilastir.com';
 
 interface GoogleTokenResponse {
   access_token: string;
@@ -148,7 +149,7 @@ export function startIndexingScheduler(): void {
     const urlsToSubmit = Array.from(pendingUrls).slice(0, 200);
 
     if (urlsToSubmit.length === 0) {
-      console.log('📭 Indexlenmesi gereken URL yok');
+      console.log('😴 İndexlenmesi gereken URL yok');
       return;
     }
 
@@ -158,7 +159,7 @@ export function startIndexingScheduler(): void {
       const url = urlsToSubmit[i];
       await submitUrlToGoogle(url, 'URL_UPDATED');
 
-      // Rate limiting: 10ms arası ile gönder
+      // Rate limiting: 10ms arasında gönder
       if (i < urlsToSubmit.length - 1) {
         await delay(10);
       }
@@ -174,7 +175,7 @@ export function startIndexingScheduler(): void {
  * Pending URL'lere yeni URL ekle
  */
 export function addUrlToIndexQueue(url: string): void {
-  if (url) {
+  if (url && url.includes(BASE_URL)) {
     pendingUrls.add(url);
     console.log(`➕ URL kuyruğa eklendi: ${url} (Toplam: ${pendingUrls.size})`);
   }

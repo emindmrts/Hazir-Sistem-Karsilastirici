@@ -32,7 +32,7 @@ async function getAllProducts(): Promise<Product[]> {
  * XML Sitemap oluştur
  */
 function generateSitemapXml(products: Product[]): string {
-  const baseUrl = 'https://pckarsilastir.com';
+  const baseUrl = 'https://www.pckarsilastir.com';
   
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -70,7 +70,7 @@ function generateSitemapXml(products: Product[]): string {
  * Sitemap Index oluştur (büyük siteler için)
  */
 function generateSitemapIndex(): string {
-  const baseUrl = 'https://pckarsilastir.com';
+  const baseUrl = 'https://www.pckarsilastir.com';
   
   return `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
