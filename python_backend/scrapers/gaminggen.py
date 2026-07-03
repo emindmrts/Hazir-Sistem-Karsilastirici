@@ -1,7 +1,12 @@
 import re
 import asyncio
 from scrapling import Fetcher
-from .utils import extract_specs_from_list, extract_specs_from_name
+from .utils import (
+    extract_specs_from_list,
+    extract_specs_from_name,
+    extract_specs_from_attributes,
+    merge_specs,
+)
 
 STORE = "gamingGen"
 BASE_URL = "https://www.gaming.gen.tr/kategori/hazir-sistemler/"
@@ -70,6 +75,53 @@ def _parse_page_products(page) -> list[dict]:
     return products
 
 
+def _parse_detail_attrs(page) -> dict:
+    """Read the product detail attribute table (Case/PSU/Cooler live here, not on
+    the listing card)."""
+    if not page:
+        return {}
+    attrs = {}
+    for row in page.css("table.shop_attributes tr"):
+        th = row.css("th").first
+        td = row.css("td").first
+        if not th or not td:
+            continue
+        label = " ".join(th.get_all_text().split())
+        value = " ".join(td.get_all_text().split())
+        if label and value:
+            attrs[label] = value
+    return attrs
+
+
+async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
+    specs = product["specs"]
+    if specs.get("PSU") != "N/A" and specs.get("Cooler") != "N/A" and specs.get("Case") != "N/A":
+        return product
+    url = product.get("url")
+    if not url:
+        return product
+
+    def sync_fetch():
+        try:
+            return fetcher_instance.get(url)
+        except Exception:
+            return None
+
+    for attempt in range(3):
+        page = await asyncio.to_thread(sync_fetch)
+        if not page:
+            await asyncio.sleep(1 + attempt)
+            continue
+        if getattr(page, "status_code", 200) == 429:
+            await asyncio.sleep(4 + attempt * 4)
+            continue
+        attrs = _parse_detail_attrs(page)
+        if attrs:
+            merge_specs(product["specs"], extract_specs_from_attributes(attrs))
+        break
+    return product
+
+
 async def scrape_all_pages_async() -> list[dict]:
     print(f"[GamingGen] Ilk sayfa: {BASE_URL}", flush=True)
     fetcher = Fetcher()
@@ -119,6 +171,17 @@ async def scrape_all_pages_async() -> list[dict]:
             break
             
         page_num += 1
+
+    print(f"[GamingGen] {len(all_products)} urun icin detay cekiliyor (PSU/Sogutucu)...", flush=True)
+    detail_sem = asyncio.Semaphore(4)
+
+    async def fetch_detail_with_sem(prod):
+        async with detail_sem:
+            res = await _fetch_product_details(prod, fetcher)
+            await asyncio.sleep(0.3)
+            return res
+
+    all_products = await asyncio.gather(*[fetch_detail_with_sem(p) for p in all_products])
 
     print(f"[GamingGen] Toplam {len(all_products)} urun", flush=True)
     return all_products
