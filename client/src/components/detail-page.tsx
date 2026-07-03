@@ -115,11 +115,16 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
             <Helmet>
                 <title>{pageTitle}</title>
                 <meta name="description" content={pageDesc} />
-                <link rel="canonical" href={`/sistem/${canonicalSlug}`} />
+                <link rel="canonical" href={`https://www.pckarsilastir.com/sistem/${canonicalSlug}`} />
                 <meta property="og:title" content={pageTitle} />
                 <meta property="og:description" content={pageDesc} />
                 <meta property="og:image" content={product.resimUrl} />
                 <meta property="og:type" content="product" />
+                <meta property="og:url" content={`https://www.pckarsilastir.com/sistem/${canonicalSlug}`} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={pageDesc} />
+                <meta name="twitter:image" content={product.resimUrl} />
                 <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
             </Helmet>
 

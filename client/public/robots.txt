@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /*.json$
 
-Sitemap: https://www.ucuzasistem.com/sitemap.xml
+User-agent: Googlebot
+Allow: /
+
+Sitemap: https://www.pckarsilastir.com/sitemap.xml

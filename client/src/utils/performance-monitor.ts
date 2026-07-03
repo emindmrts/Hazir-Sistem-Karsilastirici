@@ -12,17 +12,20 @@ interface VitalMetrics {
 export function initPerformanceMonitoring(): void {
   // Web Vitals API varsa kullan
   if ('web-vital' in window) {
-    try {
-      const { getCLS, getFID, getFCP, getLCP, getTTFB } = require('web-vitals');
+    const webVitalsModule = 'web-vitals';
+    import(/* @vite-ignore */ webVitalsModule)
+      .then((webVitals: any) => {
+        const { getCLS, getFID, getFCP, getLCP, getTTFB } = webVitals;
 
-      getCLS(onMetric);
-      getFID(onMetric);
-      getFCP(onMetric);
-      getLCP(onMetric);
-      getTTFB(onMetric);
-    } catch (error) {
-      console.error('Web Vitals init error:', error);
-    }
+        getCLS?.(onMetric);
+        getFID?.(onMetric);
+        getFCP?.(onMetric);
+        getLCP?.(onMetric);
+        getTTFB?.(onMetric);
+      })
+      .catch((error) => {
+        console.error('Web Vitals init error:', error);
+      });
   }
 
   // Performance Observer (fallback)
@@ -33,6 +36,7 @@ function onMetric(metric: any): void {
   console.log('📊 Web Vital:', metric.name, metric.value);
 
   // Google Analytics'e gönder
+  const gtag = (window as any).gtag;
   if (typeof gtag !== 'undefined') {
     gtag('event', metric.name, {
       value: Math.round(metric.value),
@@ -49,7 +53,7 @@ function observePerformance(): void {
     const lcpObserver = new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
       const lastEntry = entries[entries.length - 1];
-      console.log('📊 LCP:', lastEntry.renderTime || lastEntry.loadTime);
+      console.log('📊 LCP:', (lastEntry as any).renderTime || (lastEntry as any).loadTime);
     });
     lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
 

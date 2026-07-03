@@ -76,12 +76,12 @@ function AppContent() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "PcKarşılaştır.com - Hızır Sistem Karşılaştırma",
-    "description": "Türkiye'nin tüm bilgisayar mağazalarındaki hızır sistem bilgisayarlarını karşılaştırın.",
-    "url": "https://pckarsilastir.com",
+    "name": "PcKarşılaştır.com - Hazır Sistem Karşılaştırma",
+    "description": "Türkiye'nin tüm bilgisayar mağazalarındaki hazır sistem bilgisayarlarını karşılaştırın.",
+    "url": "https://www.pckarsilastir.com",
     "mainEntity": {
       "@type": "ItemList",
-      "name": "Hızır Sistemler",
+      "name": "Hazır Sistemler",
       "numberOfItems": totalCount,
       "itemListElement": products.slice(0, 10).map((p, i) => ({
         "@type": "ListItem",
@@ -89,7 +89,7 @@ function AppContent() {
         "item": {
           "@type": "Product",
           "name": p.sistemAdi || p.name,
-          "description": `${p.islemci || "Yüksek performanslı"} işlemci ve ${p.ekranKarti || "güçlü"} ekran kartına sahip hızır sistem.",
+          "description": `${p.islemci || "Yüksek performanslı"} işlemci ve ${p.ekranKarti || "güçlü"} ekran kartına sahip hazır sistem.`,
           "image": p.resimUrl || p.image,
           "offers": {
             "@type": "Offer",
@@ -108,8 +108,8 @@ function AppContent() {
   }
 
   const dynamicTitle = filters.searchStr 
-    ? `\"${filters.searchStr}\" İçin Hızır Sistemler` 
-    : "En Uygun Hızır Sistemleri Karşılaştırın"
+    ? `"${filters.searchStr}" İçin Hazır Sistemler` 
+    : "En Uygun Hazır Sistemleri Karşılaştırın"
 
   return (
     <Layout
