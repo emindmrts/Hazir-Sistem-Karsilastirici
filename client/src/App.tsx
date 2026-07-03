@@ -89,7 +89,7 @@ function AppContent() {
         "item": {
           "@type": "Product",
           "name": p.sistemAdi || p.name,
-          "description": `${p.islemci || "Yüksek performanslı"} işlemci ve ${p.ekranKarti || "güçlü"} ekran kartına sahip hızır sistem.",
+          "description": `${p.islemci || "Yüksek performanslı"} işlemci ve ${p.ekranKarti || "güçlü"} ekran kartına sahip hızır sistem.`,
           "image": p.resimUrl || p.image,
           "offers": {
             "@type": "Offer",
