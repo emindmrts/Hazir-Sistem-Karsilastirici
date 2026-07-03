@@ -12,7 +12,7 @@ export function SEO({
   title = "PcKarşılaştır.com | PC Konfigürasyon & Sistem Karşılaştırması",
   description = "PcKarşılaştır.com'da Türkiye'nin tüm bilgisayar mağazalarındaki hazır sistemleri karşılaştırın. Fiyat, işlemci, ekran kartı ve diğer özelliklere göre filtreleyin.",
   canonical = "https://www.pckarsilastir.com",
-  ogImage = "https://www.pckarsilastir.com/og-image.jpg",
+  ogImage = "https://www.pckarsilastir.com/og-image.png",
   jsonLd,
 }: SEOProps) {
   const siteTitle = title.includes("PcKarşılaştır") ? title : `${title} | PcKarşılaştır.com`
