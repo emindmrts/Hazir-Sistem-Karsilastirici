@@ -22,7 +22,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: `https://pckarsilastir.com${item.url}`,
+      item: `https://www.pckarsilastir.com${item.url}`,
     })),
   };
 

@@ -10,6 +10,7 @@ import {
 import type { Product } from "@/hooks/use-products"
 import { createSlug } from "@/hooks/use-slugs"
 import { calculateFPScore } from "@/lib/fp-scoring"
+import { Breadcrumb } from "./breadcrumb"
 
 function getLogoUrl(store: string) {
     const key = store.toLowerCase().replace(/[^a-z]/g, "")
@@ -90,6 +91,7 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
         .slice(0, 4)
 
     const canonicalSlug = createSlug(product.name || product.sistemAdi, product.magaza)
+    const canonicalUrl = `https://www.pckarsilastir.com/sistem/${canonicalSlug}`
     const pageTitle = `${product.sistemAdi} | ${product.magaza} | ${product.fiyat.toLocaleString("tr-TR")} ₺`
     const pageDesc = `${product.magaza} mağazasından ${product.sistemAdi} hazır sistem bilgisayarı. ${product.islemci ? product.islemci + " işlemcili" : ""} ${product.ekranKarti ? "ve " + product.ekranKarti + " ekran kartlı" : ""} bu sistemi ${product.fiyat.toLocaleString("tr-TR")} ₺ fiyatıyla inceleyin.`
 
@@ -104,27 +106,39 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
             "@type": "Offer",
             "price": product.fiyat,
             "priceCurrency": "TRY",
+            "itemCondition": "https://schema.org/NewCondition",
             "availability": product.stoktaVarMi ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-            "url": product.siteUrl,
+            "url": canonicalUrl,
             "seller": { "@type": "Organization", "name": product.magaza }
         }
     }
+
+    const breadcrumbItems = [
+        { name: "Anasayfa", url: "/" },
+        { name: product.sistemAdi, url: `/sistem/${canonicalSlug}` },
+    ]
 
     return (
         <>
             <Helmet>
                 <title>{pageTitle}</title>
                 <meta name="description" content={pageDesc} />
-                <link rel="canonical" href={`https://www.pckarsilastir.com/sistem/${canonicalSlug}`} />
+                <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+                <link rel="canonical" href={canonicalUrl} />
                 <meta property="og:title" content={pageTitle} />
                 <meta property="og:description" content={pageDesc} />
                 <meta property="og:image" content={product.resimUrl} />
                 <meta property="og:type" content="product" />
-                <meta property="og:url" content={`https://www.pckarsilastir.com/sistem/${canonicalSlug}`} />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:site_name" content="PcKarşılaştır.com" />
+                <meta property="og:locale" content="tr_TR" />
+                <meta property="product:price:amount" content={String(product.fiyat)} />
+                <meta property="product:price:currency" content="TRY" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content={pageTitle} />
                 <meta name="twitter:description" content={pageDesc} />
                 <meta name="twitter:image" content={product.resimUrl} />
+                <meta name="twitter:site" content="@PcKarsilastir" />
                 <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
             </Helmet>
 
@@ -147,6 +161,7 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
                 </div>
 
                 <div className="mx-auto w-full max-w-screen-xl px-4 md:px-8 py-8 md:py-12">
+                    <Breadcrumb items={breadcrumbItems} />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-12">
 
                         {/* ── Left: Image + Score ── */}

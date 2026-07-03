@@ -16,6 +16,34 @@ import { findBySlug } from "./hooks/use-slugs"
 
 gsap.registerPlugin(ScrollTrigger)
 
+const HOME_FAQ = [
+  {
+    question: "Hazır sistem bilgisayar nedir?",
+    answer:
+      "Hazır sistem, işlemci, ekran kartı, anakart, RAM, depolama ve güç kaynağı gibi tüm parçaları önceden monte edilmiş, kutusundan çıktığı gibi kullanıma hazır masaüstü bilgisayardır. Parça uyumluluğu ile uğraşmadan doğrudan satın alabilirsiniz.",
+  },
+  {
+    question: "En uygun hazır sistemi nasıl bulabilirim?",
+    answer:
+      "PcKarşılaştır.com Türkiye'nin önde gelen mağazalarındaki hazır sistemleri tek ekranda toplar. İşlemci, ekran kartı, mağaza ve fiyat aralığına göre filtreleyip fiyata göre sıralayarak bütçenize en uygun sistemi saniyeler içinde bulabilirsiniz.",
+  },
+  {
+    question: "Hangi mağazaların hazır sistemleri karşılaştırılıyor?",
+    answer:
+      "Vatan Bilgisayar, İtopya, Sinerji, PCKolik, İncehesap, Gaming.Gen.TR, Game Garaj ve Tebilon gibi Türkiye'nin popüler teknoloji mağazalarının hazır sistem bilgisayarları karşılaştırılmaktadır.",
+  },
+  {
+    question: "Fiyatlar ne sıklıkla güncelleniyor?",
+    answer:
+      "Fiyat ve stok bilgileri her gece otomatik olarak güncellenmektedir. Böylece güncel fiyatlar üzerinden karşılaştırma yapabilirsiniz. Nihai fiyat için ilgili mağazanın sayfasını kontrol etmeniz önerilir.",
+  },
+  {
+    question: "Fiyat/performans (F/P) puanı nedir?",
+    answer:
+      "F/P puanı, bir sistemin donanımını fiyatına göre değerlendiren deneysel (beta) bir referans skorudur. Kaba bir karşılaştırma aracıdır; tek başına satın alma kararı için kullanılmamalıdır.",
+  },
+]
+
 function AppContent() {
   const {
     products, totalCount, isLoading, error,
@@ -73,7 +101,7 @@ function AppContent() {
   }
 
   // Generate JSON-LD for SEO
-  const jsonLd = {
+  const collectionJsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": "PcKarşılaştır.com - Hazır Sistem Karşılaştırma",
@@ -107,9 +135,41 @@ function AppContent() {
     }
   }
 
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PcKarşılaştır.com",
+    "url": "https://www.pckarsilastir.com",
+    "inLanguage": "tr-TR",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://www.pckarsilastir.com/?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  }
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": HOME_FAQ.map(f => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+
+  const jsonLd = [collectionJsonLd, websiteJsonLd, faqJsonLd]
+
   const dynamicTitle = filters.searchStr 
     ? `"${filters.searchStr}" İçin Hazır Sistemler` 
     : "En Uygun Hazır Sistemleri Karşılaştırın"
+
+  const dynamicDescription = filters.searchStr
+    ? `"${filters.searchStr}" için Türkiye'nin tüm bilgisayar mağazalarındaki hazır sistem bilgisayarları fiyat ve özelliklerine göre karşılaştırın.`
+    : "Türkiye'nin tüm bilgisayar mağazalarındaki hazır sistemleri fiyat, işlemci ve ekran kartına göre karşılaştırın. İtopya, Vatan, Sinerji, Gaming Gen ve daha fazlasında en uygun sistemi bulun."
 
   return (
     <Layout
@@ -122,9 +182,23 @@ function AppContent() {
     >
       <SEO 
         title={dynamicTitle} 
+        description={dynamicDescription}
+        keywords="hazır sistem, hazır sistem fiyatları, bilgisayar karşılaştırma, pc toplama, itopya hazır sistem, vatan hazır sistem, sinerji sistem, gaming pc, oyuncu bilgisayarı, uygun fiyatlı sistem, ekran kartı, işlemci"
         jsonLd={jsonLd}
       />
       <div className="flex flex-col gap-6">
+        {/* Page heading (SEO H1) */}
+        <header className="flex flex-col gap-1.5">
+          <h1 className="text-xl md:text-2xl font-black tracking-tight leading-tight">
+            Hazır Sistem Bilgisayar Fiyatları ve Karşılaştırması
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-3xl leading-relaxed">
+            İtopya, Vatan, Sinerji, Gaming Gen, PCKolik ve daha fazla mağazadaki hazır sistem
+            bilgisayarları tek ekranda karşılaştırın. İşlemci, ekran kartı ve fiyata göre
+            filtreleyerek bütçenize en uygun oyuncu ve ofis sistemini bulun.
+          </p>
+        </header>
+
         {/* Top bar / Filter Bar */}
         <div ref={topBarRef} className="sticky top-[56px] md:static z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 py-3 border-b border-border/40 md:border-0 md:p-0 md:bg-transparent md:mx-0">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -254,6 +328,27 @@ function AppContent() {
             </Button>
           </div>
         )}
+
+        {/* FAQ — visible content matching FAQPage schema */}
+        <section aria-labelledby="faq-heading" className="mt-10 border-t border-border/60 pt-8">
+          <h2 id="faq-heading" className="text-lg md:text-xl font-black tracking-tight mb-4">
+            Sıkça Sorulan Sorular
+          </h2>
+          <div className="flex flex-col gap-2">
+            {HOME_FAQ.map((f, i) => (
+              <details
+                key={i}
+                className="group rounded-xl border border-border/60 bg-card/50 px-4 py-3 open:bg-card"
+              >
+                <summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-semibold list-none">
+                  {f.question}
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+                </summary>
+                <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{f.answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
       </div>
     </Layout>
   )
