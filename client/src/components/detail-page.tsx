@@ -90,7 +90,7 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
         )
         .slice(0, 4)
 
-    const canonicalSlug = createSlug(product.name || product.sistemAdi, product.magaza)
+    const canonicalSlug = product.slug ?? createSlug(product.name || product.sistemAdi, product.magaza)
     const canonicalUrl = `https://www.pckarsilastir.com/sistem/${canonicalSlug}`
     const pageTitle = `${product.sistemAdi} | ${product.magaza} | ${product.fiyat.toLocaleString("tr-TR")} ₺`
     const pageDesc = `${product.magaza} mağazasından ${product.sistemAdi} hazır sistem bilgisayarı. ${product.islemci ? product.islemci + " işlemcili" : ""} ${product.ekranKarti ? "ve " + product.ekranKarti + " ekran kartlı" : ""} bu sistemi ${product.fiyat.toLocaleString("tr-TR")} ₺ fiyatıyla inceleyin.`
@@ -269,7 +269,7 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {similar.map((p) => {
-                                    const slug = createSlug(p.name || p.sistemAdi, p.magaza)
+                                    const slug = p.slug ?? createSlug(p.name || p.sistemAdi, p.magaza)
                                     const sLogo = getLogoUrl(p.magaza)
                                     return (
                                         <button

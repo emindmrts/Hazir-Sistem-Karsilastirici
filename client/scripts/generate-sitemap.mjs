@@ -32,6 +32,33 @@ function createSlug(name, store) {
   return `${cleanStore}-${cleanName}`
 }
 
+/** Mirrors shortHash() in src/hooks/use-slugs.ts */
+function shortHash(str) {
+  let h = 5381
+  for (let i = 0; i < str.length; i++) h = ((h * 33) ^ str.charCodeAt(i)) >>> 0
+  return h.toString(36).slice(0, 6)
+}
+
+/**
+ * Mirrors assignSlugs() in src/hooks/use-slugs.ts: unique base slugs stay as-is,
+ * colliding ones get a short hash of the store URL appended so distinct listings
+ * each get their own URL (and rows sharing the same URL collapse).
+ */
+function assignSlugs(products) {
+  const baseCounts = new Map()
+  for (const p of products) {
+    const base = createSlug(p?.name, p?.store)
+    baseCounts.set(base, (baseCounts.get(base) || 0) + 1)
+  }
+  const slugs = new Map()
+  for (const p of products) {
+    const base = createSlug(p?.name, p?.store)
+    const identity = p?.url || `${p?.name || ""}-${p?.store || ""}`
+    slugs.set(p, baseCounts.get(base) > 1 ? `${base}-${shortHash(identity)}` : base)
+  }
+  return slugs
+}
+
 function xmlEscape(str) {
   return str
     .replace(/&/g, "&amp;")
@@ -55,12 +82,11 @@ function main() {
     { loc: `${SITE_URL}/`, changefreq: "daily", priority: "1.0", lastmod: today },
   ]
 
+  const slugs = assignSlugs(products)
   const seen = new Set()
   for (const p of products) {
-    const name = p?.name
-    const store = p?.store
-    if (!name || !store) continue
-    const slug = createSlug(name, store)
+    if (!p?.name || !p?.store) continue
+    const slug = slugs.get(p)
     if (!slug || slug === "-" || seen.has(slug)) continue
     seen.add(slug)
     urls.push({
