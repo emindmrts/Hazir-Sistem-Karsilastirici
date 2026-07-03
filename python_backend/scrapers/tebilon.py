@@ -1,4 +1,5 @@
 import re
+import random
 import asyncio
 from scrapling import Fetcher
 from .utils import extract_specs_from_name, extract_specs_from_list
@@ -57,35 +58,35 @@ async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
         except:
             return None
             
-    for attempt in range(3):
+    for attempt in range(6):
         try:
             page = await asyncio.to_thread(sync_fetch)
             if not page:
                 await asyncio.sleep(1 + attempt)
                 continue
             
-            # Handle rate limiting / 429
+            # Handle rate limiting: an explicit 429, or a fast "block"/challenge
+            # page that returns 200 without the product configurator form. Both
+            # get an exponential backoff + jitter and are retried.
             status = getattr(page, "status_code", 200)
-            if status == 429:
-                # Backoff longer
-                await asyncio.sleep(4 + attempt * 4)
+            checked = page.css("input:checked")
+            if status == 429 or not checked:
+                await asyncio.sleep(min(30, 2 ** attempt) + random.uniform(0, 1.5))
                 continue
 
-            checked = page.css("input:checked")
-            if checked:
-                spec_items = []
-                for c in checked:
-                    gp = c.xpath("../..")
-                    if gp:
-                        text = gp[0].get_all_text().strip()
-                        if text:
-                            spec_items.append(text)
-                        
-                if spec_items:
-                    extra_specs = extract_specs_from_list(spec_items)
-                    for k, v in extra_specs.items():
-                        if product["specs"].get(k, "N/A") == "N/A" and v != "N/A":
-                            product["specs"][k] = v
+            spec_items = []
+            for c in checked:
+                gp = c.xpath("../..")
+                if gp:
+                    text = gp[0].get_all_text().strip()
+                    if text:
+                        spec_items.append(text)
+
+            if spec_items:
+                extra_specs = extract_specs_from_list(spec_items)
+                for k, v in extra_specs.items():
+                    if product["specs"].get(k, "N/A") == "N/A" and v != "N/A":
+                        product["specs"][k] = v
             break
         except Exception:
             await asyncio.sleep(2)
@@ -119,7 +120,7 @@ async def scrape_all_pages_async() -> list[dict]:
     all_products = _parse_page_products(first_page)
 
     if total_pages > 1:
-        sem = asyncio.Semaphore(3)
+        sem = asyncio.Semaphore(8)
         async def fetch_n(n):
             async with sem:
                 for attempt in range(3):
@@ -136,13 +137,13 @@ async def scrape_all_pages_async() -> list[dict]:
 
     print(f"[{STORE}] Fetching details for {len(all_products)} products...", flush=True)
     
-    # Lower concurrency to prevent 429
-    detail_sem = asyncio.Semaphore(3)
+    # Concurrency high enough to be fast, low enough that the retry/backoff in
+    # _fetch_product_details recovers the occasional 429.
+    detail_sem = asyncio.Semaphore(6)
     async def fetch_detail_with_sem(prod):
         async with detail_sem:
             res = await _fetch_product_details(prod, fetcher)
-            # Add a small delay between requests
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.1)
             return res
             
     detail_tasks = [fetch_detail_with_sem(p) for p in all_products]

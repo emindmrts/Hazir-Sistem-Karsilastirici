@@ -173,12 +173,12 @@ async def scrape_all_pages_async() -> list[dict]:
         page_num += 1
 
     print(f"[GamingGen] {len(all_products)} urun icin detay cekiliyor (PSU/Sogutucu)...", flush=True)
-    detail_sem = asyncio.Semaphore(4)
+    detail_sem = asyncio.Semaphore(12)
 
     async def fetch_detail_with_sem(prod):
         async with detail_sem:
             res = await _fetch_product_details(prod, fetcher)
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(0.1)
             return res
 
     all_products = await asyncio.gather(*[fetch_detail_with_sem(p) for p in all_products])
