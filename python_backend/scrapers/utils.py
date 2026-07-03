@@ -1,5 +1,7 @@
 
 import re
+import os
+import json
 
 EMPTY_SPECS = {
     "CPU": "N/A",
@@ -192,6 +194,50 @@ def merge_specs(base: dict, extra: dict) -> dict:
         if base.get(k, "N/A") in (None, "", "N/A") and extra.get(k, "N/A") not in (None, "", "N/A"):
             base[k] = extra[k]
     return base
+
+
+# ── Detail-page cache ─────────────────────────────────────────────────────────
+# Product detail pages (Case/PSU/Cooler for tebilon, PSU/Cooler for gamingGen)
+# are the slow part of scraping because the source sites rate-limit. The specs on
+# those pages are stable per product URL, while price/stock come fresh from the
+# listing page — so caching detail-derived specs by URL makes re-runs near
+# instant. Delete the cache file (or set SCRAPER_NO_CACHE=1) to force a full
+# refetch.
+
+_CACHE_PATH = os.path.join(os.path.dirname(__file__), "..", ".detail_cache.json")
+_CACHE_DISABLED = os.environ.get("SCRAPER_NO_CACHE") == "1"
+
+
+def load_detail_cache() -> dict:
+    """Return the persisted url -> {spec: value} cache (empty if disabled/missing)."""
+    if _CACHE_DISABLED:
+        return {}
+    try:
+        with open(_CACHE_PATH, encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def save_detail_cache(cache: dict) -> None:
+    """Persist the cache, merging with whatever is on disk. Merging keeps entries
+    written by another store that scrapes concurrently into the same file."""
+    if _CACHE_DISABLED or not cache:
+        return
+    merged = load_detail_cache()
+    merged.update(cache)
+    try:
+        with open(_CACHE_PATH, "w", encoding="utf-8") as fh:
+            json.dump(merged, fh, ensure_ascii=False)
+    except OSError:
+        pass
+
+
+def cacheable_specs(specs: dict) -> dict:
+    """Keep only the resolved (non-N/A) fields worth caching."""
+    return {k: v for k, v in specs.items()
+            if k in EMPTY_SPECS and v not in (None, "", "N/A")}
 
 
 def extract_specs_from_name(name: str) -> dict:
