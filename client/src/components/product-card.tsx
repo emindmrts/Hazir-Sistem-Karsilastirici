@@ -55,7 +55,7 @@ function shortenName(name: string) {
 export function ProductCard({ product }: { product: Product }) {
     const displayName = shortenName(product.sistemAdi)
     const [, setLocation] = useLocation()
-    const slug = createSlug(product.name || product.sistemAdi, product.magaza)
+    const slug = product.slug ?? createSlug(product.name || product.sistemAdi, product.magaza)
     const goToDetail = () => setLocation(`/sistem/${slug}`)
     return (
         <Card className="group flex flex-col sm:flex-col overflow-hidden border-border/60 bg-card transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/30">

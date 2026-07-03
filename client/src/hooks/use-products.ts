@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react"
 import type { FilterState } from "../components/filter-sidebar"
+import { assignSlugs } from "./use-slugs"
 
 // The shape of data returned from the backend mock.json
 export interface Product {
@@ -38,6 +39,8 @@ export interface Product {
     stoktaVarMi: boolean
     gpuKey?: string
     islemciModel?: string
+    /** Unique, stable URL slug assigned by assignSlugs(). */
+    slug?: string
 }
 
 function parseCpuModel(cpuStr: string): string {
@@ -191,7 +194,7 @@ export function useProducts() {
                 if (!res.ok) throw new Error("Ürünler yüklenirken hata oluştu.")
                 const raw: Record<string, unknown>[] = await res.json()
                 
-                setAllProducts(raw.map(p => normalise(p)))
+                setAllProducts(assignSlugs(raw.map(p => normalise(p))))
 
                 // Load filters from URL
                 const params = new URLSearchParams(window.location.search)
