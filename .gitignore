@@ -7,4 +7,6 @@
 /client/dist
 /.env
 *_test.json
+.detail_cache.json
+/python_backend/.detail_cache.json
 

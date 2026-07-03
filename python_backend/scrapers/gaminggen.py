@@ -6,6 +6,9 @@ from .utils import (
     extract_specs_from_name,
     extract_specs_from_attributes,
     merge_specs,
+    cacheable_specs,
+    load_detail_cache,
+    save_detail_cache,
 )
 
 STORE = "gamingGen"
@@ -93,12 +96,17 @@ def _parse_detail_attrs(page) -> dict:
     return attrs
 
 
-async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
+async def _fetch_product_details(product: dict, fetcher_instance, cache=None) -> dict:
     specs = product["specs"]
     if specs.get("PSU") != "N/A" and specs.get("Cooler") != "N/A" and specs.get("Case") != "N/A":
         return product
     url = product.get("url")
     if not url:
+        return product
+
+    # Cached detail specs for this URL — skip the network round-trip.
+    if cache is not None and url in cache:
+        merge_specs(product["specs"], cache[url])
         return product
 
     def sync_fetch():
@@ -117,7 +125,10 @@ async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
             continue
         attrs = _parse_detail_attrs(page)
         if attrs:
-            merge_specs(product["specs"], extract_specs_from_attributes(attrs))
+            detail_specs = extract_specs_from_attributes(attrs)
+            merge_specs(product["specs"], detail_specs)
+            if cache is not None:
+                cache[url] = cacheable_specs(detail_specs)
         break
     return product
 
@@ -172,16 +183,22 @@ async def scrape_all_pages_async() -> list[dict]:
             
         page_num += 1
 
-    print(f"[GamingGen] {len(all_products)} urun icin detay cekiliyor (PSU/Sogutucu)...", flush=True)
+    cache = load_detail_cache()
+    cached = sum(1 for p in all_products if p.get("url") in cache)
+    print(f"[GamingGen] {len(all_products)} urun icin detay cekiliyor "
+          f"(PSU/Sogutucu, {cached} onbellekten)...", flush=True)
     detail_sem = asyncio.Semaphore(12)
 
     async def fetch_detail_with_sem(prod):
         async with detail_sem:
-            res = await _fetch_product_details(prod, fetcher)
-            await asyncio.sleep(0.1)
+            was_cached = prod.get("url") in cache
+            res = await _fetch_product_details(prod, fetcher, cache)
+            if not was_cached:
+                await asyncio.sleep(0.1)
             return res
 
     all_products = await asyncio.gather(*[fetch_detail_with_sem(p) for p in all_products])
+    save_detail_cache(cache)
 
     print(f"[GamingGen] Toplam {len(all_products)} urun", flush=True)
     return all_products

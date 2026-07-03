@@ -2,7 +2,14 @@ import re
 import random
 import asyncio
 from scrapling import Fetcher
-from .utils import extract_specs_from_name, extract_specs_from_list
+from .utils import (
+    extract_specs_from_name,
+    extract_specs_from_list,
+    merge_specs,
+    cacheable_specs,
+    load_detail_cache,
+    save_detail_cache,
+)
 
 STORE = "tebilon"
 BASE_URL = "https://www.tebilon.com/hazir-sistemler/"
@@ -44,12 +51,17 @@ async def _fetch_page(url: str, fetcher_instance) -> list[dict]:
     return _parse_page_products(page)
 
 
-async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
+async def _fetch_product_details(product: dict, fetcher_instance, cache=None) -> dict:
     if product["specs"].get("Case") != "N/A" and product["specs"].get("PSU") != "N/A":
         return product
         
     url = product["url"]
     if not url:
+        return product
+
+    # Cached detail specs for this URL — skip the (rate-limited) network round-trip.
+    if cache is not None and url in cache:
+        merge_specs(product["specs"], cache[url])
         return product
 
     def sync_fetch():
@@ -87,6 +99,8 @@ async def _fetch_product_details(product: dict, fetcher_instance) -> dict:
                 for k, v in extra_specs.items():
                     if product["specs"].get(k, "N/A") == "N/A" and v != "N/A":
                         product["specs"][k] = v
+                if cache is not None:
+                    cache[url] = cacheable_specs(extra_specs)
             break
         except Exception:
             await asyncio.sleep(2)
@@ -135,19 +149,25 @@ async def scrape_all_pages_async() -> list[dict]:
             if isinstance(r, list):
                 all_products.extend(r)
 
-    print(f"[{STORE}] Fetching details for {len(all_products)} products...", flush=True)
+    cache = load_detail_cache()
+    cached = sum(1 for p in all_products if p.get("url") in cache)
+    print(f"[{STORE}] Fetching details for {len(all_products)} products "
+          f"({cached} onbellekten)...", flush=True)
     
     # Concurrency high enough to be fast, low enough that the retry/backoff in
     # _fetch_product_details recovers the occasional 429.
     detail_sem = asyncio.Semaphore(6)
     async def fetch_detail_with_sem(prod):
         async with detail_sem:
-            res = await _fetch_product_details(prod, fetcher)
-            await asyncio.sleep(0.1)
+            was_cached = prod.get("url") in cache
+            res = await _fetch_product_details(prod, fetcher, cache)
+            if not was_cached:
+                await asyncio.sleep(0.1)
             return res
             
     detail_tasks = [fetch_detail_with_sem(p) for p in all_products]
     all_products = await asyncio.gather(*detail_tasks)
+    save_detail_cache(cache)
 
     print(f"[{STORE}] Toplam {len(all_products)} urun", flush=True)
     return all_products
