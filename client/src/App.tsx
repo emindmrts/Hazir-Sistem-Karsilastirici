@@ -108,7 +108,7 @@ function AppContent() {
   }
 
   const dynamicTitle = filters.searchStr 
-    ? `\"${filters.searchStr}\" İçin Hızır Sistemler` 
+    ? `"${filters.searchStr}" İçin Hızır Sistemler` 
     : "En Uygun Hızır Sistemleri Karşılaştırın"
 
   return (
