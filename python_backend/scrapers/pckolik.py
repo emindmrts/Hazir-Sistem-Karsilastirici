@@ -1,7 +1,14 @@
 import re
 import asyncio
 from scrapling import Fetcher
-from .utils import extract_specs_from_list, extract_specs_from_name
+from .utils import (
+    extract_specs_from_list,
+    extract_specs_from_name,
+    merge_specs,
+    cacheable_specs,
+    load_detail_cache,
+    save_detail_cache,
+)
 
 STORE = "pckolik"
 BASE_URL = "https://pckolik.com.tr/kategori/oem-paketler"
@@ -86,7 +93,7 @@ def _parse_page_products(page) -> list[dict]:
         specs = extract_specs_from_list(features)
 
         if name and name != "N/A":
-            name_specs = extract_specs_from_name(name)
+            name_specs = extract_specs_from_name(f"{name} {href}")
             for k, v in specs.items():
                 if v == "N/A" and name_specs.get(k) != "N/A":
                     specs[k] = name_specs[k]
@@ -101,6 +108,72 @@ def _parse_page_products(page) -> list[dict]:
         })
 
     return products
+
+
+def _parse_detail_image(page) -> str | None:
+    """Detail sayfasindaki kasa urun gorselini dondurur.
+
+    pckolik listing'inde bileşen (PSU/MB/RAM) görselleri gösterilir; gercek
+    sistem/kasa gorseli yalnizca detay sayfasinda ``.case-img-crop img`` icinde
+    bulunur.
+    """
+    if not page:
+        return None
+    for sel in (".case-img-crop img", ".case-img img", "img.case-img",
+                ".product-gallery img", ".product-image img"):
+        img = page.css(sel).first
+        if img:
+            src = img.attrib.get("src") or img.attrib.get("data-src") or ""
+            if src and not src.endswith(".svg") and "icon" not in src.lower():
+                return src
+    return None
+
+
+async def _fetch_product_details(product: dict, fetcher, cache=None) -> dict:
+    """Detail'den kasa gorselini cek, listing gorselinin uzerine yaz.
+
+    Image cache'lenir (URL kararli).  Eksik spec'ler de detail'den
+    extract_specs_from_list ile doldurulur (pckolik detail'de spec table yok,
+    ama oylesine bir fallback birakildi).
+    """
+    url = product.get("url")
+    if not url:
+        return product
+
+    if cache is not None and url in cache:
+        cached = cache[url]
+        if cached.get("image"):
+            product["image"] = cached["image"]
+        if cached.get("specs"):
+            merge_specs(product["specs"], cached["specs"])
+        return product
+
+    def sync_fetch():
+        try:
+            return fetcher.get(url)
+        except Exception:
+            return None
+
+    for attempt in range(3):
+        page = await asyncio.to_thread(sync_fetch)
+        if not page:
+            await asyncio.sleep(1 + attempt)
+            continue
+        if getattr(page, "status_code", 200) == 429:
+            await asyncio.sleep(4 + attempt * 4)
+            continue
+        image = _parse_detail_image(page)
+        if image:
+            if image.startswith("/"):
+                image = f"{SITE_BASE}{image}"
+            product["image"] = image
+        if cache is not None:
+            cache[url] = {
+                "image": image,
+                "specs": cacheable_specs(product["specs"]),
+            }
+        break
+    return product
 
 
 async def scrape_all_pages_async() -> list[dict]:
@@ -157,6 +230,27 @@ async def scrape_all_pages_async() -> list[dict]:
                         all_products.append(p)
 
     print(f"[PCKolik] Toplam {len(all_products)} urun cekildi", flush=True)
+
+    # Detay cekimi: listing gorselleri bileşen, kasa gorseli detayda.
+    cache = load_detail_cache()
+    cached = sum(1 for p in all_products if p.get("url") in cache)
+    print(f"[PCKolik] {len(all_products)} urun icin kasa gorseli cekiliyor "
+          f"({cached} onbellekten)...", flush=True)
+
+    sem = asyncio.Semaphore(8)
+
+    async def fetch_detail_with_sem(prod):
+        async with sem:
+            was_cached = prod.get("url") in cache
+            res = await _fetch_product_details(prod, fetcher, cache)
+            if not was_cached:
+                await asyncio.sleep(0.1)
+            return res
+
+    all_products = await asyncio.gather(*[fetch_detail_with_sem(p) for p in all_products])
+    save_detail_cache(cache)
+
+    print(f"[PCKolik] Detay cekimi tamamlandi", flush=True)
     return all_products
 
 

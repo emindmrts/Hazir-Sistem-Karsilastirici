@@ -51,7 +51,15 @@ def _parse_page_products(page) -> list[dict]:
         specs = extract_specs_from_name(name)
         if specs.get("CPU") == "N/A" and specs.get("GPU") == "N/A":
             continue
-            
+
+        # incehesap; Case/PSU/Cooler bilgisini ne listing'de ne de urun detay
+        # sayfasinda paylasir (sadece Islemci/Ekran Karti/Bellek/SSD verir).
+        # Bu alanlar UI'da "N/A" gorunup eksik veri sanilmasin diye net bir
+        # etiketle isaretlenir.
+        for k in ("Case", "PSU", "Cooler"):
+            if specs.get(k, "N/A") == "N/A":
+                specs[k] = "Pakette yok"
+
         products.append({"name": name, "price": price, "image": image, "url": url_product, "store": STORE, "specs": specs})
 
     return products

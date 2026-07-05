@@ -33,10 +33,27 @@ from scrapers.incehesap import scrape_all_pages_async as scrape_incehesap_async
 from scrapers.pckolik import scrape_all_pages_async as scrape_pckolik_async
 from scrapers.gaminggen import scrape_all_pages_async as scrape_gaminggen_async
 from scrapers.tebilon import scrape_all_pages_async as scrape_tebilon_async
+from scrapers.enucuzsistem import scrape_all_pages_async as scrape_enucuzsistem_async
 
 # mock.json yolu - proje kokunde
 MOCK_JSON = Path(__file__).parent.parent / "mock.json"
 CACHE_META = Path(__file__).parent.parent / "cache-meta.json"
+
+# load .env file manually if it exists
+def load_env_file():
+    for p in [Path(__file__).parent.parent / ".env", Path(__file__).parent / ".env"]:
+        if p.exists():
+            try:
+                for line in p.read_text(encoding="utf-8").splitlines():
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        parts = line.split("=", 1)
+                        os.environ[parts[0].strip()] = parts[1].strip()
+            except Exception as e:
+                print(f"[WARN] Failed to load .env: {e}", flush=True)
+
+load_env_file()
+USE_ENUCUZSISTEM_API = os.environ.get("USE_ENUCUZSISTEM_API", "true").lower() in ("true", "1", "yes")
 
 _scrape_lock = asyncio.Lock()
 _scrape_in_progress = False
@@ -79,6 +96,38 @@ def save_mock(products: list[dict]) -> None:
     )
     print(f"[mock.json] Guncellendi - {len(products)} urun", flush=True)
 
+    # Sync to client/public
+    client_public_dir = Path(__file__).parent.parent / "client" / "public"
+    if client_public_dir.exists():
+        try:
+            (client_public_dir / "mock.json").write_text(
+                json.dumps(products, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            (client_public_dir / "cache-meta.json").write_text(
+                json.dumps({"lastUpdated": int(time.time() * 1000), "totalProducts": len(products)}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            print("[mock.json] client/public synced", flush=True)
+        except Exception as e:
+            print(f"[WARN] Failed to write to client/public: {e}", flush=True)
+
+    # Sync to client/dist
+    client_dist_dir = Path(__file__).parent.parent / "client" / "dist"
+    if client_dist_dir.exists():
+        try:
+            (client_dist_dir / "mock.json").write_text(
+                json.dumps(products, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            (client_dist_dir / "cache-meta.json").write_text(
+                json.dumps({"lastUpdated": int(time.time() * 1000), "totalProducts": len(products)}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            print("[mock.json] client/dist synced", flush=True)
+        except Exception as e:
+            print(f"[WARN] Failed to write to client/dist: {e}", flush=True)
+
 
 async def run_all_scrapers() -> list[dict]:
     """Tum scraper'lari paralel calistir."""
@@ -86,47 +135,54 @@ async def run_all_scrapers() -> list[dict]:
     _scrape_in_progress = True
 
     try:
-        print("[Scraper] Tum scraper'lar baslatiliyor...", flush=True)
-        all_products = []
-        save_mock(all_products)  # Baslangicta temizle
+        if USE_ENUCUZSISTEM_API:
+            print("[Scraper] EnUcuzSistem scraper baslatiliyor (USE_ENUCUZSISTEM_API=True)...", flush=True)
+            all_products = await scrape_enucuzsistem_async()
+            save_mock(all_products)
+            print(f"[Scraper] TAMAMLANDI - Toplam {len(all_products)} urun", flush=True)
+            return all_products
+        else:
+            print("[Scraper] Bireysel magaza scraper'lari baslatiliyor (USE_ENUCUZSISTEM_API=False)...", flush=True)
+            all_products = []
+            save_mock(all_products)
 
-        # Sync scraper'lari thread pool'da calistir
-        loop = asyncio.get_event_loop()
-        sync_results = await asyncio.gather(
-            loop.run_in_executor(None, scrape_sinerji),
-            loop.run_in_executor(None, scrape_gamegaraj),
-            return_exceptions=True,
-        )
+            # Sync scraper'lari thread pool'da calistir
+            loop = asyncio.get_event_loop()
+            sync_results = await asyncio.gather(
+                loop.run_in_executor(None, scrape_sinerji),
+                loop.run_in_executor(None, scrape_gamegaraj),
+                return_exceptions=True,
+            )
 
-        for name, r in zip(["Sinerji", "GameGaraj"], sync_results):
-            if isinstance(r, list):
-                all_products.extend(r)
-                save_mock(all_products)
-                print(f"[OK] {name} eklendi. Toplam: {len(all_products)}", flush=True)
-            else:
-                print(f"[HATA] {name}: {r}", flush=True)
-
-        # Async scraper'lari SIRAYLA calistir (Timeout ve bloklanmayi onlemek icin)
-        async def run_and_save(name, coro_fn):
-            try:
-                print(f"[Scraper] {name} baslatiliyor...", flush=True)
-                result = await coro_fn()
-                if isinstance(result, list):
-                    all_products.extend(result)
+            for name, r in zip(["Sinerji", "GameGaraj"], sync_results):
+                if isinstance(r, list):
+                    all_products.extend(r)
                     save_mock(all_products)
                     print(f"[OK] {name} eklendi. Toplam: {len(all_products)}", flush=True)
-            except Exception as e:
-                print(f"[HATA] {name}: {e}", flush=True)
+                else:
+                    print(f"[HATA] {name}: {r}", flush=True)
 
-        await run_and_save("Vatan", scrape_vatan_async)
-        await run_and_save("Itopya", scrape_itopya_async)
-        await run_and_save("InceHesap", scrape_incehesap_async)
-        await run_and_save("PCKolik", scrape_pckolik_async)
-        await run_and_save("GamingGen", scrape_gaminggen_async)
-        await run_and_save("Tebilon", scrape_tebilon_async)
+            # Async scraper'lari SIRAYLA calistir
+            async def run_and_save(name, coro_fn):
+                try:
+                    print(f"[Scraper] {name} baslatiliyor...", flush=True)
+                    result = await coro_fn()
+                    if isinstance(result, list):
+                        all_products.extend(result)
+                        save_mock(all_products)
+                        print(f"[OK] {name} eklendi. Toplam: {len(all_products)}", flush=True)
+                except Exception as e:
+                    print(f"[HATA] {name}: {e}", flush=True)
 
-        print(f"[Scraper] TAMAMLANDI - Toplam {len(all_products)} urun", flush=True)
-        return all_products
+            await run_and_save("Vatan", scrape_vatan_async)
+            await run_and_save("Itopya", scrape_itopya_async)
+            await run_and_save("InceHesap", scrape_incehesap_async)
+            await run_and_save("PCKolik", scrape_pckolik_async)
+            await run_and_save("GamingGen", scrape_gaminggen_async)
+            await run_and_save("Tebilon", scrape_tebilon_async)
+
+            print(f"[Scraper] TAMAMLANDI - Toplam {len(all_products)} urun", flush=True)
+            return all_products
     finally:
         _scrape_in_progress = False
 

@@ -2,6 +2,7 @@ import re
 import asyncio
 from scrapling import Fetcher
 from .utils import (
+    EMPTY_SPECS,
     extract_specs_from_list,
     extract_specs_from_name,
     extract_specs_from_attributes,
@@ -10,7 +11,6 @@ from .utils import (
     load_detail_cache,
     save_detail_cache,
 )
-
 STORE = "gamingGen"
 BASE_URL = "https://www.gaming.gen.tr/kategori/hazir-sistemler/"
 PRODUCT_SEL = "li.product"
@@ -49,13 +49,29 @@ def _parse_page_products(page) -> list[dict]:
         name = _normalize(title_el.text) if title_el else "N/A"
         a_el = item.css("a").first
         link = a_el.attrib.get("href") if a_el else None
-        img_el = item.css("img").first
+        # Listing card'inda birden fazla img var: ilki "secondary-image" (ekran
+        # kartı gibi hover görseli), asıl ürün görseli lazy-load edilir ve
+        # `attachment-woocommerce_thumbnail` class'ındadır.  Bu class yoksa
+        # "secondary-image" OLMAYAN ilk img'i kullan.
         image = None
-        if img_el:
-            for attr in ["data-src", "data-lazy-src", "src"]:
-                val = img_el.attrib.get(attr)
-                if val and not val.startswith("data:image"):
+        thumb = item.css("img.attachment-woocommerce_thumbnail").first
+        if thumb:
+            for attr in ("data-src", "data-lazy-src", "src"):
+                val = thumb.attrib.get(attr, "")
+                if val and not val.startswith("data:image") and "svg" not in val:
                     image = val
+                    break
+        if not image:
+            for img in item.css("img"):
+                cls = img.attrib.get("class", "")
+                if "secondary-image" in cls or "perfmatters-lazy" in cls:
+                    continue
+                for attr in ("data-src", "data-lazy-src", "src"):
+                    val = img.attrib.get(attr, "")
+                    if val and not val.startswith("data:image") and "svg" not in val:
+                        image = val
+                        break
+                if image:
                     break
             if not image:
                 noscript_img = item.css("noscript img").first
@@ -79,8 +95,8 @@ def _parse_page_products(page) -> list[dict]:
 
 
 def _parse_detail_attrs(page) -> dict:
-    """Read the product detail attribute table (Case/PSU/Cooler live here, not on
-    the listing card)."""
+    """Read the product detail attribute table (PSU/Cooler specs live here, not on
+    the listing card).  Returns label→value dict for ``extract_specs_from_attributes``."""
     if not page:
         return {}
     attrs = {}
@@ -96,9 +112,37 @@ def _parse_detail_attrs(page) -> dict:
     return attrs
 
 
+def _parse_detail_parts(page) -> list[str]:
+    """Read the ``beta-parts-parts-table`` on the detail page.
+
+    This table lists each installed component as a single cell (no label):
+    "AMD Ryzen 7 7800X3D ...", "HYTE X50 ... Gaming Kasa ...", etc.  These
+    strings are exactly what ``extract_specs_from_list`` classifies, and they
+    are the **only** place where the Case name appears on gaming.gen.tr.
+    """
+    items = []
+    if not page:
+        return items
+    tbl = page.css("table.beta-parts-parts-table").first
+    if not tbl:
+        return items
+    for row in tbl.css("tr"):
+        tds = row.css("td")
+        if not tds:
+            continue
+        # The component text is in the last td of each row.
+        txt = (tds[-1].get_all_text() if hasattr(tds[-1], "get_all_text") else tds[-1].text or "").strip()
+        # Skip service/up-sell rows (Standart Montaj, VIP Hizmet, Kablolama, Ayar)
+        if txt and not any(skip in txt for skip in
+                           ("Standart Montaj", "VIP Hizmet", "Standart Kablolama",
+                            "Standart Ayar", "Hızlı Montaj")):
+            items.append(" ".join(txt.split()))
+    return items
+
+
 async def _fetch_product_details(product: dict, fetcher_instance, cache=None) -> dict:
     specs = product["specs"]
-    if specs.get("PSU") != "N/A" and specs.get("Cooler") != "N/A" and specs.get("Case") != "N/A":
+    if all(specs.get(k) != "N/A" for k in ("PSU", "Cooler", "Case")):
         return product
     url = product.get("url")
     if not url:
@@ -123,12 +167,18 @@ async def _fetch_product_details(product: dict, fetcher_instance, cache=None) ->
         if getattr(page, "status_code", 200) == 429:
             await asyncio.sleep(4 + attempt * 4)
             continue
+        detail_specs = dict(EMPTY_SPECS)
+        # 1) Attribute table → PSU/Cooler/MB/RAM/Storage values
         attrs = _parse_detail_attrs(page)
         if attrs:
-            detail_specs = extract_specs_from_attributes(attrs)
-            merge_specs(product["specs"], detail_specs)
-            if cache is not None:
-                cache[url] = cacheable_specs(detail_specs)
+            merge_specs(detail_specs, extract_specs_from_attributes(attrs))
+        # 2) Parts table → component list (Case lives here, also reinforces others)
+        parts = _parse_detail_parts(page)
+        if parts:
+            merge_specs(detail_specs, extract_specs_from_list(parts))
+        merge_specs(product["specs"], detail_specs)
+        if cache is not None:
+            cache[url] = cacheable_specs(detail_specs)
         break
     return product
 

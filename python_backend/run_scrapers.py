@@ -29,14 +29,15 @@ if sys.platform == "win32":
 # ── Scraper imports ──────────────────────────────────────────────────────────
 sys.path.insert(0, str(Path(__file__).parent))
 
-from scrapers.sinerji      import scrape_all_pages          as scrape_sinerji
-from scrapers.gamegaraj    import scrape_all_pages          as scrape_gamegaraj
+from scrapers.sinerji      import scrape_all_pages_async    as scrape_sinerji
+from scrapers.gamegaraj    import scrape_all_pages_async    as scrape_gamegaraj
 from scrapers.itopya       import scrape_all_pages_async    as scrape_itopya
 from scrapers.vatan        import scrape_all_pages_async    as scrape_vatan
 from scrapers.incehesap    import scrape_all_pages_async    as scrape_incehesap
 from scrapers.pckolik      import scrape_all_pages_async    as scrape_pckolik
 from scrapers.gaminggen    import scrape_all_pages_async    as scrape_gaminggen
 from scrapers.tebilon      import scrape_all_pages_async    as scrape_tebilon
+from scrapers.enucuzsistem import scrape_all_pages_async    as scrape_enucuzsistem
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 ROOT       = Path(__file__).parent.parent
@@ -91,7 +92,6 @@ class ScraperState:
             return time.time() - self.start_time
         return self.elapsed
 
-# ── Registry ─────────────────────────────────────────────────────────────────
 ALL_SCRAPERS: list[ScraperState] = [
     ScraperState("Vatan",        "vatan",        True,  scrape_vatan),
     ScraperState("InceHesap",    "incehesap",    True,  scrape_incehesap),
@@ -99,8 +99,9 @@ ALL_SCRAPERS: list[ScraperState] = [
     ScraperState("GamingGen",    "gaminggen",    True,  scrape_gaminggen),
     ScraperState("Tebilon",      "tebilon",      True,  scrape_tebilon),
     ScraperState("Itopya",       "itopya",       True,  scrape_itopya),
-    ScraperState("Sinerji",      "sinerji",      False, scrape_sinerji),
-    ScraperState("GameGaraj",    "gamegaraj",    False, scrape_gamegaraj),
+    ScraperState("Sinerji",      "sinerji",      True,  scrape_sinerji),
+    ScraperState("GameGaraj",    "gamegaraj",    True,  scrape_gamegaraj),
+    ScraperState("EnUcuzSistem", "enucuzsistem", True,  scrape_enucuzsistem),
 ]
 
 # ── Shared ───────────────────────────────────────────────────────────────────
@@ -120,6 +121,42 @@ def save_products(products: list[dict]) -> None:
         ),
         encoding="utf-8",
     )
+
+    # Sync to client/public
+    client_public_dir = ROOT / "client" / "public"
+    if client_public_dir.exists():
+        try:
+            (client_public_dir / "mock.json").write_text(
+                json.dumps(products, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            (client_public_dir / "cache-meta.json").write_text(
+                json.dumps(
+                    {"lastUpdated": int(time.time() * 1000), "totalProducts": len(products)},
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+        except Exception as e:
+            print(f"[WARN] Failed to write to client/public: {e}")
+
+    # Sync to client/dist
+    client_dist_dir = ROOT / "client" / "dist"
+    if client_dist_dir.exists():
+        try:
+            (client_dist_dir / "mock.json").write_text(
+                json.dumps(products, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            (client_dist_dir / "cache-meta.json").write_text(
+                json.dumps(
+                    {"lastUpdated": int(time.time() * 1000), "totalProducts": len(products)},
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+        except Exception as e:
+            print(f"[WARN] Failed to write to client/dist: {e}")
 
 # ── Rich UI ──────────────────────────────────────────────────────────────────
 def _header() -> Panel:
@@ -341,6 +378,17 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    use_api = True
+    if not args.sites:
+        try:
+            print("===================================================")
+            ans = input("En Ucuz Sistem API'si kullanilsin mi? (E/h) [Varsayilan: E]: ").strip().lower()
+            if ans in ('h', 'n', 'hayir', 'no'):
+                use_api = False
+        except (KeyboardInterrupt, EOFError):
+            print("\n[INFO] Varsayilan olarak API kullaniliyor.")
+            use_api = True
+
     if args.sites:
         keys     = {k.lower() for k in args.sites}
         selected = [s for s in ALL_SCRAPERS if s.key in keys]
@@ -349,7 +397,12 @@ if __name__ == "__main__":
             print("Gecerli:", ", ".join(s.key for s in ALL_SCRAPERS))
             sys.exit(1)
     else:
-        selected = ALL_SCRAPERS
+        if use_api:
+            print("[INFO] EnUcuzSistem API'sinden tum veriler hizlica cekilecek.")
+            selected = [s for s in ALL_SCRAPERS if s.key == "enucuzsistem"]
+        else:
+            print("[INFO] Bireysel magaza scraper'lari calistirilacak.")
+            selected = [s for s in ALL_SCRAPERS if s.key != "enucuzsistem"]
 
     save = not args.no_save
     if save:

@@ -8,7 +8,7 @@ import math
 import sys
 import asyncio
 from scrapling import Fetcher
-from .utils import extract_specs_from_list
+from .utils import extract_specs_from_list, extract_specs_from_name
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -54,6 +54,13 @@ def _parse_page_products(page) -> list[dict]:
         # Specs
         spec_items = [p.get_all_text().strip() for p in el.css(".productlist_spec ul li p")]
         specs = extract_specs_from_list(spec_items)
+
+        # Fallback to name/URL-based extraction for remaining N/A fields
+        if name and name != "N/A":
+            name_specs = extract_specs_from_name(f"{name} {url_product}")
+            for k, v in specs.items():
+                if v == "N/A" and name_specs.get(k) != "N/A":
+                    specs[k] = name_specs[k]
 
         products.append({"name": name, "price": price, "image": image, "url": url_product, "store": STORE, "specs": specs})
     return products

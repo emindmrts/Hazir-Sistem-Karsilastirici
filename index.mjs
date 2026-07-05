@@ -32,6 +32,14 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// ─── Serve fresh mock data directly from root ───────────────────────────────
+app.get("/mock.json", (req, res) => {
+  res.sendFile(path.join(__dirname, "mock.json"));
+});
+app.get("/cache-meta.json", (req, res) => {
+  res.sendFile(path.join(__dirname, "cache-meta.json"));
+});
+
 // ─── Static (React build) ─────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, "client", "dist")));
 

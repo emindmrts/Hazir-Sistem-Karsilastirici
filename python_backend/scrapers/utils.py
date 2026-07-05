@@ -155,7 +155,6 @@ def extract_specs_from_attributes(attrs: dict) -> dict:
             if any(frag in label for frag in label_fragments):
                 return " ".join(val.split())
         return None
-
     cpu = pick("islemci modeli") or pick("islemci serisi")
     if cpu:
         specs["CPU"] = cpu
@@ -194,6 +193,64 @@ def merge_specs(base: dict, extra: dict) -> dict:
         if base.get(k, "N/A") in (None, "", "N/A") and extra.get(k, "N/A") not in (None, "", "N/A"):
             base[k] = extra[k]
     return base
+
+
+# Label fragments → spec category.  Order matters: more specific labels first
+# (e.g. "ekran karti hafizasi" must not claim "Ekran Kartı" before the GPU row).
+_LABEL_RULES = [
+    ("CPU",       ["islemci modeli", "islemci serisi", "islemci", "processor", "cpu"]),
+    ("Motherboard", ["anakart", "motherboard", "mainboard", "cipset", "chipset"]),
+    ("GPU",       ["ekran karti modeli", "ekran karti serisi", "ekran karti", "grafik islemci", "gpu", "graphics"]),
+    ("RAM",       ["ram kapasitesi", "ram tipi", "ram hizi", "ram", "bellek", "memory"]),
+    ("Storage",   ["depolama kapasitesi", "depolama tipi", "ssd", "hdd", "depolama", "sabit disk", "storage"]),
+    ("Cooler",    ["sogutma yontemi", "sogutucu", "cooler", "sogutma", "heatsink"]),
+    ("Case",      ["kasa", "case", "kabin", "chassis"]),
+    ("PSU",       ["guc kaynagi", "power supply", "psu"]),
+]
+
+_SUB_ATTR = ("hizi", "hiz", "hafizasi", "hafiza", "bellek tipi", "bellek arayuzu",
+             "max. ram", "isletim sistemi", "serisi", "modeli", "powered by",
+             "monitor", "monitorsuz", "ekran karti serisi", "islemci modeli",
+             "ekran karti hafizasi")
+
+
+def _label_to_category(label: str) -> str | None:
+    """Map a Turkish/English spec-table label to a spec category, or None."""
+    n = _norm(label)
+    if not n:
+        return None
+    for category, frags in _LABEL_RULES:
+        for frag in frags:
+            if frag in n:
+                return category
+    return None
+
+
+def extract_specs_from_table(rows: list[tuple[str, str]]) -> dict:
+    """Extract specs from a label→value table.
+
+    Used for detail pages whose spec list is a 2-column table
+    (``<th>İşlemci</th><td>AMD Ryzen 5 7500F</td>``) or a single-column
+    "Label: Value" cell list (gamegaraj).  Skips secondary labels such as
+    "İşlemci Hızı", "Ekran Kartı Hafızası" because they are sub-attributes
+    that would overwrite the primary component field.
+    """
+    specs = dict(EMPTY_SPECS)
+    if not rows:
+        return specs
+
+    filled = set()
+    for label, value in rows:
+        if not value or value.lower() in ("yok", "no", "-"):
+            continue
+        n_label = _norm(label)
+        if any(sub in n_label for sub in _SUB_ATTR):
+            continue
+        cat = _label_to_category(label)
+        if cat and cat not in filled:
+            specs[cat] = " ".join(value.split())
+            filled.add(cat)
+    return specs
 
 
 # ── Detail-page cache ─────────────────────────────────────────────────────────
@@ -240,33 +297,139 @@ def cacheable_specs(specs: dict) -> dict:
             if k in EMPTY_SPECS and v not in (None, "", "N/A")}
 
 
+def _clean(s: str) -> str:
+    return " ".join(s.split())
+
+
 def extract_specs_from_name(name: str) -> dict:
-    """Fallback: extract basic specs from a product name string using regex."""
+    """Extract structured PC specs from a product name or URL slug.
+
+    Handles hyphens, underscores, slashes and other separators common in URL
+    slugs (``phoenix-9060xt-amd-ryzen-5-7500f-...``) by normalising them to
+    spaces before pattern matching.  Returns the best-effort spec fields;
+    anything not found stays ``"N/A"``.
+    """
     specs = dict(EMPTY_SPECS)
     if not name:
         return specs
 
-    # CPU
-    cpu_match = re.search(
-        r"(INTEL[\w\s-]+|AMD[\w\s-]+|Ryzen\s+\d[\w\s-]*|Core\s+(?:Ultra\s+)?[\w-]+|i[3579]-\d+[\w-]*)",
-        name, re.IGNORECASE)
-    if cpu_match:
-        cpu = re.split(r"\s+RTX|\s+RX|\s+GTX|\s+ARC|\s*-", cpu_match.group(1), flags=re.IGNORECASE)[0].strip()
-        specs["CPU"] = cpu
+    # Normalise separators → spaces (case preserved for display)
+    text = re.sub(r"[-_/]+", " ", name)
+    text = re.sub(r"\s+", " ", text).strip()
+    # Split merged patterns common in URL slugs: "ddr4500gb" → "ddr4 500gb",
+    # "8gb16gb" → "8gb 16gb"  (missing hyphens in some itopya slugs)
+    text = re.sub(r"(ddr[45])(\d)", r"\1 \2", text, flags=re.IGNORECASE)
+    text = re.sub(r"(\dgb)(\d)", r"\1 \2", text, flags=re.IGNORECASE)
+    n = _norm(text)  # Turkish-folded lowercase for keyword matching
 
-    # GPU
-    gpu_match = re.search(r"((?:RTX|GTX|RX|ARC|RADEON)\s*\d+[\w\s]*)", name, re.IGNORECASE)
-    if gpu_match:
-        specs["GPU"] = re.split(r"\s*-", gpu_match.group(1), flags=re.IGNORECASE)[0].strip()
+    # ── GPU ──────────────────────────────────────────────────────────────────
+    # Radeon RX 9060 XT 8GB · GeForce RTX 4060 Ti · RTX 5060 · RX 7600 · GTX 1650 · Arc A750 · GT 730
+    gpu_m = re.search(
+        r"\b((?:radeon\s+|geforce\s+)?(?:rtx|gtx|rx|arc\s+a|gt)\s*\d{3,4}\s*"
+        r"(?:ti|xt|super)?(?:\s*\d+\s*gb?)?)",
+        text, re.IGNORECASE)
+    if gpu_m:
+        specs["GPU"] = _clean(gpu_m.group(1))
 
-    # RAM
-    ram_match = re.search(r"(\d+\s*GB(?:\s*DDR\d)?(?:\s*RAM|\s*Bellek)?)", name, re.IGNORECASE)
-    if ram_match:
-        specs["RAM"] = ram_match.group(1).strip()
+    # ── CPU ──────────────────────────────────────────────────────────────────
+    cpu_patterns = [
+        r"(?:amd\s+)?ryzen\s+(?:\d\s+)?\d{3,5}\w*",     # AMD Ryzen 5 7500F · Ryzen 5500
+        r"(?:amd\s+)?r[3579]\s+\d{3,5}\w*",              # AMD R5 7500F · R7 5700
+        r"intel\s+(?:core\s+)?ultra\s+\d\s+\d{3,5}\w*",  # Intel Core Ultra 5 225F
+        r"intel\s+(?:core\s+)?[iu][3579]\s+\d{3,5}\w*",  # Intel Core i5 12600KF · Intel i5 12400
+        r"intel\s+(?:core\s+)?\d{3,5}\w*",                # Intel Core 12100
+        # AMD bare model (when "Ryzen"/"R7" prefix is dropped): "AMD 7700X" · "AMD 5500"
+        r"amd\s+\d{3,5}\w*",
+    ]
+    for pat in cpu_patterns:
+        cpu_m = re.search(pat, text, re.IGNORECASE)
+        if cpu_m:
+            specs["CPU"] = _clean(cpu_m.group(0))
+            break
 
-    # Storage
-    storage_match = re.search(r"(\d+(?:\s*GB|\s*TB)\s*(?:M\.2\s*)?(?:SSD|HDD|NVME|M\.2|SATA))", name, re.IGNORECASE)
-    if storage_match:
-        specs["Storage"] = storage_match.group(1).strip()
+    # ── Motherboard (chipset) ────────────────────────────────────────────────
+    # A620M · H610M · B840M · X670E · Z790 · A520 · H810M …
+    for mb_m in re.finditer(r"\b([abhxz]\d{3}[a-z]{0,2})\b", text, re.IGNORECASE):
+        start = mb_m.start()
+        before = _norm(text[max(0, start - 5):start])
+        if "arc" in before:          # "Arc A750" is a GPU, not a chipset
+            continue
+        specs["Motherboard"] = mb_m.group(1)
+        break
+
+    # ── RAM ──────────────────────────────────────────────────────────────────
+    # 16GB DDR5 · 8GB DDR4 · 32GB RAM · 16GB Bellek · DDR5 32GB (DDR prefix)
+    # Requires a DDR/RAM/Bellek keyword so storage capacities ("500GB SSD") are
+    # not picked up as RAM.
+    ram_m = (re.search(r"(\d+\s*gb\s*(?:ddr[45]|ram|bellek))", text, re.IGNORECASE)
+             or re.search(r"((?:ddr[45])\s*\d+\s*gb)", text, re.IGNORECASE))
+    if ram_m:
+        specs["RAM"] = _clean(ram_m.group(1))
+
+    # ── Storage ──────────────────────────────────────────────────────────────
+    # 500GB NVMe M.2 SSD · 1TB SSD · 512GB M.2 SSD · 240GB SSD · 500GB (bare)
+    # Exclude capacities that are part of GPU (VRAM) or RAM (DDR/Bellek) matches,
+    # and prefer candidates that carry a storage keyword (SSD/HDD/NVMe/M.2).
+    _exclude = []
+    if gpu_m:
+        _exclude.append(gpu_m.span())
+    if ram_m:
+        _exclude.append(ram_m.span())
+
+    storage_candidates = []
+    for sm in re.finditer(
+        r"\d+\s*(?:gb|tb)(?:\s+(?:nvme|m\.?\s*2|ssd|hdd|sata))*",
+        text, re.IGNORECASE):
+        s, e = sm.span()
+        if any(s < e2 and s2 < e for s2, e2 in _exclude):
+            continue
+        has_kw = bool(re.search(r"(?:nvme|m\.?\s*2|ssd|hdd|sata)", sm.group(0), re.IGNORECASE))
+        # For bare capacities (no storage keyword), skip if followed by DDR/RAM
+        if not has_kw:
+            tail = _norm(text[e:e + 12])
+            if "ddr" in tail or "ram" in tail or "bellek" in tail:
+                continue
+        storage_candidates.append(sm)
+
+    if storage_candidates:
+        with_kw = [c for c in storage_candidates
+                   if re.search(r"(?:nvme|m\.?\s*2|ssd|hdd|sata)", c.group(0), re.IGNORECASE)]
+        if with_kw:
+            chosen = with_kw[0]
+        else:
+            # No storage keyword anywhere — prefer TB over GB (RAM is never TB)
+            # so "1tb 32gb" → Storage="1tb", RAM stays separate.
+            tb = [c for c in storage_candidates
+                  if re.search(r"\d+\s*tb", c.group(0), re.IGNORECASE)]
+            chosen = tb[0] if tb else storage_candidates[0]
+        specs["Storage"] = _clean(chosen.group(0))
+
+    # ── Case ─────────────────────────────────────────────────────────────────
+    for kw in ("kasa", "case", "tower", "kabin", "chassis"):
+        idx = n.find(kw)
+        if idx >= 0:
+            start = max(0, idx - 20)
+            end = min(len(text), idx + len(kw) + 25)
+            specs["Case"] = _clean(text[start:end])[:50]
+            break
+
+    # ── PSU ──────────────────────────────────────────────────────────────────
+    psu_watt_m = re.search(r"(\d{3,4})\s*w(?:att)?(?![a-z])", text, re.IGNORECASE)
+    if psu_watt_m:
+        watt = psu_watt_m.group(1)
+        plus_m = re.search(
+            r"(80\s*\+\s*(?:bronze|gold|silver|platinum|titanium)?"
+            r"|80\s*plus\s*(?:bronze|gold|silver|platinum|titanium)?)",
+            text, re.IGNORECASE)
+        specs["PSU"] = f"{watt}W 80+" if plus_m else f"{watt}W"
+
+    # ── Cooler ───────────────────────────────────────────────────────────────
+    for kw in ("sogutucu", "sogutma", "sivi sogutma", "cooler", "aio", "liquid"):
+        idx = n.find(kw)
+        if idx >= 0:
+            start = max(0, idx - 20)
+            end = min(len(text), idx + len(kw) + 25)
+            specs["Cooler"] = _clean(text[start:end])[:50]
+            break
 
     return specs

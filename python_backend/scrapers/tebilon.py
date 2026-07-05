@@ -36,7 +36,7 @@ def _parse_page_products(page) -> list[dict]:
         img_el = el.css(".showcase__image img").first
         image = img_el.attrib.get("src") if img_el else None
         
-        specs = extract_specs_from_name(name)
+        specs = extract_specs_from_name(f"{name} {link}")
         products.append({"name": name, "price": price, "image": image, "url": link, "store": STORE, "specs": specs})
     return products
 

@@ -8,7 +8,7 @@ import re
 import asyncio
 import sys
 from scrapling import Fetcher
-from .utils import extract_specs_from_list
+from .utils import extract_specs_from_list, extract_specs_from_name
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -95,6 +95,27 @@ async def scrape_all_pages_async() -> list[dict]:
         for k, v in specs.items():
             if v == "N/A" and extra_specs.get(k) != "N/A":
                 specs[k] = extra_specs[k]
+        
+        # Fallback to name/URL-based extraction for remaining N/A fields.
+        # The display name is often just a model code ("PHOENIX-9060XT V3") but
+        # the URL slug carries the full spec string, so feed both.
+        if name:
+            name_specs = extract_specs_from_name(f"{name} {link}")
+            for k, v in specs.items():
+                if v == "N/A" and name_specs.get(k) != "N/A":
+                    specs[k] = name_specs[k]
+
+        # itopya "LITE" paketler: urun adinda "LITE" ve URL'de "lite-paket"
+        # gecen OEM paketlerde RAM ve SSD dahil DEGILDIR (kullanici opsiyonel
+        # ekler).  Bu urunlerde name-based extraction URL'deki GPU VRAM
+        # ("16gb", "12gb", "8gb") degerini Storage'a yanlislikla yazabilir;
+        # bu yuzden LITE paketlerde RAM ve Storage her halukarda "dahil degil"
+        # olarak isaretlenir ki UI'da GPU VRAM'i RAM/Storage sanilmasin.
+        slug = (link or "").lower()
+        is_lite = "lite-paket" in slug or ("lite-" in slug and "lite" in name.lower())
+        if is_lite:
+            specs["RAM"] = "Pakete dahil değil"
+            specs["Storage"] = "Pakete dahil değil"
 
         products.append({"name": name, "price": price, "image": image, "url": link, "store": "itopya", "specs": specs})
 
