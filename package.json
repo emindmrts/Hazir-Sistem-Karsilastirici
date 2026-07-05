@@ -5,8 +5,11 @@
   "type": "module",
 
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd client && npm install && npm run build"
+    "start": "node index.mjs",
+    "dev": "node --watch index.mjs",
+    "build": "if exist mock.json (copy /Y mock.json client\\public\\mock.json) && cd client && npm install && npm run build",
+    "deploy-copy": "if exist mock.json (copy /Y mock.json client\\public\\mock.json)",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
@@ -15,17 +18,9 @@
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "fs": "^0.0.1-security",
-    "jsdom": "^24.1.1",
     "morgan": "^1.10.1",
     "mysql2": "^3.11.0",
     "node-cron": "^4.2.1",
-    "node-fetch": "^3.3.2",
-    "pip": "^0.0.1",
-    "punycode": "^2.3.1",
-    "puppeteer": "^22.15.0",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   }
