@@ -14,7 +14,7 @@ export function SEO({
   title = "PcKarşılaştır.com | PC Konfigürasyon & Sistem Karşılaştırması",
   description = "Türkiye'nin tüm mağazalarındaki hazır sistemleri fiyat, işlemci ve ekran kartına göre karşılaştırın. En uygun sistemi PcKarşılaştır.com'da bulun.",
   canonical = "https://www.pckarsilastir.com",
-  ogImage = "https://www.pckarsilastir.com/og-image.png",
+  ogImage = "https://www.pckarsilastir.com/og-image.png?v=2",
   ogType = "website",
   keywords,
   jsonLd,
