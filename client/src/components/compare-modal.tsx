@@ -1,6 +1,7 @@
 import { useState } from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { useCompare } from "@/hooks/use-compare"
+import type { Product } from "@/hooks/use-products"
 import { Button } from "@/components/ui/button"
 import {
   X, ExternalLink, Cpu, LayoutGrid, MemoryStick,
@@ -21,7 +22,7 @@ interface SpecDef {
   key: string
   label: string
   icon: React.ReactNode
-  getValue: (p: typeof import("@/hooks/use-products").Product.prototype) => string | undefined
+  getValue: (p: Product) => string | undefined
 }
 
 const SPEC_DEFS: SpecDef[] = [

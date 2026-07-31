@@ -1,29 +1,28 @@
-# Hazır Sistem Karşılaştırıcı
+# PC KARSILASTIR
 
-Türkiye'deki teknoloji mağazalarının hazır bilgisayar sistemlerini tek yerden toplar, filtrelemenizi ve fiyatları karşılaştırmanızı sağlar. Vatan, İtopya, Sinerji, PCKolik ve daha fazla mağaza düzenli olarak taranır.
+Türkiye'deki hazır sistem mağazalarının hazır bilgisayarlarını karşılaştırmak için tek yerden toplar, filtrelemenizi ve fiyatları karşılaştırmanızı sağlar. Vatan, İtopya, Sinerji, PCKolik ve daha fazla mağaza düzenli olarak taranır.
 
 ## Nasıl çalışıyor
 
 Üç katmanlı bir yapı var:
 
-- **Python scraper'lar** mağaza sitelerinden ürün, fiyat ve donanım bilgilerini toplar.
-- **Node.js API** bu veriyi web uygulamasına sunar.
-- **React frontend** aramayı, filtrelemeyi ve karşılaştırmayı yapar.
+- **Python scraper'lar** mağaza sitelerinden ürün, fiyat ve donanım scraping yaoar
+- **Node.js API** Node Js ile api işi halledilir
+- **React frontend** Kullanıcın gördüğü arayüz
 
 Veri her gece 03:00'te otomatik güncellenir. Ayrıca `POST /api/combined` ile elle de tetiklenebilir.
 
 ## Özellikler
 
 - Ürün adı, işlemci ve ekran kartı üzerinde anlık arama
-- CPU, GPU, mağaza, fiyat aralığı ve stok durumu filtreleri
-- Fiyat/performans (F/P) puanı ve akıllı sıralama
+- Fiyat/performans (F/P) puanı ve akıllı sıralama(Şuanlık Stabil Değil)
 - Detay sayfasında işlemci, anakart, kasa, PSU ve soğutucu bilgileri
 - 4 ürüne kadar yan yana karşılaştırma
 - Karanlık/aydınlık tema
 
-## Teknoloji
+## Stack
 
-| Katman | Teknolojiler |
+
 | --- | --- |
 | Frontend | React 19, Vite, TypeScript, Tailwind CSS, Radix UI, GSAP |
 | API | Node.js, Express, node-cron, Swagger |
@@ -47,7 +46,7 @@ Veri her gece 03:00'te otomatik güncellenir. Ayrıca `POST /api/combined` ile e
 
 ## Kurulum
 
-### 1. Bağımlılıkları kurun
+### 1. Dependencies kurun
 
 ```bash
 npm install
@@ -79,11 +78,11 @@ cd client
 npm run dev
 ```
 
-Vite dev sunucusu `5173` portunda açar ve API isteklerini `3000`'e yönlendirir.
+Vite dev server `5173` portunda açılır ve API requestleri `3000`'e yönlendirir.
 
 ## API
 
-| Metot | Uç nokta | Açıklama |
+| Metot | Endpoint | Açıklama |
 | --- | --- | --- |
 | `GET` | `/api/status` | Sistem durumu ve son güncelleme zamanı |
 | `POST` | `/api/getProducts` | Filtreli ürün listesi |

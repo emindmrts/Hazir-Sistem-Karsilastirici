@@ -4,7 +4,6 @@ import { useCompare } from "@/hooks/use-compare"
 import { useProducts } from "@/hooks/use-products"
 import { Button } from "@/components/ui/button"
 import { calculateFPScore } from "@/lib/fp-scoring"
-import type { Product } from "@/hooks/use-products"
 import { createSlug, findBySlug } from "@/hooks/use-slugs"
 import {
   ExternalLink, ShieldCheck,
@@ -72,7 +71,6 @@ export function ComparePage() {
   const tableAnchorRef = useRef<HTMLDivElement>(null)
   const tableBodyRef = useRef<HTMLTableSectionElement>(null)
   const slotsRef = useRef<HTMLDivElement>(null)
-  const mainRef = useRef<HTMLDivElement>(null)
   const [, setLocation] = useLocation()
   const prevCountRef = useRef(items.length)
   const initRef = useRef(false)
