@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="evkbJesdgOTdcivoV3OIpK_RGFIylvYzBOIXTPM9rvs" />
+
+  <!-- title/description/keywords/language/canonical/OG/Twitter React SEO bileşeni (Helmet) tarafından yönetilir -->
+  <meta name="author" content="PcKarşılaştır.com" />
+
+  <!-- og:image boyutları statik; og:image URL'i Helmet tarafından sayfaya göre ayarlanır -->
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- Performance & Theming -->
+  <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  
+  <!-- Preload critical resources for faster LCP -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cloud.umami.is">
+  <!-- Ürün verisi JS ile paralel yüklensin (seri bağımlılığı kırar) -->
+  <link rel="preload" href="/mock.json" as="fetch" crossorigin="anonymous">
+  
+  <!-- Google Fonts for Logo — non-blocking load via media swap -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Michroma&display=swap"
+    rel="stylesheet"
+    media="print"
+    onload="this.media='all'"
+  >
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  </noscript>
+  
+  <!-- Structured Data - Organization -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "PcKarşılaştır.com",
+      "url": "https://www.pckarsilastir.com",
+      "logo": "https://www.pckarsilastir.com/favicon.png",
+      "sameAs": [
+        "https://twitter.com/PcKarsilastir",
+        "https://www.linkedin.com/company/pckarsilastir"
+      ],
+      "description": "Türkiye'nin hazır sistem karşılaştırma platformu"
+    }
+  </script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJ6KXSWZK9"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KJ6KXSWZK9');
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="0f542165-dd82-48d4-8a71-e06b6c800d50"></script>
+
+</html>

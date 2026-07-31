@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+User-agent: Googlebot
+Allow: /
+
+Sitemap: https://www.pckarsilastir.com/sitemap.xml
+Sitemap: https://www.pckarsilastir.com/sitemap-images.xml

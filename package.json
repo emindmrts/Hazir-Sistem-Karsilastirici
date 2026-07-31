@@ -1,0 +1,27 @@
+{
+  "name": "scraper-api",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+
+  "scripts": {
+    "start": "node index.mjs",
+    "dev": "node --watch index.mjs",
+    "build": "node -e \"const fs=require('fs');try{fs.copyFileSync('mock.json','client/public/mock.json');console.log('mock.json → client/public/')}catch{}\" && cd client && npm install && npm run build",
+    "deploy-copy": "node -e \"const fs=require('fs');try{fs.copyFileSync('mock.json','client/public/mock.json');console.log('✓ mock.json kopyalandı')}catch(e){console.error('mock.json yok:',e.message)}\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "morgan": "^1.10.1",
+    "mysql2": "^3.11.0",
+    "node-cron": "^4.2.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}

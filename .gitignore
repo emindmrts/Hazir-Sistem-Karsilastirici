@@ -1,0 +1,58 @@
+# Dependencies
+/node_modules
+/client/node_modules
+
+# Build outputs
+/client/dist
+
+# Python
+__pycache__/
+*.py[cod]
+/.venv
+/venv
+/python_backend/.venv
+/python_backend/venv
+
+# Env / secrets
+/.env
+.env
+*.env
+
+# Runtime / generated data
+/mock.json
+/cache-meta.json
+/data/
+/client/public/cache-meta.json
+/client/dist/mock.json
+/client/dist/cache-meta.json
+
+# Vercel config is in client/vercel.json; this copy overrides it
+/client/public/vercel.json
+/python_backend/mock.json
+/python_backend/cache-meta.json
+.detail_cache.json
+/python_backend/.detail_cache.json
+
+# Local config backups
+*.backup
+
+# Debug / scratch output
+*_test.json
+*_dump.html
+scrapling_*.json
+scrapling_*.txt
+
+# Scratch & ad-hoc test directories
+/scratch/
+/test_scripts/
+/test_data/
+/python_backend/scratch/
+
+# Scratch debug tests & dumps
+/python_backend/test_*.py
+/python_backend/*_detail.html
+/python_backend/scrapers/.itopya_detail_cache.json
+# Local env & scratch
+/.env
+/old_mock_tmp.json
+

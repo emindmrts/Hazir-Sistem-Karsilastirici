@@ -1,0 +1,6 @@
+scrapling
+fastapi
+uvicorn
+curl_cffi
+playwright
+rich
