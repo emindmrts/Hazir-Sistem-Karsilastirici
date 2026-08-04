@@ -1,6 +1,9 @@
 import re
+import os
+import json
 import random
 import asyncio
+from pathlib import Path
 from scrapling import Fetcher
 from .utils import (
     extract_specs_from_name,
@@ -14,6 +17,28 @@ from .utils import (
 STORE = "tebilon"
 BASE_URL = "https://www.tebilon.com/hazir-sistemler/"
 PRODUCT_SEL = ".showcase__product"
+
+
+def _load_last_good() -> list[dict]:
+    """Cloudflare bizi engellediğinde (403) silinen veriyi korumak için
+    son başarılı mock.json içindeki Tebilon ürünlerini geri yükle."""
+    roots = [
+        Path(__file__).parent.parent / "mock.json",          # python_backend/mock.json
+        Path(__file__).parent.parent.parent / "mock.json",   # kök mock.json
+        Path(__file__).parent.parent.parent.parent / "mock.json",
+    ]
+    for mock in roots:
+        if not mock.exists():
+            continue
+        try:
+            data = json.loads(mock.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                cached = [p for p in data if p.get("store") == STORE]
+                if cached:
+                    return cached
+        except Exception:
+            continue
+    return []
 
 
 def _parse_page_products(page) -> list[dict]:
@@ -120,6 +145,18 @@ async def scrape_all_pages_async() -> list[dict]:
             return None
 
     first_page = await asyncio.to_thread(fetch_sync, BASE_URL)
+
+    # Cloudflare/Turnstile engeli (403) → son bilinen veriyi koru.
+    is_blocked = first_page is None or getattr(first_page, "status", 200) in (403, 429)
+    if is_blocked:
+        cached = _load_last_good()
+        if cached:
+            print(f"[Tebilon] Cloudflare engeli, son {len(cached)} urun geri yuklendi "
+                  f"(eski veri korundu)", flush=True)
+            return cached
+        print("[Tebilon] Cloudflare engeli, onbellegi elde veri yok", flush=True)
+        return []
+
     if not first_page:
         print("[Tebilon] Ilk sayfa hatasi", flush=True)
         return []
