@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -52,6 +52,7 @@ const oneYear = 60 * 60 * 24 * 365;
 const oneHour = 60 * 60;
 app.use(
   express.static(path.join(__dirname, "client", "dist"), {
+    extensions: ["html"],
     etag: true,
     setHeaders: (res, filePath) => {
       if (filePath.endsWith("index.html")) {
