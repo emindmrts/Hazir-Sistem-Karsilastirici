@@ -54,7 +54,9 @@ try:
     from rich.align   import Align
     from rich.layout  import Layout
     from rich         import box
-    RICH = True
+    # Boru/redirect altinda (scheduled task, log capture) Rich kapat:
+    # gereksiz ansi cikisi ve non-tty Live sorunlarini onler
+    RICH = sys.stdout.isatty()
 except ImportError:
     RICH = False
     print("[UYARI] 'rich' yükle:  python -m pip install rich\n")
@@ -376,6 +378,11 @@ if __name__ == "__main__":
         action="store_true",
         help="mock.json'a kaydetme",
     )
+    parser.add_argument(
+        "--no-pause",
+        action="store_true",
+        help="sonda Enter bekleme (scheduled task / daemon kullanimi)",
+    )
     args = parser.parse_args()
 
     use_api = True
@@ -406,12 +413,18 @@ if __name__ == "__main__":
 
     save = not args.no_save
     if save:
+        # NOT: burada save_products([]) YAPILMAZ — canli site bos veri servis
+        # etmesin diye mevcut mock.json korunur; her site bitince toplam
+        # liste yeniden yazilir (bkz. _run_async/_run_sync).
         _all_products.clear()
-        save_products([])
 
     asyncio.run(main(selected, save))
 
-    try:
-        input("\n  Devam etmek icin Enter'a basin...")
-    except (EOFError, KeyboardInterrupt):
-        pass
+    # Dikkat: session-0 (scheduled task) altinda stdin TTY gorunur ama klavye
+    # yoktur -> input() sonsuz bekler. Bu yuzden yalnizca --no-pause YOKSA ve
+    # gercekten interaktif terminalde dur.
+    if not args.no_pause and sys.stdin.isatty():
+        try:
+            input("\n  Devam etmek icin Enter'a basin...")
+        except (EOFError, KeyboardInterrupt):
+            pass
