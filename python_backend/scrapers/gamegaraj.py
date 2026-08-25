@@ -16,7 +16,7 @@ from .utils import (
     save_detail_cache,
 )
 
-STORE = "gameGaraj"
+STORE = "gamegaraj"
 BASE_URL = "https://www.gamegaraj.com/oem-paketler/"
 SITE = "https://www.gamegaraj.com"
 

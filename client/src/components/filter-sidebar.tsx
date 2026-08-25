@@ -29,12 +29,12 @@ interface FilterSidebarProps {
 
 const STORES = [
     { id: "itopya", label: "Itopya", logo: "/logos/itopya.png" },
-    { id: "gamingGen", label: "GamingGen", logo: "/logos/gaminggen.png" },
-    { id: "gameGaraj", label: "Game Garaj", logo: "/logos/gamegaraj.png" },
+    { id: "gaminggen", label: "GamingGen", logo: "/logos/gaminggen.png" },
+    { id: "gamegaraj", label: "Game Garaj", logo: "/logos/gamegaraj.png" },
     { id: "pckolik", label: "PcKolik", logo: "/logos/pckolik.png" },
     { id: "vatan", label: "Vatan", logo: "/logos/vatan.png" },
     { id: "sinerji", label: "Sinerji", logo: "/logos/sinerji.png" },
-    { id: "inceHesap", label: "İnceHesap", logo: "/logos/incehesap.png" },
+    { id: "incehesap", label: "İnceHesap", logo: "/logos/incehesap.png" },
     { id: "tebilon", label: "Tebilon", logo: "/logos/tebilon.png" },
 ]
 
@@ -74,7 +74,7 @@ const GPU_SERIES_GROUPS = [
     {
         brand: "RX",
         gen: "RX 9000",
-        items: ["9070 XT", "9070"],
+        items: ["9070 XT", "9070", "9060 XT", "9060"],
     },
     {
         brand: "RX",
@@ -138,7 +138,7 @@ export function FilterSidebar({ filters, setFilters, onReset, availableCpuModels
         filters.gpuSeries.length +
         (filters.minPrice !== "" ? 1 : 0) +
         (filters.maxPrice !== "" ? 1 : 0) +
-        (filters.inStock ? 1 : 0)
+        (!filters.inStock ? 1 : 0)
 
     const toggle = (group: "stores" | "cpuBrands" | "cpuSeries" | "cpuModels" | "gpuBrands" | "gpuSeries") => (id: string, checked: boolean) => {
         const list = filters[group] || [];

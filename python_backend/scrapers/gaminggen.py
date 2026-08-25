@@ -11,7 +11,7 @@ from .utils import (
     load_detail_cache,
     save_detail_cache,
 )
-STORE = "gamingGen"
+STORE = "gaminggen"
 BASE_URL = "https://www.gaming.gen.tr/kategori/hazir-sistemler/"
 PRODUCT_SEL = "li.product"
 

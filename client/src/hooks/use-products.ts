@@ -210,6 +210,7 @@ export function useProducts() {
                 if (params.get("cpuSeries")) urlFilters.cpuSeries = params.get("cpuSeries")?.split(",") || []
                 if (params.get("cpuModels")) urlFilters.cpuModels = params.get("cpuModels")?.split(",") || []
                 if (params.get("gpu")) urlFilters.gpuBrands = params.get("gpu")?.split(",") || []
+                if (params.get("gpuSeries")) urlFilters.gpuSeries = params.get("gpuSeries")?.split(",") || []
 
                 // Landing page detection — apply filters based on pathname
                 const landingPath = window.location.pathname.slice(1).replace(/\.html$/, "")
@@ -219,8 +220,8 @@ export function useProducts() {
                     "sinerji-hazir-sistem": { stores: ["sinerji"] },
                     "pckolik-hazir-sistem": { stores: ["pckolik"] },
                     "incehesap-hazir-sistem": { stores: ["incehesap"] },
-                    "gaminggen-hazir-sistem": { stores: ["gamingGen"] },
-                    "gamegaraj-hazir-sistem": { stores: ["gameGaraj"] },
+                    "gaminggen-hazir-sistem": { stores: ["gaminggen"] },
+                    "gamegaraj-hazir-sistem": { stores: ["gamegaraj"] },
                     "tebilon-hazir-sistem": { stores: ["tebilon"] },
                     "rtx-5060-hazir-sistem": { gpuSeries: ["RTX 5060"] },
                     "rtx-5070-hazir-sistem": { gpuSeries: ["RTX 5070"] },
@@ -233,12 +234,14 @@ export function useProducts() {
                     "ryzen-7-hazir-sistem": { cpuSeries: ["RYZEN 7"] },
                     "ryzen-9-hazir-sistem": { cpuSeries: ["RYZEN 9"] },
                     "core-i5-hazir-sistem": { cpuSeries: ["CORE I5"] },
-                    "core-ultra-hazir-sistem": { cpuBrands: ["Intel"] },
+                    "core-ultra-hazir-sistem": { cpuBrands: ["Intel"], cpuSeries: ["Core Ultra"] },
                     "ucuz-hazir-sistem": { maxPrice: 30000 },
                     "0-30000-tl-hazir-sistem": { maxPrice: 30000 },
                     "30000-50000-tl-hazir-sistem": { minPrice: 30000, maxPrice: 50000 },
                     "50000-100000-tl-hazir-sistem": { minPrice: 50000, maxPrice: 100000 },
                     "100000-tl-uzeri-hazir-sistem": { minPrice: 100000 },
+                    "gaming-pc": { gpuBrands: ["RTX"] },
+                    "oyuncu-bilgisayari": { gpuBrands: ["RTX"] },
                 }
                 if (landingMap[landingPath]) {
                     Object.assign(urlFilters, landingMap[landingPath])
@@ -269,6 +272,7 @@ export function useProducts() {
         if (filters.cpuSeries.length) params.set("cpuSeries", filters.cpuSeries.join(","))
         if (filters.cpuModels && filters.cpuModels.length) params.set("cpuModels", filters.cpuModels.join(","))
         if (filters.gpuBrands.length) params.set("gpu", filters.gpuBrands.join(","))
+        if (filters.gpuSeries.length) params.set("gpuSeries", filters.gpuSeries.join(","))
         
         const newRelativePathQuery = window.location.pathname + '?' + params.toString()
         if (params.toString()) {
@@ -379,7 +383,8 @@ export function useProducts() {
             result = result.filter(p => {
                 if (!p.ekranKarti) return false
                 const t = p.ekranKarti.toUpperCase()
-                return filters.gpuSeries.some(s => t.includes(s))
+                const norm = (x: string) => x.replace(/[\s-]/g, "").toUpperCase()
+                return filters.gpuSeries.some(s => t.includes(norm(s)))
             })
         }
 

@@ -86,6 +86,9 @@ def load_mock() -> list[dict]:
 
 
 def save_mock(products: list[dict]) -> None:
+    for p in products:
+        if "store" in p and isinstance(p["store"], str):
+            p["store"] = p["store"].lower()
     MOCK_JSON.write_text(
         json.dumps(products, ensure_ascii=False, indent=2),
         encoding="utf-8",

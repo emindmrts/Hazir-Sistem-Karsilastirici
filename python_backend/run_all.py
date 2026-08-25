@@ -29,6 +29,9 @@ SCRAPERS = [
 ]
 
 def save(products):
+    for p in products:
+        if "store" in p and isinstance(p["store"], str):
+            p["store"] = p["store"].lower()
     MOCK.write_text(json.dumps(products, ensure_ascii=False, indent=2), encoding="utf-8")
     CACHE.write_text(json.dumps({"lastUpdated": int(time.time()*1000), "totalProducts": len(products)}, ensure_ascii=False), encoding="utf-8")
     for d in [ROOT/"client/public", ROOT/"client/dist"]:
