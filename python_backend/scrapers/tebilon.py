@@ -18,6 +18,34 @@ STORE = "tebilon"
 BASE_URL = "https://www.tebilon.com/hazir-sistemler/"
 PRODUCT_SEL = ".showcase__product"
 
+# ── Görsel yerelleştirme ──────────────────────────────────────────────────────
+# tebilon.com görselleri Cloudflare tarafından 3. taraf sitelere 403 ile
+# engelleniyor. Bu yüzden görsel URL'sini kaydederken yerel kopyaya çevrilir:
+# client/public/tebilon/<dosya> varsa /tebilon/<dosya>, yoksa placeholder.
+_PUBLIC_TB_DIR = Path(__file__).resolve().parent.parent.parent / "client" / "public" / "tebilon"
+_local_img_names = None
+_local_img_lower = None
+
+
+def _localize_image(url):
+    global _local_img_names, _local_img_lower
+    if not url or not isinstance(url, str) or not url.startswith("https://www.tebilon.com"):
+        return url
+    if _local_img_names is None:
+        if _PUBLIC_TB_DIR.is_dir():
+            names = {f.name for f in _PUBLIC_TB_DIR.iterdir() if f.is_file()}
+        else:
+            names = set()
+        _local_img_names = names
+        _local_img_lower = {n.lower(): n for n in names}
+    fname = url.rsplit("/", 1)[-1]
+    if fname in _local_img_names:
+        return "/tebilon/" + fname
+    exact = _local_img_lower.get(fname.lower())
+    if exact:
+        return "/tebilon/" + exact
+    return "/tebilon/placeholder.svg"
+
 
 def _load_last_good() -> list[dict]:
     """Cloudflare bizi engellediğinde (403) silinen veriyi korumak için
@@ -60,6 +88,7 @@ def _parse_page_products(page) -> list[dict]:
             price = 0.0
         img_el = el.css(".showcase__image img").first
         image = img_el.attrib.get("src") if img_el else None
+        image = _localize_image(image)
         
         specs = extract_specs_from_name(f"{name} {link}")
         products.append({"name": name, "price": price, "image": image, "url": link, "store": STORE, "specs": specs})
