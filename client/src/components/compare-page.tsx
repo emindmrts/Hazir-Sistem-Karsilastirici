@@ -130,21 +130,30 @@ export function ComparePage() {
     return `${window.location.origin}/karsilastir?${params.toString()}`
   }, [items])
 
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   const copyShareLink = useCallback(() => {
     if (!shareUrl) return
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
     })
   }, [shareUrl])
 
   useEffect(() => {
     if (items.length === 2 && prevCountRef.current === 1 && tableAnchorRef.current) {
-      setTimeout(() => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+      scrollTimeoutRef.current = setTimeout(() => {
         tableAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
       }, 300)
     }
     prevCountRef.current = items.length
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+    }
   }, [items.length])
 
   // GSAP: hero heading entrance

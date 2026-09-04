@@ -34,12 +34,16 @@ async function getProducts() {
 }
 
 // Invalidate cache when mock.json is written
-watch(MOCK_PATH, (eventType) => {
-  if (eventType === "change") {
-    console.log("[cache] mock.json changed — invalidating cache");
-    cache = null;
-  }
-});
+try {
+  watch(MOCK_PATH, (eventType) => {
+    if (eventType === "change" || eventType === "rename") {
+      console.log("[cache] mock.json changed — invalidating cache");
+      cache = null;
+    }
+  });
+} catch (err) {
+  console.warn("[cache] Watcher failed to attach:", err.message);
+}
 
 // ─── Route ───────────────────────────────────────────────────────────────────
 
