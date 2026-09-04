@@ -1,6 +1,6 @@
 import { Card, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, GitCompareArrows } from "lucide-react"
+import { GitCompareArrows } from "lucide-react"
 import { useLocation } from "wouter"
 import type { Product } from "@/hooks/use-products"
 import { createSlug } from "@/hooks/use-slugs"
@@ -70,7 +70,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
     const { toggleCompare, isInCompare, isFull } = useCompare()
     const inCompare = isInCompare(slug)
     return (
-        <Card className="group flex flex-col sm:flex-col overflow-hidden border-border/60 bg-card transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/30">
+        <Card className="group flex flex-col sm:flex-col overflow-hidden border-border/60 bg-card transition-[box-shadow,border-color,background-color] duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/30 transform-gpu">
 
             {/* ── MOBILE: horizontal layout ── */}
             <div className="flex sm:hidden">
@@ -153,39 +153,29 @@ export function ProductCard({ product, priority = false }: { product: Product; p
                         >
                             {product.fiyat.toLocaleString("tr-TR")} ₺
                         </p>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-col gap-0.5">
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className={`rounded-full shrink-0 h-7 w-7 p-0 transition-colors ${
+                                className={`rounded-full shrink-0 h-6 px-2 text-[10px] gap-1 transition-colors ${
                                     inCompare
-                                        ? "text-primary bg-primary/10 hover:bg-primary/20"
+                                        ? "text-primary bg-primary/10 hover:bg-primary/20 font-semibold"
                                         : "text-muted-foreground hover:text-foreground"
                                 }`}
                                 onClick={() => toggleCompare(product)}
                                 disabled={!inCompare && isFull}
                                 title={inCompare ? "Karşılaştırmadan Çıkar" : isFull ? "En fazla 4 sistem" : "Karşılaştır"}
                             >
-                                <GitCompareArrows className="h-3.5 w-3.5" />
+                                <GitCompareArrows className="h-3 w-3" />
+                                {inCompare ? "Eklendi" : "Karşılaştır"}
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="rounded-full shrink-0 gap-1 text-xs h-7 px-2 font-semibold text-muted-foreground hover:text-foreground"
+                                className="rounded-full shrink-0 gap-1 text-[10px] h-5 px-2 font-semibold text-muted-foreground hover:text-foreground"
                                 onClick={goToDetail}
                             >
                                 Detay
-                            </Button>
-                            <Button
-                                size="sm"
-                                className="rounded-full shrink-0 gap-1 text-xs h-7 px-3 font-semibold shadow-sm"
-                                disabled={!product.stoktaVarMi}
-                                asChild
-                            >
-                                <a href={product.siteUrl} target="_blank" rel="nofollow noopener noreferrer">
-                                    İncele
-                                    <ExternalLink className="h-3 w-3 opacity-75" />
-                                </a>
                             </Button>
                         </div>
                     </div>
@@ -289,11 +279,11 @@ export function ProductCard({ product, priority = false }: { product: Product; p
                             {product.fiyat.toLocaleString("tr-TR")} ₺
                         </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1">
                         <Button
                             variant={inCompare ? "default" : "outline"}
                             size="sm"
-                            className={`rounded-full shrink-0 gap-1.5 font-semibold text-xs transition-all ${
+                            className={`rounded-full shrink-0 gap-1.5 font-semibold text-xs transition-all h-7 px-3 ${
                                 inCompare
                                     ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
                                     : ""
@@ -308,21 +298,10 @@ export function ProductCard({ product, priority = false }: { product: Product; p
                         <Button
                             variant="outline"
                             size="sm"
-                            className="rounded-full shrink-0 font-semibold text-xs"
+                            className="rounded-full shrink-0 font-semibold text-[11px] h-6 px-3 text-muted-foreground hover:text-foreground"
                             onClick={goToDetail}
                         >
                             Detay
-                        </Button>
-                        <Button
-                            size="sm"
-                            className="rounded-full shrink-0 gap-1.5 font-semibold shadow-sm hover:shadow-primary/25 transition-all"
-                            disabled={!product.stoktaVarMi}
-                            asChild
-                        >
-                            <a href={product.siteUrl} target="_blank" rel="nofollow noopener noreferrer">
-                                İncele
-                                <ExternalLink className="h-3.5 w-3.5 opacity-75" />
-                            </a>
                         </Button>
                     </div>
                 </CardFooter>

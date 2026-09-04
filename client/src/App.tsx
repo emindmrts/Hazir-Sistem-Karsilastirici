@@ -132,47 +132,27 @@ function AppContent() {
     const cards = grid.querySelectorAll<HTMLElement>(".product-card")
     if (!cards.length) return
 
-    // Entrance stagger
-    const isBelow = window.scrollY > 200
+    // Entrance stagger - hardware accelerated & clean cleanup
     gsap.fromTo(cards,
-      { opacity: 0, y: isBelow ? 50 : -50, scale: 0.96 },
+      { opacity: 0, y: 24, scale: 0.98 },
       {
-        opacity: 1, y: 0, scale: 1,
-        duration: 0.5,
-        ease: "power3.out",
-        stagger: { each: 0.03, from: isBelow ? "end" : "start" },
-        clearProps: "transform",
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.35,
+        ease: "power2.out",
+        stagger: 0.02,
+        clearProps: "transform,opacity",
         force3D: true,
       }
     )
 
-    // Top-card glow (smart sort) — boxShadow paint tetikler; CSS transition ile,
-    // layout/forced reflow olmadan.
+    // Top-card glow (smart sort)
     if (cards.length > 0 && sortOrder === "smart") {
       const top = cards[0]
       top.style.setProperty("box-shadow", "0 0 20px rgba(59,130,246,0.12)")
       top.style.setProperty("transition", "box-shadow 1s ease")
     }
-
-    // Scroll fade — ScrollTrigger yerine IntersectionObserver (reflow yok, daha ucuz).
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            gsap.to(entry.target, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out", clearProps: "transform" })
-            io.unobserve(entry.target)
-          }
-        }
-      },
-      { rootMargin: "80px 0px" }
-    )
-    cards.forEach(card => {
-      card.style.opacity = "0"
-      card.style.transform = "translateY(24px)"
-      card.style.willChange = "transform, opacity"
-      io.observe(card)
-    })
-    return () => io.disconnect()
   }, [products, isLoading, sortOrder])
 
   // Skeleton stagger entrance
@@ -407,7 +387,7 @@ function AppContent() {
             <h2 className="sr-only">Sistem Listesi</h2>
             <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
               {products.map((p, i) => (
-                <div key={p.slug ?? p.sistemAdi + p.magaza} className="product-card opacity-0">
+                <div key={p.slug ?? p.sistemAdi + p.magaza} className="product-card">
                   <ProductCard product={p} priority={i < 4} />
                 </div>
               ))}

@@ -86,9 +86,16 @@ def load_mock() -> list[dict]:
 
 
 def save_mock(products: list[dict]) -> None:
+    unique_products = []
+    seen = set()
     for p in products:
         if "store" in p and isinstance(p["store"], str):
             p["store"] = p["store"].lower()
+        url_key = (p.get("url") or p.get("siteUrl") or f"{p.get('store')}-{p.get('name')}").strip().lower()
+        if url_key not in seen:
+            seen.add(url_key)
+            unique_products.append(p)
+    products = unique_products
     MOCK_JSON.write_text(
         json.dumps(products, ensure_ascii=False, indent=2),
         encoding="utf-8",

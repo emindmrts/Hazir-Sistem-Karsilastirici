@@ -163,7 +163,7 @@ input[type="number"] {
   }
 
   .card-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .card-hover:hover {
     transform: translateY(-3px);
@@ -202,11 +202,9 @@ input[type="number"] {
   }
 }
 
-/* Viewport disindaki kartlari render etmeyerek uzun liste reflow'unu azaltir.
-   Girdikte tekrar render edilir; TBT/SI iyilestirir. */
 @layer base {
   .product-card {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 380px;
+    contain: layout style;
+    backface-visibility: hidden;
   }
 }
