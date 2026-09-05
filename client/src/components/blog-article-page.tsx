@@ -72,7 +72,7 @@ function ArticleLink({ article, title, arrow, align }: { article: BlogArticleMet
     return (
         <Link
             href={`/blog/${article.slug}`}
-            className={`group flex flex-col gap-1 rounded-[8px] border-[1px] border-[var(--b-smoke)] bg-[var(--b-carbon)] p-4 transition-colors hover:bg-[var(--b-graphite)] ${
+            className={`group flex flex-col gap-1 border-t-[1px] border-[var(--b-smoke)] pt-4 transition-colors ${
                 align === "end" ? "items-end text-right" : "items-start"
             }`}
         >
@@ -342,7 +342,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
             <div className="border-t-[1px] border-[var(--b-smoke)] pt-6" />
 
             {(newer || older) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8">
                     {newer ? (
                         <ArticleLink article={newer} title="Daha yeni" arrow="left" align="start" />
                     ) : (
