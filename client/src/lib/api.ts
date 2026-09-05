@@ -33,30 +33,6 @@ export interface ProductsPageResponse {
         currentPage: number
         pageSize: number
     }
-    grouped?: false
-}
-
-export interface ProductGroup {
-    key: string
-    title: string
-    image: string
-    minPrice: number
-    maxPrice: number
-    storeCount: number
-    offerCount: number
-    stores: string[]
-    offers: Product[]
-}
-
-export interface GroupedPageResponse {
-    data: ProductGroup[]
-    pagination: {
-        totalItems: number
-        totalPages: number
-        currentPage: number
-        pageSize: number
-    }
-    grouped: true
 }
 
 export interface ProductDetailResponse {
@@ -66,19 +42,6 @@ export interface ProductDetailResponse {
 
 export interface FacetsResponse {
     cpuModels: { AMD: string[]; Intel: string[] }
-}
-
-function isGroupedPage(r: unknown): r is GroupedPageResponse {
-    if (typeof r !== "object" || r === null) return false
-    const o = r as Record<string, unknown>
-    const p = o.pagination as Record<string, unknown> | undefined
-    return (
-        o.grouped === true &&
-        Array.isArray(o.data) &&
-        typeof p === "object" && p !== null &&
-        typeof p.totalItems === "number" &&
-        typeof p.totalPages === "number"
-    )
 }
 
 function isProductsPage(r: unknown): r is ProductsPageResponse {
@@ -107,16 +70,15 @@ export interface ProductQuery {
     page?: number
     pageSize?: number
     sortOrder?: "lowToHigh" | "highToLow"
-    groupByConfig?: boolean
 }
 
-export async function fetchProductsPage(q: ProductQuery): Promise<ProductsPageResponse | GroupedPageResponse> {
+export async function fetchProductsPage(q: ProductQuery): Promise<ProductsPageResponse> {
     const r = await req<unknown>("/api/getProducts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(q),
     })
-    if (!isProductsPage(r) && !isGroupedPage(r)) throw new Error("API unexpected shape: /api/getProducts")
+    if (!isProductsPage(r)) throw new Error("API unexpected shape: /api/getProducts")
     return r
 }
 

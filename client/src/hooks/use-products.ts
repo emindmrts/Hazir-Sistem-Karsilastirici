@@ -3,8 +3,6 @@ import type { FilterState } from "../components/filter-sidebar"
 import { assignSlugs } from "./use-slugs"
 import { getCpuTier } from "../lib/fp-scoring"
 import { fetchProductsPage, fetchFacets, fetchProductDetail } from "../lib/api"
-import type { GroupedPageResponse, ProductGroup } from "../lib/api"
-import { groupOffers } from "../lib/config-key"
 
 // The shape of data returned from the backend mock.json
 export interface Product {
@@ -214,8 +212,6 @@ export function useProducts() {
     const [apiTotal, setApiTotal] = useState(0)
     const [apiPages, setApiPages] = useState(1)
     const [apiModels, setApiModels] = useState<{ AMD: string[]; Intel: string[] } | null>(null)
-    const [apiGroups, setApiGroups] = useState<ProductGroup[]>([])
-    const [apiGrouped, setApiGrouped] = useState(false)
 
     // Statik mod state (eski davranış)
     const [staticAll, setStaticAll] = useState<Product[]>([])
@@ -241,10 +237,6 @@ export function useProducts() {
     const [page, setPage] = useState(1)
     const [pageSize, setPageSize] = useState(60)
     const [sortOrder, setSortOrder] = useState<"lowToHigh" | "highToLow">("lowToHigh")
-    // Aynı konfigürasyon farklı isimle listelenenleri tek kartta birleştir
-    // Varsayılan KAPALI: farklı mağaza derlemeleri gerçekten farklı sistemler
-    // (anakart/kasa/PSU farklı), agresif birleştirme yanlış eşleşme yapıyor.
-    const [groupBy, setGroupBy] = useState(false)
 
     // URL'den filtreleri bir kez yükle (her iki modda da geçerli)
     useEffect(() => {
@@ -291,20 +283,11 @@ export function useProducts() {
                         page,
                         pageSize,
                         sortOrder,
-                        groupByConfig: groupBy,
                     }),
                     fetchFacets({ cpuBrands: filters.cpuBrands, cpuSeries: filters.cpuSeries }),
                 ])
                 if (cancelled) return
-                if ((pg as GroupedPageResponse).grouped === true) {
-                    setApiGroups((pg as GroupedPageResponse).data)
-                    setApiItems([])
-                    setApiGrouped(true)
-                } else {
-                    setApiItems(pg.data as Product[])
-                    setApiGroups([])
-                    setApiGrouped(false)
-                }
+                setApiItems(pg.data as Product[])
                 setApiTotal(pg.pagination.totalItems)
                 setApiPages(pg.pagination.totalPages)
                 setApiModels(fc.cpuModels)
@@ -327,7 +310,7 @@ export function useProducts() {
             cancelled = true
             clearTimeout(t)
         }
-    }, [mode, filters, page, pageSize, sortOrder, groupBy])
+    }, [mode, filters, page, pageSize, sortOrder])
 
     // Statik mod: tüm kataloğu indir (eski davranış, fallback)
     useEffect(() => {
@@ -494,22 +477,10 @@ export function useProducts() {
         return staticProcessed.slice(start, start + pageSize)
     }, [staticProcessed, page, pageSize])
 
-    const staticGroups = useMemo(
-        () => (groupBy ? groupOffers(staticProcessed) : []),
-        [staticProcessed, groupBy]
-    )
-    const staticGroupPages = Math.max(1, Math.ceil(staticGroups.length / pageSize))
-    const staticPaginatedGroups = useMemo(
-        () => staticGroups.slice((page - 1) * pageSize, page * pageSize),
-        [staticGroups, page, pageSize]
-    )
-
     // Moda göre çıktı seç
     const products = mode === "api" ? apiItems : staticPaginated
-    const groups = mode === "api" ? apiGroups : (groupBy ? staticPaginatedGroups : [])
-    const grouped = groupBy && (mode === "api" ? apiGrouped : true)
-    const totalCount = mode === "api" ? apiTotal : (groupBy ? staticGroups.length : staticProcessed.length)
-    const totalPages = mode === "api" ? apiPages : (groupBy ? staticGroupPages : staticTotalPages)
+    const totalCount = mode === "api" ? apiTotal : staticProcessed.length
+    const totalPages = mode === "api" ? apiPages : staticTotalPages
     const allProducts = mode === "api" ? [] : staticAll
     const availableCpuModels = mode === "api" ? (apiModels ?? EMPTY_MODELS) : staticCpuModels
 
@@ -524,10 +495,6 @@ export function useProducts() {
 
     return {
         products,
-        groups,
-        grouped,
-        groupBy,
-        setGroupBy,
         allProducts,
         totalCount,
         isLoading,

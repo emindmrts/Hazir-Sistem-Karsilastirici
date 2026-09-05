@@ -54,7 +54,7 @@ const HOME_FAQ = [
 
 function AppContent() {
   const {
-    products, groups, grouped, groupBy, setGroupBy, totalCount, isLoading, error,
+    products, totalCount, isLoading, error,
     filters, setFilters, resetFilters,
     page, setPage, totalPages,
     pageSize, setPageSize,
@@ -108,8 +108,8 @@ function AppContent() {
     setPage(1)
   }
 
-  // Generate JSON-LD for SEO (gruplu modda her grubun en ucuz teklifi)
-  const schemaProducts = grouped ? groups.map((g) => g.offers[0]).filter(Boolean) : products
+  // Generate JSON-LD for SEO
+  const schemaProducts = products
   const collectionJsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -258,15 +258,6 @@ function AppContent() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button
-                variant={groupBy ? "default" : "outline"}
-                size="sm"
-                title="Aynı konfigürasyondaki ürünleri tek kartta birleştir"
-                className="h-8 rounded-full text-[11px] font-bold uppercase shrink-0"
-                onClick={() => { setGroupBy(!groupBy); setPage(1) }}
-              >
-                Gruplu
-              </Button>
             </div>
           </div>
         </div>
@@ -296,7 +287,7 @@ function AppContent() {
         )}
 
         {/* Empty state */}
-        {!isLoading && !error && (grouped ? groups.length === 0 : products.length === 0) && (
+        {!isLoading && !error && products.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4 text-muted-foreground">
               <SearchX className="w-8 h-8 opacity-80" />
@@ -312,11 +303,7 @@ function AppContent() {
         {/* Grid — cards are tagged with .product-card for GSAP selector */}
         {!isLoading && (
           <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
-            {grouped ? groups.map((g) => (
-              <div key={g.key} className="product-card opacity-0">
-                <ProductCard product={g.offers[0]} />
-              </div>
-            )) : products.map((p, i) => (
+            {products.map((p, i) => (
               <div key={i} className="product-card opacity-0">
                 <ProductCard product={p} />
               </div>
@@ -325,7 +312,7 @@ function AppContent() {
         )}
 
         {/* Pagination */}
-        {!isLoading && (grouped ? groups.length > 0 : products.length > 0) && (
+        {!isLoading && products.length > 0 && (
           <div className="flex items-center justify-between pt-6 border-t border-border/60 mt-2">
             <Button
               variant="outline" size="sm"
