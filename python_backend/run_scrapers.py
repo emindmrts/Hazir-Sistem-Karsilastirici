@@ -105,6 +105,10 @@ ALL_SCRAPERS: list[ScraperState] = [
     ScraperState("EnUcuzSistem", "enucuzsistem", True,  scrape_enucuzsistem),
 ]
 
+# Fallback esiği: ana kaynak (API) bu sayidan az urun uretirse bireysel
+# magaza scraper'lari devreye girer (tek kaynak iflasina karsi koruma).
+MIN_PRODUCT_FALLBACK = 500
+
 # ── Shared ───────────────────────────────────────────────────────────────────
 _lock         = Lock()
 _all_products: list[dict] = []
@@ -140,10 +144,20 @@ def save_partitions(products: list[dict]) -> None:
 
 
 def save_products(products: list[dict]) -> None:
-    MOCK_JSON.write_text(
-        json.dumps(products, ensure_ascii=False, separators=(",", ":")),
-        encoding="utf-8",
-    )
+    if not products:
+        # Veri kaybini onle: scrape hic urun uretemediyse mevcut mock.json'u koru.
+        # (En basinda clean() cagriyoruz, bu yuzden bos yazim su an icin
+        #  sadece gercek bir kaynak hatasi durumunda tetiklenir.)
+        print("[WARN] save_products([]) - bos liste atlandi, mevcut veri korunuyor.", flush=True)
+        return
+    payload = json.dumps(products, ensure_ascii=False, separators=(",", ":"))
+
+    def _atomic_write(path: Path, content: str) -> None:
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        tmp.write_text(content, encoding="utf-8")
+        tmp.replace(path)
+
+    _atomic_write(MOCK_JSON, payload)
     save_partitions(products)
     CACHE_META.write_text(
         json.dumps(
@@ -157,16 +171,13 @@ def save_products(products: list[dict]) -> None:
     client_public_dir = ROOT / "client" / "public"
     if client_public_dir.exists():
         try:
-            (client_public_dir / "mock.json").write_text(
-                json.dumps(products, ensure_ascii=False, separators=(",", ":")),
-                encoding="utf-8",
-            )
-            (client_public_dir / "cache-meta.json").write_text(
+            _atomic_write(client_public_dir / "mock.json", payload)
+            _atomic_write(
+                client_public_dir / "cache-meta.json",
                 json.dumps(
                     {"lastUpdated": int(time.time() * 1000), "totalProducts": len(products)},
                     ensure_ascii=False,
                 ),
-                encoding="utf-8",
             )
         except Exception as e:
             print(f"[WARN] Failed to write to client/public: {e}")
@@ -175,16 +186,13 @@ def save_products(products: list[dict]) -> None:
     client_dist_dir = ROOT / "client" / "dist"
     if client_dist_dir.exists():
         try:
-            (client_dist_dir / "mock.json").write_text(
-                json.dumps(products, ensure_ascii=False, separators=(",", ":")),
-                encoding="utf-8",
-            )
-            (client_dist_dir / "cache-meta.json").write_text(
+            _atomic_write(client_dist_dir / "mock.json", payload)
+            _atomic_write(
+                client_dist_dir / "cache-meta.json",
                 json.dumps(
                     {"lastUpdated": int(time.time() * 1000), "totalProducts": len(products)},
                     ensure_ascii=False,
                 ),
-                encoding="utf-8",
             )
         except Exception as e:
             print(f"[WARN] Failed to write to client/dist: {e}")
@@ -410,7 +418,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     use_api = True
-    if not args.sites:
+    env_api = os.environ.get("USE_ENUCUZSISTEM_API")
+    if env_api is not None:
+        use_api = env_api.lower() in ("true", "1", "yes")
+        print(f"[INFO] USE_ENUCUZSISTEM_API={use_api} (ortam degiskeni)")
+    elif not args.sites:
         if sys.stdin.isatty():
             try:
                 print("===================================================")
@@ -443,9 +455,23 @@ if __name__ == "__main__":
     save = not args.no_save
     if save:
         _all_products.clear()
-        save_products([])
+        # Not: Eski mock.json artik hicbir kosulda bosaltilmiyor. save_products([])
+        # early-return ile mevcut veriyi korur; ilk temizlik gereksiz oldugu icin
+        # kaldirildi — onceki veri scrape basarisiz olursa yedek olarak durur.
 
     asyncio.run(main(selected, save))
+
+    # ── Veri kaybi koruyucusu: API/tek kaynak az urun urettiyse per-store fallback ──
+    if save and _all_products and (len(_all_products) < MIN_PRODUCT_FALLBACK):
+        print(f"[WARN] Sadece {len(_all_products)} urun geldi "
+              f"(esik: {MIN_PRODUCT_FALLBACK}) — bireysel magaza scraper'lariyla tamamlaniyor...",
+              flush=True)
+        fallback = [s for s in ALL_SCRAPERS if s.key != "enucuzsistem"]
+        asyncio.run(main(fallback, True))
+        print(f"[INFO] Fallback sonrasi toplam: {len(_all_products)} urun", flush=True)
+
+    if save and _all_products:
+        save_products(_all_products)
 
     try:
         input("\n  Devam etmek icin Enter'a basin...")
