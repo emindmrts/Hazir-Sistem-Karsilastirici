@@ -68,16 +68,24 @@ function renderArticle(content: string): { html: string; toc: TocItem[] } {
     return { html: marked.parse(content, { async: false }) as string, toc }
 }
 
-function ArticleLink({ article, label, align }: { article: BlogArticleMeta; label: string; align: "start" | "end" }) {
+function ArticleLink({ article, title, arrow, align }: { article: BlogArticleMeta; title: string; arrow: "left" | "right"; align: "start" | "end" }) {
     return (
         <Link
             href={`/blog/${article.slug}`}
-            className={`flex flex-col gap-1 rounded-lg border-[1px] border-[var(--b-smoke)] bg-[var(--b-carbon)] p-4 transition-colors hover:bg-[var(--b-graphite)] group ${
+            className={`group flex flex-col gap-1 rounded-[8px] border-[1px] border-[var(--b-smoke)] bg-[var(--b-carbon)] p-4 transition-colors hover:bg-[var(--b-graphite)] ${
                 align === "end" ? "items-end text-right" : "items-start"
             }`}
         >
-            <span className="text-[13px] font-[510] text-[var(--b-fog)] tracking-wide uppercase">
-                {label}
+            <span className={`inline-flex items-center gap-1.5 text-[13px] font-[510] text-[var(--b-fog)] tracking-wide uppercase ${
+                align === "end" ? "flex-row-reverse" : ""
+            }`}>
+                {arrow === "left" && (
+                    <span className="transition-transform duration-200 group-hover:-translate-x-0.5" aria-hidden="true">←</span>
+                )}
+                {title}
+                {arrow === "right" && (
+                    <span className="transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true">→</span>
+                )}
             </span>
             <span className="text-[15px] font-[510] text-[var(--b-snow)] leading-snug line-clamp-2 group-hover:text-[var(--b-mist)] transition-colors">
                 {article.title}
@@ -336,12 +344,12 @@ export function BlogArticlePage({ slug }: { slug: string }) {
             {(newer || older) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {newer ? (
-                        <ArticleLink article={newer} label="← Daha yeni" align="start" />
+                        <ArticleLink article={newer} title="Daha yeni" arrow="left" align="start" />
                     ) : (
                         <div className="hidden sm:block" aria-hidden="true" />
                     )}
                     {older ? (
-                        <ArticleLink article={older} label="Daha eski →" align="end" />
+                        <ArticleLink article={older} title="Daha eski" arrow="right" align="end" />
                     ) : (
                         <div className="hidden sm:block" aria-hidden="true" />
                     )}
@@ -349,21 +357,29 @@ export function BlogArticlePage({ slug }: { slug: string }) {
             )}
 
             {related.length > 0 && (
-                <section className="flex flex-col gap-4 mt-2">
+                <section className="flex flex-col gap-2 border-t-[1px] border-[var(--b-smoke)] pt-6">
                     <h2 className="text-[20px] font-[510] tracking-[-0.012em] text-[var(--b-snow)]">İlgili yazılar</h2>
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col divide-y divide-[var(--b-smoke)]">
                         {related.map((r) => (
                             <Link
                                 key={r.slug}
                                 href={`/blog/${r.slug}`}
-                                className="group flex flex-col gap-1 rounded-lg border-[1px] border-[var(--b-smoke)] bg-[var(--b-carbon)] p-4 transition-colors hover:bg-[var(--b-graphite)]"
+                                className="group flex items-start justify-between gap-4 py-5"
                             >
-                                <span className="text-[13px] text-[var(--b-steel)]">{formatDate(r.date)}</span>
-                                <span className="text-[15px] font-[510] text-[var(--b-snow)] leading-snug line-clamp-2 group-hover:text-[var(--b-mist)] transition-colors">
-                                    {r.title}
-                                </span>
-                                <span className="text-[13px] text-[var(--b-fog)] leading-relaxed line-clamp-2">
-                                    {r.description}
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[13px] text-[var(--b-fog)]">{formatDate(r.date)}</span>
+                                    <span className="text-[15px] font-[510] text-[var(--b-snow)] leading-snug line-clamp-2 group-hover:text-[var(--b-mist)] transition-colors">
+                                        {r.title}
+                                    </span>
+                                    <span className="text-[13px] text-[var(--b-fog)] leading-relaxed line-clamp-2">
+                                        {r.description}
+                                    </span>
+                                </div>
+                                <span
+                                    className="mt-1 shrink-0 text-[16px] text-[var(--b-fog)] transition-all duration-200 group-hover:translate-x-1 group-hover:text-[var(--b-snow)]"
+                                    aria-hidden="true"
+                                >
+                                    →
                                 </span>
                             </Link>
                         ))}
@@ -371,7 +387,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
                 </section>
             )}
 
-            <div className="mt-4 rounded-lg border-[1px] border-[var(--b-smoke)] bg-[var(--b-carbon)] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6">
                 <div>
                     <p className="text-[15px] font-[510] text-[var(--b-snow)]">Hazır sistemleri karşılaştır</p>
                     <p className="text-[14px] text-[var(--b-fog)] mt-0.5">
