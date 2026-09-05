@@ -66,6 +66,16 @@ input[type="number"] {
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Inter', system-ui, sans-serif;
@@ -302,6 +312,23 @@ input[type="number"] {
 
   .blog-anchor:hover {
     color: var(--b-fog);
+  }
+
+  /* İçindekiler'den gelen hedef bölüm vurgusu */
+  @keyframes blog-target-fade {
+    from {
+      background: var(--b-snow);
+      color: var(--b-canvas);
+    }
+    to {
+      background: transparent;
+      color: var(--b-snow);
+    }
+  }
+
+  .blog-content :is(h1, h2, h3):target {
+    animation: blog-target-fade 1.6s ease-out 1;
+    border-radius: 4px;
   }
 
   /* Okuma ilerleme çubuğu */
