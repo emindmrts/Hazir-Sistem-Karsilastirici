@@ -117,42 +117,65 @@ input[type="number"] {
   }
 }
 
+/* ─── Blog surface — Linear "observatory" tokens ──────────────────────────── */
+.blog-surface {
+  --b-canvas: #08090a;
+  --b-carbon: #141516;
+  --b-graphite: #1c1c1f;
+  --b-smoke: #23252a;
+  --b-iron: #2d2e31;
+  --b-ash: #34343a;
+  --b-steel: #62666d;
+  --b-fog: #8a8f98;
+  --b-mist: #d0d6e0;
+  --b-chalk: #e4e5e9;
+  --b-snow: #f7f8f8;
+  --b-void: #030404;
+}
+
 /* Markdown blog içeriği (marked ile render edilir) */
 @layer components {
   .blog-content {
-    color: hsl(var(--foreground));
+    color: var(--b-mist);
+    font-size: 15px;
+    line-height: 1.6;
+    letter-spacing: -0.008em;
   }
 
   .blog-content h1,
   .blog-content h2,
   .blog-content h3 {
-    @apply font-black tracking-tight;
+    color: var(--b-snow);
+    letter-spacing: -0.012em;
     margin-top: 1.5em;
-    margin-bottom: 0.5em;
+    margin-bottom: 0.45em;
   }
 
   .blog-content h1 {
-    @apply text-2xl;
+    font-size: 24px;
+    font-weight: 510;
   }
 
   .blog-content h2 {
-    @apply text-xl;
-    padding-bottom: 0.3em;
-    border-bottom: 1px solid hsl(var(--border));
+    font-size: 20px;
+    font-weight: 510;
+    padding-bottom: 0.35em;
+    border-bottom: 1px solid var(--b-ash);
   }
 
   .blog-content h3 {
-    @apply text-lg;
-  }
-
-  .blog-content p {
-    @apply text-[15px] leading-relaxed;
-    margin-top: 0.9em;
-    margin-bottom: 0.9em;
+    font-size: 17px;
+    font-weight: 510;
   }
 
   .blog-content strong {
-    font-weight: 700;
+    font-weight: 590;
+    color: var(--b-snow);
+  }
+
+  .blog-content p {
+    margin-top: 0.9em;
+    margin-bottom: 0.9em;
   }
 
   .blog-content ul,
@@ -160,7 +183,6 @@ input[type="number"] {
     margin-top: 0.9em;
     margin-bottom: 0.9em;
     padding-left: 1.4em;
-    @apply text-[15px] leading-relaxed;
   }
 
   .blog-content ul {
@@ -176,45 +198,81 @@ input[type="number"] {
     margin-bottom: 0.35em;
   }
 
+  .blog-content li::marker {
+    color: var(--b-steel);
+  }
+
   .blog-content a {
-    color: hsl(var(--primary));
-    text-decoration: underline;
+    color: var(--b-snow);
+    font-weight: 510;
+    text-decoration: none;
     text-underline-offset: 3px;
   }
 
+  .blog-content a:hover {
+    text-decoration: underline;
+  }
+
   .blog-content code {
-    @apply rounded bg-muted px-1.5 py-0.5 text-[13px];
+    background: var(--b-graphite);
+    color: var(--b-snow);
+    border: 1px solid var(--b-smoke);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+    font-size: 13px;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: -0.014em;
   }
 
   .blog-content pre {
-    @apply rounded-xl bg-muted/70 p-4 overflow-x-auto my-4;
+    background: var(--b-carbon);
+    border: 1px solid var(--b-smoke);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    margin: 1.25rem 0;
   }
 
   .blog-content pre code {
     background: transparent;
+    border: none;
     padding: 0;
-    @apply text-[13px];
+    font-size: 13px;
   }
 
   .blog-content hr {
-    @apply my-6 border-border;
+    margin: 2rem 0;
+    border: 0;
+    border-top: 1px solid var(--b-smoke);
   }
 
   .blog-content table {
-    @apply w-full border-collapse my-4 text-[14px];
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    font-size: 14px;
   }
 
   .blog-content th {
-    @apply text-left font-bold border-b border-border px-3 py-2;
+    text-align: left;
+    font-weight: 510;
+    color: var(--b-snow);
+    border-bottom: 1px solid var(--b-ash);
+    padding: 0.5rem 0.75rem;
   }
 
   .blog-content td {
-    @apply border-b border-border/60 px-3 py-2 align-top;
+    border-bottom: 1px solid var(--b-smoke);
+    padding: 0.5rem 0.75rem;
+    vertical-align: top;
+    color: var(--b-mist);
   }
 
   .blog-content blockquote {
-    @apply border-l-4 border-primary pl-4 my-4 italic text-muted-foreground;
+    border-left: 2px solid var(--b-steel);
+    padding-left: 1rem;
+    margin: 1.25rem 0;
+    color: var(--b-fog);
   }
 
   /* Başlık çapaları + scroll konumu */
@@ -227,13 +285,13 @@ input[type="number"] {
 
   .blog-anchor {
     position: absolute;
-    left: -1.3rem;
+    left: -1.4rem;
     top: 0.12em;
     opacity: 0;
-    color: hsl(var(--muted-foreground));
+    color: var(--b-steel);
     font-weight: 400;
     text-decoration: none;
-    transition: opacity 0.15s ease, color 0.15s ease;
+    transition: opacity 0.12s ease, color 0.12s ease;
   }
 
   .blog-content h1:hover .blog-anchor,
@@ -243,7 +301,7 @@ input[type="number"] {
   }
 
   .blog-anchor:hover {
-    color: hsl(var(--primary));
+    color: var(--b-fog);
   }
 
   /* Okuma ilerleme çubuğu */
@@ -252,92 +310,65 @@ input[type="number"] {
     inset-inline: 0;
     top: 0;
     z-index: 60;
-    height: 3px;
+    height: 2px;
     transform-origin: 0 50%;
-    background: linear-gradient(
-      90deg,
-      hsl(var(--primary)),
-      hsl(var(--primary) / 0.65)
-    );
-    box-shadow: 0 0 12px hsl(var(--primary) / 0.5);
-  }
-
-  /* Kapak görseli yoksa gradyan yer tutucu */
-  .blog-cover-placeholder {
-    background:
-      radial-gradient(900px 320px at 12% -20%, hsl(var(--primary) / 0.22), transparent 55%),
-      radial-gradient(700px 280px at 95% 115%, hsl(var(--primary) / 0.14), transparent 55%),
-      linear-gradient(140deg, hsl(var(--card)), hsl(var(--muted)));
-    position: relative;
-    overflow: hidden;
-  }
-
-  .blog-cover-placeholder::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(hsl(var(--foreground) / 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--foreground) / 0.05) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+    background: var(--b-snow);
   }
 
   /* İçindekiler */
   .blog-toc {
-    font-size: 0.8rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.9rem;
-    background: hsl(var(--card) / 0.6);
-    padding: 0.85rem 1rem;
+    font-size: 13px;
+    border: 1px solid var(--b-smoke);
+    border-radius: 8px;
+    background: var(--b-carbon);
+    padding: 0.85rem;
   }
 
   .blog-toc-title {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-weight: 800;
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: hsl(var(--muted-foreground));
-    margin-bottom: 0.55rem;
+    color: var(--b-steel);
+    margin-bottom: 0.5rem;
   }
 
   .blog-toc a {
     display: block;
-    padding: 0.28rem 0.5rem;
-    border-radius: 0.45rem;
-    color: hsl(var(--muted-foreground));
+    padding: 0.22rem 0.55rem;
+    border-radius: 4px;
+    color: var(--b-fog);
     text-decoration: none;
-    line-height: 1.35;
+    line-height: 1.4;
     border-left: 2px solid transparent;
-    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    transition: color 0.12s ease, background 0.12s ease, border-color 0.12s ease;
   }
 
   .blog-toc a:hover {
-    color: hsl(var(--primary));
-    background: hsl(var(--muted) / 0.45);
+    color: var(--b-snow);
+    background: var(--b-smoke);
   }
 
   .blog-toc a.is-h2 {
-    font-weight: 700;
-    color: hsl(var(--foreground));
+    font-weight: 510;
+    color: var(--b-mist);
   }
 
   .blog-toc a.is-h3 {
-    padding-left: 1.15rem;
+    padding-left: 1rem;
   }
 
   .blog-toc a.is-active {
-    color: hsl(var(--primary));
-    border-left-color: hsl(var(--primary));
-    background: hsl(var(--muted) / 0.45);
+    color: var(--b-snow);
+    border-left-color: var(--b-snow);
+    background: var(--b-graphite);
   }
 
   .blog-toc-empty {
-    padding: 1rem;
-    text-align: center;
-    color: hsl(var(--muted-foreground));
+    padding: 0.9rem 0.4rem;
+    color: var(--b-steel);
   }
 }

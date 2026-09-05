@@ -1,21 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link } from "wouter"
 import { marked, type MarkedExtension, type Tokens } from "marked"
-import {
-    CalendarDays,
-    Clock,
-    Tag,
-    ArrowLeft,
-    ArrowRight,
-    ListOrdered,
-    Copy,
-    Check,
-    Twitter,
-    MessageCircle,
-} from "lucide-react"
 import { SEO } from "@/components/seo"
 import { useBlogArticle, useBlogList } from "@/hooks/use-blog"
-import { Button } from "@/components/ui/button"
 import type { BlogArticleMeta } from "@/lib/api"
 
 function formatDate(date: string) {
@@ -30,24 +17,9 @@ function formatDate(date: string) {
     }
 }
 
-function timeAgo(date: string) {
-    const d = new Date(date)
-    if (Number.isNaN(d.getTime())) return formatDate(date)
-    const days = Math.floor((Date.now() - d.getTime()) / 86_400_000)
-    if (days <= 0) return "Bugün"
-    if (days === 1) return "Dün"
-    if (days < 30) return `${days} gün önce`
-    return formatDate(date)
-}
-
-// marked: kod bloğu içinde escape + güvenli bağlantılar (legal koruma).
 marked.setOptions({ gfm: true, breaks: true })
 
-interface TocItem {
-    id: string
-    text: string
-    depth: number
-}
+interface TocItem { id: string; text: string; depth: number }
 
 const TR_MAP: Record<string, string> = {
     ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u",
@@ -79,7 +51,7 @@ function renderArticle(content: string): { html: string; toc: TocItem[] } {
                 seen.set(base, n + 1)
                 const id = n === 0 ? base : `${base}-${n}`
                 toc.push({ id, text: clean, depth })
-                return `<h${depth} id="${id}"><a href="#${id}" class="blog-anchor" aria-label="Bölüm bağlantısı: ${clean}">#</a><span>${clean}</span></h${depth}>`
+                return `<h${depth} id="${id}"><a href="#${id}" class="blog-anchor" aria-label="${clean}">#</a><span>${clean}</span></h${depth}>`
             },
             link({ href, text, title }: Tokens.Link) {
                 let target = typeof href === "string" ? href : ""
@@ -93,27 +65,26 @@ function renderArticle(content: string): { html: string; toc: TocItem[] } {
     }
 
     marked.use(ext)
-    const html = marked.parse(content, { async: false }) as string
-    return { html, toc }
+    return { html: marked.parse(content, { async: false }) as string, toc }
 }
 
-function RelatedRow({ article, label, href, align }: { article: BlogArticleMeta; label: string; href: string; align: "start" | "end" }) {
+function ArticleLink({ article, label, align }: { article: BlogArticleMeta; label: string; align: "start" | "end" }) {
     return (
         <Link
-            href={href}
-            className={`flex flex-col gap-1 rounded-2xl border border-border/60 bg-card/60 p-4 hover:border-primary/40 hover:bg-card transition-all group ${
-                align === "end" ? "text-right items-end text-start" : "items-start"
+            href={`/blog/${article.slug}`}
+            className={`flex flex-col gap-1 rounded-lg border-[1px] border-[var(--b-smoke)] bg-[var(--b-carbon)] p-4 transition-colors hover:bg-[var(--b-graphite)] group ${
+                align === "end" ? "items-end text-right" : "items-start"
             }`}
         >
-            <span className="flex items-center gap-1.5 text-xs font-semibold text-primary">
-                {align === "start" ? <ArrowLeft className="w-3.5 h-3.5" /> : null}
+            <span className="text-[13px] font-[510] text-[var(--b-fog)] tracking-wide uppercase">
                 {label}
-                {align === "end" ? <ArrowRight className="w-3.5 h-3.5" /> : null}
             </span>
-            <span className="text-sm font-bold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+            <span className="text-[15px] font-[510] text-[var(--b-snow)] leading-snug line-clamp-2 group-hover:text-[var(--b-mist)] transition-colors">
                 {article.title}
             </span>
-            <span className="text-xs text-muted-foreground">{timeAgo(article.date)}</span>
+            <span className="text-[13px] text-[var(--b-steel)]">
+                {formatDate(article.date)}
+            </span>
         </Link>
     )
 }
@@ -159,32 +130,40 @@ export function BlogArticlePage({ slug }: { slug: string }) {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-sm font-bold text-muted-foreground">Yükleniyor...</p>
+            <div className="blog-surface min-h-screen flex items-center justify-center">
+                <p className="text-[13px] text-[var(--b-fog)]">Yükleniyor…</p>
             </div>
         )
     }
 
     if (notFound || !article) {
         return (
-            <div className="min-h-screen flex items-center justify-center flex-col gap-4 text-center px-4">
-                <p className="text-6xl font-black text-muted/40">404</p>
-                <p className="text-lg font-bold">Yazı bulunamadı.</p>
-                <Button variant="outline" onClick={() => (window.location.href = "/blog")}>
-                    Blog'a Dön
-                </Button>
+            <div className="blog-surface min-h-screen flex items-center justify-center flex-col gap-5 text-center px-4">
+                <p className="text-[48px] font-[510] tracking-[-0.02em] text-[var(--b-iron)]">404</p>
+                <p className="text-[17px] font-[510] text-[var(--b-mist)]">Yazı bulunamadı.</p>
+                <button
+                    type="button"
+                    onClick={() => (window.location.href = "/blog")}
+                    className="rounded-[9999px] border-[1px] border-[var(--b-snow)] bg-transparent text-[var(--b-snow)] text-[14px] font-[510] px-4 py-2 transition-colors hover:bg-[var(--b-snow)] hover:text-[var(--b-canvas)]"
+                >
+                    Blog'a dön
+                </button>
             </div>
         )
     }
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center flex-col gap-4 text-center px-4">
-                <p className="text-destructive font-semibold">Yazı yüklenemedi</p>
-                <p className="text-sm text-muted-foreground">{error}</p>
-                <Button variant="outline" onClick={() => (window.location.href = "/blog")}>
-                    Blog'a Dön
-                </Button>
+            <div className="blog-surface min-h-screen flex items-center justify-center flex-col gap-5 text-center px-4">
+                <p className="text-[17px] font-[510] text-[var(--b-fog)]">Yazı yüklenemedi.</p>
+                <p className="text-[14px] text-[var(--b-steel)]">{error}</p>
+                <button
+                    type="button"
+                    onClick={() => (window.location.href = "/blog")}
+                    className="rounded-[9999px] border-[1px] border-[var(--b-snow)] bg-transparent text-[var(--b-snow)] text-[14px] font-[510] px-4 py-2 transition-colors hover:bg-[var(--b-snow)] hover:text-[var(--b-canvas)]"
+                >
+                    Blog'a dön
+                </button>
             </div>
         )
     }
@@ -233,7 +212,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
     ]
 
     return (
-        <div className="max-w-5xl mx-auto flex flex-col gap-5">
+        <div className="blog-surface max-w-[720px] w-full mx-auto flex flex-col gap-6">
             <SEO
                 title={article.title}
                 description={article.description}
@@ -246,70 +225,58 @@ export function BlogArticlePage({ slug }: { slug: string }) {
 
             <div className="blog-progress" style={{ transform: `scaleX(${progress})` }} aria-hidden="true" />
 
-            <div className="flex flex-col gap-4">
-                <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors w-fit">
-                    <ArrowLeft className="w-4 h-4" />
-                    Tüm yazılar
+            <div className="flex flex-col gap-2">
+                <Link
+                    href="/blog"
+                    className="inline-flex items-center gap-1 text-[14px] text-[var(--b-fog)] hover:text-[var(--b-snow)] transition-colors w-fit mb-4"
+                >
+                    ← Tüm yazılar
                 </Link>
 
-                <header className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-1.5">
-                            <CalendarDays className="w-3.5 h-3.5" />
-                            {formatDate(article.date)}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5" />
-                            {article.readingMinutes} dk okuma
-                        </span>
-                    </div>
-                    <h1 className="text-2xl md:text-4xl font-black tracking-tight leading-tight">
-                        {article.title}
-                    </h1>
-                    <p className="text-base text-muted-foreground leading-relaxed">
-                        {article.description}
+                <div className="flex items-center gap-2 text-[13px] text-[var(--b-fog)]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--b-chalk)]" aria-hidden="true" />
+                    <time>{formatDate(article.date)}</time>
+                    <span className="text-[var(--b-steel)]" aria-hidden="true">·</span>
+                    <span>{article.readingMinutes} dk okuma</span>
+                </div>
+
+                <h1 className="text-[32px] font-[510] tracking-[-0.013em] leading-tight text-[var(--b-snow)] mt-1">
+                    {article.title}
+                </h1>
+
+                <p className="text-[15px] leading-relaxed text-[var(--b-fog)] max-w-[640px]">
+                    {article.description}
+                </p>
+
+                {article.tags.length > 0 && (
+                    <p className="text-[13px] text-[var(--b-steel)] mt-1">
+                        {article.tags.join("  ·  ")}
                     </p>
-                    {article.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                            {article.tags.map((t) => (
-                                <span
-                                    key={t}
-                                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary"
-                                >
-                                    <Tag className="w-3 h-3" />
-                                    {t}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                </header>
+                )}
             </div>
 
-            {article.image ? (
+            {article.image && (
                 <img
                     src={article.image}
                     alt={article.title}
-                    className="w-full aspect-[16/9] object-cover rounded-2xl border border-border/60"
+                    className="w-full aspect-[21/9] object-cover rounded-lg border-[1px] border-[var(--b-smoke)]"
                     loading="lazy"
                 />
-            ) : (
-                <div className="blog-cover-placeholder aspect-[16/9] rounded-2xl border border-border/60" aria-hidden="true" />
             )}
 
-            <div className="grid lg:grid-cols-[minmax(0,1fr)_240px] gap-8 items-start">
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_220px] gap-8 items-start mt-2">
                 <article
-                    className="blog-content rounded-2xl border border-border/60 bg-card/60 p-5 md:p-8"
+                    className="blog-content"
                     dangerouslySetInnerHTML={{ __html: html }}
                 />
 
                 <aside className="hidden lg:block">
                     <nav className="blog-toc lg:sticky lg:top-24 max-h-[calc(100vh-8rem)] overflow-y-auto" aria-label="İçindekiler">
                         <div className="blog-toc-title">
-                            <ListOrdered className="w-3.5 h-3.5" />
                             İçindekiler
                         </div>
                         {toc.length === 0 ? (
-                            <p className="blog-toc-empty">Bu yazıda bölüm başlığı yok.</p>
+                            <p className="blog-toc-empty">Başlık yok.</p>
                         ) : (
                             toc.map((t) => (
                                 <a
@@ -325,31 +292,27 @@ export function BlogArticlePage({ slug }: { slug: string }) {
                 </aside>
             </div>
 
-            <div className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card/60 p-5">
-                <p className="text-sm font-bold">Bu yazıyı paylaş</p>
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="inline-flex items-center gap-1.5"
+            <div className="flex flex-col gap-3 mt-4">
+                <p className="text-[12px] font-[500] uppercase tracking-wide text-[var(--b-steel)]">Paylaş</p>
+                <div className="flex flex-wrap items-center gap-1 text-[14px]">
+                    <button
+                        type="button"
                         onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encoded(shareText)}&url=${encoded(shareUrl)}`, "_blank", "noopener,noreferrer")}
+                        className="text-[var(--b-fog)] hover:text-[var(--b-snow)] transition-colors px-2 py-1"
                     >
-                        <Twitter className="w-3.5 h-3.5" />
-                        X'te paylaş
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="inline-flex items-center gap-1.5"
+                        X
+                    </button>
+                    <span className="text-[var(--b-smoke)]" aria-hidden="true">·</span>
+                    <button
+                        type="button"
                         onClick={() => window.open(`https://wa.me/?text=${encoded(`${shareText} ${shareUrl}`)}`, "_blank", "noopener,noreferrer")}
+                        className="text-[var(--b-fog)] hover:text-[var(--b-snow)] transition-colors px-2 py-1"
                     >
-                        <MessageCircle className="w-3.5 h-3.5" />
                         WhatsApp
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="inline-flex items-center gap-1.5"
+                    </button>
+                    <span className="text-[var(--b-smoke)]" aria-hidden="true">·</span>
+                    <button
+                        type="button"
                         onClick={() => {
                             navigator.clipboard
                                 .writeText(shareUrl)
@@ -359,22 +322,24 @@ export function BlogArticlePage({ slug }: { slug: string }) {
                                 })
                                 .catch(() => undefined)
                         }}
+                        className="text-[var(--b-fog)] hover:text-[var(--b-snow)] transition-colors px-2 py-1"
                     >
-                        {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
                         {copied ? "Kopyalandı" : "Bağlantıyı kopyala"}
-                    </Button>
+                    </button>
                 </div>
             </div>
+
+            <div className="border-t-[1px] border-[var(--b-smoke)] pt-6" />
 
             {(newer || older) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {newer ? (
-                        <RelatedRow article={newer} label="Daha yeni" href={`/blog/${newer.slug}`} align="start" />
+                        <ArticleLink article={newer} label="← Daha yeni" align="start" />
                     ) : (
                         <div className="hidden sm:block" aria-hidden="true" />
                     )}
                     {older ? (
-                        <RelatedRow article={older} label="Daha eski" href={`/blog/${older.slug}`} align="end" />
+                        <ArticleLink article={older} label="Daha eski →" align="end" />
                     ) : (
                         <div className="hidden sm:block" aria-hidden="true" />
                     )}
@@ -382,36 +347,41 @@ export function BlogArticlePage({ slug }: { slug: string }) {
             )}
 
             {related.length > 0 && (
-                <section className="flex flex-col gap-4">
-                    <h2 className="text-lg font-black tracking-tight">İlgili yazılar</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <section className="flex flex-col gap-4 mt-2">
+                    <h2 className="text-[20px] font-[510] tracking-[-0.012em] text-[var(--b-snow)]">İlgili yazılar</h2>
+                    <div className="flex flex-col gap-4">
                         {related.map((r) => (
                             <Link
                                 key={r.slug}
                                 href={`/blog/${r.slug}`}
-                                className="group flex flex-col gap-1 rounded-2xl border border-border/60 bg-card/60 p-4 hover:border-primary/40 hover:bg-card transition-all"
+                                className="group flex flex-col gap-1 rounded-lg border-[1px] border-[var(--b-smoke)] bg-[var(--b-carbon)] p-4 transition-colors hover:bg-[var(--b-graphite)]"
                             >
-                                <span className="text-xs text-muted-foreground">{timeAgo(r.date)}</span>
-                                <span className="text-sm font-bold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                                <span className="text-[13px] text-[var(--b-steel)]">{formatDate(r.date)}</span>
+                                <span className="text-[15px] font-[510] text-[var(--b-snow)] leading-snug line-clamp-2 group-hover:text-[var(--b-mist)] transition-colors">
                                     {r.title}
                                 </span>
-                                <span className="text-xs text-muted-foreground line-clamp-2">{r.description}</span>
+                                <span className="text-[13px] text-[var(--b-fog)] leading-relaxed line-clamp-2">
+                                    {r.description}
+                                </span>
                             </Link>
                         ))}
                     </div>
                 </section>
             )}
 
-            <div className="mt-2 rounded-xl border border-border/60 bg-muted/40 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="mt-4 rounded-lg border-[1px] border-[var(--b-smoke)] bg-[var(--b-carbon)] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <p className="font-bold">Hazır sistemleri karşılaştır</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-[15px] font-[510] text-[var(--b-snow)]">Hazır sistemleri karşılaştır</p>
+                    <p className="text-[14px] text-[var(--b-fog)] mt-0.5">
                         İşlemci, ekran kartı ve fiyata göre filtreleyin.
                     </p>
                 </div>
-                <Button asChild className="shrink-0">
-                    <Link href="/">Sistemlere Göz At</Link>
-                </Button>
+                <Link
+                    href="/"
+                    className="rounded-[9999px] border-[1px] border-[var(--b-snow)] bg-transparent text-[var(--b-snow)] text-[14px] font-[510] px-4 py-2 transition-colors hover:bg-[var(--b-snow)] hover:text-[var(--b-canvas)] shrink-0"
+                >
+                    Sistemlere göz at
+                </Link>
             </div>
         </div>
     )
