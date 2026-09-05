@@ -5,12 +5,13 @@
  *
  * Run automatically before each build (see package.json "prebuild").
  */
-import { readFileSync, writeFileSync } from "node:fs"
+import { readFileSync, writeFileSync, readdirSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, resolve } from "node:path"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PUBLIC_DIR = resolve(__dirname, "..", "public")
+const BLOG_DIR = resolve(__dirname, "..", "..", "content", "blog")
 const SITE_URL = "https://www.pckarsilastir.com"
 
 /** Mirrors createSlug() in src/hooks/use-slugs.ts */
@@ -68,6 +69,38 @@ function xmlEscape(str) {
     .replace(/'/g, "&apos;")
 }
 
+/** Frontmatter'dan slug + date okur (content/blog/*.md). */
+function readBlogArticles() {
+  let files = []
+  try {
+    files = readdirSync(BLOG_DIR).filter((f) => f.endsWith(".md"))
+  } catch {
+    return []
+  }
+  const FM_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
+  const articles = []
+  for (const f of files) {
+    try {
+      const raw = readFileSync(resolve(BLOG_DIR, f), "utf-8")
+      const m = FM_RE.exec(raw)
+      if (!m) continue
+      let slug = "", date = null
+      for (const line of m[1].split(/\r?\n/)) {
+        const idx = line.indexOf(":")
+        if (idx === -1) continue
+        const key = line.slice(0, idx).trim()
+        const value = line.slice(idx + 1).trim().replace(/^["']|["']$/g, "")
+        if (key === "slug") slug = value
+        if (key === "date") date = value
+      }
+      if (slug) articles.push({ slug, date })
+    } catch {
+      // tekil bozuk dosya blog sitemap'ini düşürmesin
+    }
+  }
+  return articles
+}
+
 function main() {
   const today = new Date().toISOString().split("T")[0]
 
@@ -83,6 +116,22 @@ function main() {
     // /karsilastir bilinçli olarak listede YOK: özellik localhost-gated,
     // yayına alınırken geri eklenecek.
   ]
+
+  // Blog: /blog + her makale (lastmod = makale tarihi).
+  urls.push({
+    loc: `${SITE_URL}/blog`,
+    changefreq: "weekly",
+    priority: "0.7",
+    lastmod: null,
+  })
+  for (const a of readBlogArticles()) {
+    urls.push({
+      loc: `${SITE_URL}/blog/${a.slug}`,
+      changefreq: "monthly",
+      priority: "0.7",
+      lastmod: a.date,
+    })
+  }
 
   const slugs = assignSlugs(products)
   const seen = new Set()

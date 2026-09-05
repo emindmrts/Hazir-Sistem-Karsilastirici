@@ -76,6 +76,12 @@ export function Header({ searchValue, onSearchChange }: HeaderProps) {
                         Destek Ol
                     </a>
                     <a
+                        href="/blog"
+                        className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
+                    >
+                        Blog
+                    </a>
+                    <a
                         href="mailto:zenith31269@gmail.com"
                         className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
                     >

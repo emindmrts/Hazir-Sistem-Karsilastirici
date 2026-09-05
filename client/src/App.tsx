@@ -21,6 +21,12 @@ const ComparePage = lazy(() =>
 const FavoritesPage = lazy(() =>
   import("./components/favorites-page").then((m) => ({ default: m.FavoritesPage }))
 )
+const BlogPage = lazy(() =>
+  import("./components/blog-page").then((m) => ({ default: m.BlogPage }))
+)
+const BlogArticlePage = lazy(() =>
+  import("./components/blog-article-page").then((m) => ({ default: m.BlogArticlePage }))
+)
 import { PwaInstallBanner } from "./components/pwa-install-banner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
@@ -434,6 +440,22 @@ export default function App() {
                     <FavoritesPage />
                   </Suspense>
                 </Layout>
+              </Route>
+              <Route path="/blog">
+                <Layout sidebarContent={null}>
+                  <Suspense fallback={<DetailLoading />}>
+                    <BlogPage />
+                  </Suspense>
+                </Layout>
+              </Route>
+              <Route path="/blog/:slug">
+                {({ slug }) => (
+                  <Layout sidebarContent={null}>
+                    <Suspense fallback={<DetailLoading />}>
+                      <BlogArticlePage key={slug ?? ""} slug={slug ?? ""} />
+                    </Suspense>
+                  </Layout>
+                )}
               </Route>
               <Route path="/">
                 <AppContent />

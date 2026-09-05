@@ -121,3 +121,49 @@ export async function fetchProductDetail(slug: string): Promise<ProductDetailRes
     }
     return r as ProductDetailResponse
 }
+
+// ─── Blog ──────────────────────────────────────────────────────────────────────
+
+export interface BlogArticleMeta {
+    title: string
+    slug: string
+    date: string
+    description: string
+    tags: string[]
+    image: string | null
+    readingMinutes: number
+}
+
+export interface BlogArticle extends BlogArticleMeta {
+    content: string
+}
+
+export interface BlogListResponse {
+    articles: BlogArticleMeta[]
+}
+
+export interface BlogArticleResponse {
+    article: BlogArticle
+}
+
+export async function fetchBlogList(): Promise<BlogListResponse> {
+    const r = await req<unknown>("/api/blog")
+    if (
+        typeof r !== "object" || r === null ||
+        !Array.isArray((r as Record<string, unknown>).articles)
+    ) {
+        throw new Error("API unexpected shape: /api/blog")
+    }
+    return r as BlogListResponse
+}
+
+export async function fetchBlogArticle(slug: string): Promise<BlogArticleResponse> {
+    const r = await req<unknown>(`/api/blog/${encodeURIComponent(slug)}`)
+    if (
+        typeof r !== "object" || r === null ||
+        typeof (r as Record<string, unknown>).article !== "object"
+    ) {
+        throw new Error("API unexpected shape: /api/blog/:slug")
+    }
+    return r as BlogArticleResponse
+}

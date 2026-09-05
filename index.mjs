@@ -10,7 +10,8 @@ import setupSwagger from "./swagger/swagger.mjs";
 import apiRouter from "./routes/api.mjs";
 import { startScheduler } from "./lib/scheduler.mjs";
 import { loadCatalog, findBySlug } from "./lib/productIndex.mjs";
-import { isSocialBot, botHtml } from "./lib/botMeta.mjs";
+import { isSocialBot, botHtml, blogBotHtml } from "./lib/botMeta.mjs";
+import { getArticle } from "./lib/blog.mjs";
 
 const app = express();
 app.disable("x-powered-by");
@@ -91,6 +92,20 @@ app.get("/", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "
 app.get("/anasayfa", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
 app.get("/karsilastir", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
 app.get("/favoriler", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
+app.get("/blog", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
+app.get("/blog/:slug", async (req, res, next) => {
+  try {
+    const article = await getArticle(req.params.slug);
+    if (!article) return next();
+    if (isSocialBot(req.get("user-agent"))) {
+      res.set("Content-Type", "text/html; charset=utf-8");
+      return res.send(blogBotHtml(article));
+    }
+    res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+  } catch {
+    next();
+  }
+});
 
 // Detay sayfaları: slug katalogda varsa 200 + SPA, yoksa 404'e düş.
 // (Hepsini körü körüne 404 dönmek, sitemap'teki 2661 URL'yi index dışı bırakır.)

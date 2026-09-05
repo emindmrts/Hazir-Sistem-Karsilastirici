@@ -116,3 +116,104 @@ input[type="number"] {
     }
   }
 }
+
+/* Markdown blog içeriği (marked ile render edilir) */
+@layer components {
+  .blog-content {
+    color: hsl(var(--foreground));
+  }
+
+  .blog-content h1,
+  .blog-content h2,
+  .blog-content h3 {
+    @apply font-black tracking-tight;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+
+  .blog-content h1 {
+    @apply text-2xl;
+  }
+
+  .blog-content h2 {
+    @apply text-xl;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .blog-content h3 {
+    @apply text-lg;
+  }
+
+  .blog-content p {
+    @apply text-[15px] leading-relaxed;
+    margin-top: 0.9em;
+    margin-bottom: 0.9em;
+  }
+
+  .blog-content strong {
+    font-weight: 700;
+  }
+
+  .blog-content ul,
+  .blog-content ol {
+    margin-top: 0.9em;
+    margin-bottom: 0.9em;
+    padding-left: 1.4em;
+    @apply text-[15px] leading-relaxed;
+  }
+
+  .blog-content ul {
+    list-style: disc;
+  }
+
+  .blog-content ol {
+    list-style: decimal;
+  }
+
+  .blog-content li {
+    margin-top: 0.35em;
+    margin-bottom: 0.35em;
+  }
+
+  .blog-content a {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .blog-content code {
+    @apply rounded bg-muted px-1.5 py-0.5 text-[13px];
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .blog-content pre {
+    @apply rounded-xl bg-muted/70 p-4 overflow-x-auto my-4;
+  }
+
+  .blog-content pre code {
+    background: transparent;
+    padding: 0;
+    @apply text-[13px];
+  }
+
+  .blog-content hr {
+    @apply my-6 border-border;
+  }
+
+  .blog-content table {
+    @apply w-full border-collapse my-4 text-[14px];
+  }
+
+  .blog-content th {
+    @apply text-left font-bold border-b border-border px-3 py-2;
+  }
+
+  .blog-content td {
+    @apply border-b border-border/60 px-3 py-2 align-top;
+  }
+
+  .blog-content blockquote {
+    @apply border-l-4 border-primary pl-4 my-4 italic text-muted-foreground;
+  }
+}

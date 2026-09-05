@@ -7,6 +7,41 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://www.pckarsilastir.com/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.pckarsilastir.com/blog/hazir-sistem-donanim-sozlugu</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.pckarsilastir.com/blog/hazir-sistem-alirken-yapilan-7-hata</loc>
+    <lastmod>2026-08-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.pckarsilastir.com/blog/hazir-sistem-bilgisayar-alirken-dikkat-edilecekler</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.pckarsilastir.com/blog/hazir-sistem-fiyatlari-nasil-degisir</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.pckarsilastir.com/blog/oyun-bilgisayari-nasil-secilir</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.pckarsilastir.com/sistem/tebilon-amd-ryzen-5500-a520m-500gb-ssd-8gb-ram-ddr4-240-gb-ssd-gt-730-ofis-amd-ryzen-5500-a520m-500gb-ssd-8gb-ram</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
