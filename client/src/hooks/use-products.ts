@@ -1,6 +1,10 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import type { FilterState } from "../components/filter-sidebar"
 import { assignSlugs } from "./use-slugs"
+import { getCpuTier } from "../lib/fp-scoring"
+import { fetchProductsPage, fetchFacets, fetchProductDetail } from "../lib/api"
+import type { GroupedPageResponse, ProductGroup } from "../lib/api"
+import { groupOffers } from "../lib/config-key"
 
 // The shape of data returned from the backend mock.json
 export interface Product {
@@ -39,6 +43,8 @@ export interface Product {
     stoktaVarMi: boolean
     gpuKey?: string
     islemciModel?: string
+    /** F/P skoru — API modunda sunucu tarafından hesaplanır. */
+    fpScore?: number
     /** Unique, stable URL slug assigned by assignSlugs(). */
     slug?: string
 }
@@ -58,7 +64,10 @@ function parseCpuModel(cpuStr: string): string {
 
     const parts = cleaned.split(" ");
     for (let i = parts.length - 1; i >= 0; i--) {
-        const part = parts[i].trim();
+        const part = parts[i].trim().replace(/^i[3579]-/i, "");
+
+        // Skip OEM kodlari (orn. 100-000001406)
+        if (/^-?\d+-\d{5,}$/.test(part)) continue;
         
         // Skip general socket/cooler specs
         if (/ghz|lga|am\d|soket|box|kutulu|kutusuz|tray|fan|mpk/i.test(part)) continue;
@@ -106,7 +115,8 @@ function parseCpuModel(cpuStr: string): string {
             return part.toUpperCase();
         }
     }
-    const fallback = parts[parts.length - 1]?.toUpperCase() || "";
+    const fallback = (parts[parts.length - 1]?.toUpperCase() || "").replace(/^I[3579]-/, "");
+    if (/^-?\d+-\d{5,}$/.test(fallback) || fallback === "") return "";
     if (/^(ryzen|core|i3|i5|i7|i9|ultra|dual|n\/a|intel|amd|anakart|motherboard|ram|ssd)$/i.test(fallback)) {
         return "";
     }
@@ -117,6 +127,21 @@ function parseCpuModel(cpuStr: string): string {
         return "";
     }
     return fallback;
+}
+
+// "N/A" / bos deger yok hukmundedir: arayuzde ham "N/A" metni gorunmez.
+// Ayrica perakendecilerin parca adina ekledigi "(Stokta Yok)" dipnotlari
+// ve "PSU Yok" kasa sonekleri temizlenir.
+function orUndef(v: unknown): string | undefined {
+    if (v == null) return undefined
+    if (typeof v !== "string") return undefined
+    const s = v
+        .replace(/\s*\(stokta?\s+(yok|var)\)\s*/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+    const t = s.toLowerCase()
+    if (t === "" || t === "n/a" || t === "yok" || t === "yoktur" || t === "-" || t === "--") return undefined
+    return s
 }
 
 function normalise(raw: Record<string, unknown>): Product {
@@ -138,7 +163,20 @@ function normalise(raw: Record<string, unknown>): Product {
             ? "AMD"
             : undefined
 
-    const parsedModel = parseCpuModel(cpu);
+    // Model adi: bilinen cip tier'i kullan (farkli yazimlar birlesir).
+    // Tier bilinmiyorsa eski heuristic'e dus.
+    const cpuTierName = getCpuTier(cpu);
+    const parsedModel = cpuTierName !== "UNKNOWN" ? cpuTierName : parseCpuModel(cpu);
+
+    // Kasa "PSU Yok" diyorsa PSU satiri "Dahil Değil" olur; kasa adindaki
+    // sonek temizlenir (bilgi PSU satirina tasinmis olur).
+    let caseVal = orUndef(pc_case)
+    let psuVal = orUndef(psu)
+    if (!psuVal && /psu\s*yok/i.test(pc_case || "")) psuVal = "Dahil Değil"
+    if (caseVal) {
+        const stripped = caseVal.replace(/\s*PSU\s*YOK?\s*/gi, " ").replace(/\s+/g, " ").trim()
+        if (stripped) caseVal = stripped
+    }
 
     return {
         ...(raw as unknown as Product),
@@ -147,27 +185,45 @@ function normalise(raw: Record<string, unknown>): Product {
         resimUrl: (raw.image as string) ?? (raw.img as string) ?? "",
         siteUrl: (raw.url as string) ?? (raw.link as string) ?? "",
         magaza: (raw.store as string) ?? "",
-        islemci: cpu || undefined,
+        islemci: orUndef(cpu),
         islemciMarka: cpuMarka,
         islemciModel: parsedModel || undefined,
-        ekranKarti: gpu || undefined,
-        ram: ram || undefined,
-        ssd: ssd || undefined,
-        gpuKey: gpu.split(" ").slice(0, 3).join(" ").toUpperCase(),
+        ekranKarti: orUndef(gpu),
+        ram: orUndef(ram),
+        ssd: orUndef(ssd),
+        gpuKey: (orUndef(gpu) ?? "").split(" ").slice(0, 3).join(" ").toUpperCase(),
 
-        depolama: storage || undefined,
-        anakart: motherboard || undefined,
-        kasa: pc_case || undefined,
-        psu: psu || undefined,
-        sogutucu: cooler || undefined,
+        depolama: orUndef(storage),
+        anakart: orUndef(motherboard),
+        kasa: caseVal,
+        psu: psuVal,
+        sogutucu: orUndef(cooler),
         stoktaVarMi: (raw.store as string) === "pckolik" ? true : price > 0,
     }
 }
 
+const EMPTY_MODELS = { AMD: [] as string[], Intel: [] as string[] }
+
 export function useProducts() {
-    const [allProducts, setAllProducts] = useState<Product[]>([])
+    // "api": sunucu taraflı sayfalama (~50KB/sayfa). Başarısız olursa
+    // kalıcı olarak "static" moda düşer (2MB mock.json, eski davranış).
+    const [mode, setMode] = useState<"api" | "static">("api")
+
+    // API modu state
+    const [apiItems, setApiItems] = useState<Product[]>([])
+    const [apiTotal, setApiTotal] = useState(0)
+    const [apiPages, setApiPages] = useState(1)
+    const [apiModels, setApiModels] = useState<{ AMD: string[]; Intel: string[] } | null>(null)
+    const [apiGroups, setApiGroups] = useState<ProductGroup[]>([])
+    const [apiGrouped, setApiGrouped] = useState(false)
+
+    // Statik mod state (eski davranış)
+    const [staticAll, setStaticAll] = useState<Product[]>([])
+
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const fellBack = useRef(false)
+    const prevSearch = useRef<string | null>(null)
 
     const [filters, setFilters] = useState<FilterState>({
         minPrice: "",
@@ -185,42 +241,118 @@ export function useProducts() {
     const [page, setPage] = useState(1)
     const [pageSize, setPageSize] = useState(60)
     const [sortOrder, setSortOrder] = useState<"lowToHigh" | "highToLow">("lowToHigh")
+    // Aynı konfigürasyon farklı isimle listelenenleri tek kartta birleştir
+    // Varsayılan KAPALI: farklı mağaza derlemeleri gerçekten farklı sistemler
+    // (anakart/kasa/PSU farklı), agresif birleştirme yanlış eşleşme yapıyor.
+    const [groupBy, setGroupBy] = useState(false)
 
+    // URL'den filtreleri bir kez yükle (her iki modda da geçerli)
     useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const urlFilters: Partial<FilterState> = {}
+        if (params.get("q")) urlFilters.searchStr = params.get("q") || ""
+        if (params.get("stores")) urlFilters.stores = params.get("stores")?.split(",") || []
+        if (params.get("min")) urlFilters.minPrice = Number(params.get("min")) || ""
+        if (params.get("max")) urlFilters.maxPrice = Number(params.get("max")) || ""
+        if (params.get("cpu")) urlFilters.cpuBrands = params.get("cpu")?.split(",") || []
+        if (params.get("cpuSeries")) urlFilters.cpuSeries = params.get("cpuSeries")?.split(",") || []
+        if (params.get("cpuModels")) urlFilters.cpuModels = params.get("cpuModels")?.split(",") || []
+        if (params.get("gpu")) urlFilters.gpuBrands = params.get("gpu")?.split(",") || []
+
+        if (Object.keys(urlFilters).length > 0) {
+            setFilters(prev => ({ ...prev, ...urlFilters }))
+        }
+    }, [])
+
+    // API modu: filtre/sayfa değiştikçe sunucudan sayfa çek
+    useEffect(() => {
+        if (mode !== "api") return
+        let cancelled = false
+        setIsLoading(true)
+
+        // Arama yazarken istek yağmurunu önle
+        const delay = prevSearch.current !== null && prevSearch.current !== filters.searchStr ? 300 : 0
+        prevSearch.current = filters.searchStr
+
+        const t = setTimeout(async () => {
+            try {
+                const [pg, fc] = await Promise.all([
+                    fetchProductsPage({
+                        searchStr: filters.searchStr,
+                        minPrice: filters.minPrice,
+                        maxPrice: filters.maxPrice,
+                        stores: filters.stores,
+                        cpuBrands: filters.cpuBrands,
+                        cpuSeries: filters.cpuSeries,
+                        cpuModels: filters.cpuModels ?? [],
+                        gpuBrands: filters.gpuBrands,
+                        gpuSeries: filters.gpuSeries,
+                        inStock: filters.inStock,
+                        page,
+                        pageSize,
+                        sortOrder,
+                        groupByConfig: groupBy,
+                    }),
+                    fetchFacets({ cpuBrands: filters.cpuBrands, cpuSeries: filters.cpuSeries }),
+                ])
+                if (cancelled) return
+                if ((pg as GroupedPageResponse).grouped === true) {
+                    setApiGroups((pg as GroupedPageResponse).data)
+                    setApiItems([])
+                    setApiGrouped(true)
+                } else {
+                    setApiItems(pg.data as Product[])
+                    setApiGroups([])
+                    setApiGrouped(false)
+                }
+                setApiTotal(pg.pagination.totalItems)
+                setApiPages(pg.pagination.totalPages)
+                setApiModels(fc.cpuModels)
+                setError(null)
+            } catch (err: unknown) {
+                if (cancelled) return
+                console.warn("API kullanılamıyor, statik moda geçiliyor:", err)
+                if (!fellBack.current) {
+                    fellBack.current = true
+                    setMode("static")
+                } else {
+                    setError(`Hata: ${(err as Error).message}`)
+                }
+            } finally {
+                if (!cancelled && mode === "api") setIsLoading(false)
+            }
+        }, delay)
+
+        return () => {
+            cancelled = true
+            clearTimeout(t)
+        }
+    }, [mode, filters, page, pageSize, sortOrder, groupBy])
+
+    // Statik mod: tüm kataloğu indir (eski davranış, fallback)
+    useEffect(() => {
+        if (mode !== "static") return
+        let cancelled = false
         async function fetchProducts() {
             try {
                 setIsLoading(true)
                 const res = await fetch("/mock.json")
                 if (!res.ok) throw new Error("Ürünler yüklenirken hata oluştu.")
                 const raw: Record<string, unknown>[] = await res.json()
-                
-                setAllProducts(assignSlugs(raw.map(p => normalise(p))))
 
-                // Load filters from URL
-                const params = new URLSearchParams(window.location.search)
-                const urlFilters: Partial<FilterState> = {}
-                if (params.get("q")) urlFilters.searchStr = params.get("q") || ""
-                if (params.get("stores")) urlFilters.stores = params.get("stores")?.split(",") || []
-                if (params.get("min")) urlFilters.minPrice = Number(params.get("min")) || ""
-                if (params.get("max")) urlFilters.maxPrice = Number(params.get("max")) || ""
-                if (params.get("cpu")) urlFilters.cpuBrands = params.get("cpu")?.split(",") || []
-                if (params.get("cpuSeries")) urlFilters.cpuSeries = params.get("cpuSeries")?.split(",") || []
-                if (params.get("cpuModels")) urlFilters.cpuModels = params.get("cpuModels")?.split(",") || []
-                if (params.get("gpu")) urlFilters.gpuBrands = params.get("gpu")?.split(",") || []
-                
-                if (Object.keys(urlFilters).length > 0) {
-                    setFilters(prev => ({ ...prev, ...urlFilters }))
-                }
-
+                if (!cancelled) setStaticAll(assignSlugs(raw.map(p => normalise(p))))
             } catch (err: unknown) {
                 console.error("fetchProducts hatası:", err)
-                setError(`Hata: ${(err as Error).message}`)
+                if (!cancelled) setError(`Hata: ${(err as Error).message}`)
             } finally {
-                setIsLoading(false)
+                if (!cancelled) setIsLoading(false)
             }
         }
         fetchProducts()
-    }, [])
+        return () => {
+            cancelled = true
+        }
+    }, [mode])
 
     // Sync filters to URL
     useEffect(() => {
@@ -242,10 +374,11 @@ export function useProducts() {
         }
     }, [filters])
 
-    const availableCpuModels = useMemo(() => {
+    // Statik mod: CPU model dropdown (API modunda /api/facets kullanılır)
+    const staticCpuModels = useMemo(() => {
         const amdModels = new Set<string>()
         const intelModels = new Set<string>()
-        allProducts.forEach(p => {
+        staticAll.forEach(p => {
             if (p.islemciModel && p.islemciMarka) {
                 // If brand filter is active, only include models from that brand
                 if (filters.cpuBrands.length > 0 && !filters.cpuBrands.includes(p.islemciMarka)) {
@@ -280,10 +413,11 @@ export function useProducts() {
             AMD: Array.from(amdModels).sort(),
             Intel: Array.from(intelModels).sort()
         }
-    }, [allProducts, filters.cpuBrands, filters.cpuSeries])
+    }, [staticAll, filters.cpuBrands, filters.cpuSeries])
 
-    const processedProducts = useMemo(() => {
-        let result = [...allProducts]
+    // Statik mod: filtre + sıralama (API modunda sunucu yapar)
+    const staticProcessed = useMemo(() => {
+        let result = [...staticAll]
 
         if (filters.inStock) result = result.filter(p => p.stoktaVarMi)
 
@@ -352,13 +486,32 @@ export function useProducts() {
 
         result.sort((a: Product, b: Product) => sortOrder === "lowToHigh" ? a.fiyat - b.fiyat : b.fiyat - a.fiyat)
         return result
-    }, [allProducts, filters, sortOrder])
+    }, [staticAll, filters, sortOrder])
 
-    const totalPages = Math.max(1, Math.ceil(processedProducts.length / pageSize))
-    const paginatedProducts = useMemo(() => {
+    const staticTotalPages = Math.max(1, Math.ceil(staticProcessed.length / pageSize))
+    const staticPaginated = useMemo(() => {
         const start = (page - 1) * pageSize
-        return processedProducts.slice(start, start + pageSize)
-    }, [processedProducts, page, pageSize])
+        return staticProcessed.slice(start, start + pageSize)
+    }, [staticProcessed, page, pageSize])
+
+    const staticGroups = useMemo(
+        () => (groupBy ? groupOffers(staticProcessed) : []),
+        [staticProcessed, groupBy]
+    )
+    const staticGroupPages = Math.max(1, Math.ceil(staticGroups.length / pageSize))
+    const staticPaginatedGroups = useMemo(
+        () => staticGroups.slice((page - 1) * pageSize, page * pageSize),
+        [staticGroups, page, pageSize]
+    )
+
+    // Moda göre çıktı seç
+    const products = mode === "api" ? apiItems : staticPaginated
+    const groups = mode === "api" ? apiGroups : (groupBy ? staticPaginatedGroups : [])
+    const grouped = groupBy && (mode === "api" ? apiGrouped : true)
+    const totalCount = mode === "api" ? apiTotal : (groupBy ? staticGroups.length : staticProcessed.length)
+    const totalPages = mode === "api" ? apiPages : (groupBy ? staticGroupPages : staticTotalPages)
+    const allProducts = mode === "api" ? [] : staticAll
+    const availableCpuModels = mode === "api" ? (apiModels ?? EMPTY_MODELS) : staticCpuModels
 
     useEffect(() => {
         if (page > totalPages) setPage(1)
@@ -370,9 +523,13 @@ export function useProducts() {
     }
 
     return {
-        products: paginatedProducts,
+        products,
+        groups,
+        grouped,
+        groupBy,
+        setGroupBy,
         allProducts,
-        totalCount: processedProducts.length,
+        totalCount,
         isLoading,
         error,
         filters,
@@ -387,4 +544,28 @@ export function useProducts() {
         setSortOrder,
         availableCpuModels
     }
+}
+
+/** Detay sayfası için tek ürün + benzerler (API; düşerse tanımsız döner). */
+export function useProductDetail(slug: string) {
+    const [state, setState] = useState<{ loading: boolean; product?: Product; similar?: Product[] }>({
+        loading: true,
+    })
+
+    useEffect(() => {
+        let cancelled = false
+        setState({ loading: true })
+        fetchProductDetail(slug)
+            .then(r => {
+                if (!cancelled) setState({ loading: false, product: r.product, similar: r.similar })
+            })
+            .catch(() => {
+                if (!cancelled) setState({ loading: false })
+            })
+        return () => {
+            cancelled = true
+        }
+    }, [slug])
+
+    return state
 }

@@ -13,7 +13,7 @@ interface SEOProps {
 export function SEO({
   title = "PcKarşılaştır.com | PC Konfigürasyon & Sistem Karşılaştırması",
   description = "PcKarşılaştır.com'da Türkiye'nin tüm bilgisayar mağazalarındaki hazır sistemleri karşılaştırın. Fiyat, işlemci, ekran kartı ve diğer özelliklere göre filtreleyin.",
-  canonical = "https://www.pckarsilastir.com",
+  canonical = "https://www.pckarsilastir.com/",
   ogImage = "https://www.pckarsilastir.com/og-image.png",
   ogType = "website",
   keywords,

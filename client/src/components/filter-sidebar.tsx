@@ -75,8 +75,26 @@ const GPU_SERIES_GROUPS = [
     },
 ]
 
-
-
+/** Mağaza logosu; dosya yoksa (örn. monster) baş harflere düşer. */
+function StoreLogo({ logo, label }: { logo: string; label: string }) {
+    const [failed, setFailed] = useState(false)
+    if (failed) {
+        return (
+            <span className="text-[10px] font-black uppercase text-muted-foreground">
+                {label.slice(0, 2)}
+            </span>
+        )
+    }
+    return (
+        <img
+            src={logo}
+            alt={label}
+            className="w-full h-full object-contain"
+            loading="lazy"
+            onError={() => setFailed(true)}
+        />
+    )
+}
 
 interface SectionToggleProps {
     sectionKey: string
@@ -244,7 +262,7 @@ export function FilterSidebar({ filters, setFilters, onReset, availableCpuModels
                                             `}
                                         >
                                             <div className="w-7 h-7 shrink-0 bg-white dark:bg-zinc-900 rounded-md p-1 border border-border/40 flex items-center justify-center">
-                                                <img src={s.logo} alt={s.label} className="w-full h-full object-contain" />
+                                                <StoreLogo logo={s.logo} label={s.label} />
                                             </div>
                                             <span className={`text-xs font-semibold text-left line-clamp-1 ${isSelected ? "text-primary" : "text-muted-foreground"}`}>
                                                 {s.label}

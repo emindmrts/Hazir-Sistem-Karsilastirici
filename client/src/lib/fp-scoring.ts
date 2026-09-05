@@ -3,7 +3,7 @@ import type { Product } from "@/hooks/use-products"
 // --- Donanım Bağıl Güç Puanları (Heuristic Scores) ---
 // Not: Bu puanlar yaklaşık 3DMark / sentetik testlerin bağıl sıralamasıdır.
 
-const gpuScores: Record<string, number> = {
+export const gpuScores: Record<string, number> = {
     "RTX 5090": 450,
     "RTX 5080": 380,
     "RTX 5070 TI": 300,
@@ -43,9 +43,14 @@ const gpuScores: Record<string, number> = {
     "RTX 3050": 50,
     "GTX 1660 SUPER": 45,
     "GTX 1650": 30,
+    // Katalog taramasindan cikan gercek modeller (heuristic, ayni olcek)
+    "RX 580": 45,
+    "GT 730": 8,
+    "UHD 730": 10,
+    "5090": 450, // markasiz yazim ("GeForce 5090") icin
 }
 
-const cpuScores: Record<string, number> = {
+export const cpuScores: Record<string, number> = {
     "9950X3D": 260,
     "9800X3D": 250,
     "9900X3D": 240,
@@ -81,6 +86,31 @@ const cpuScores: Record<string, number> = {
     "12100F": 60,
     "5500": 55,
     "4500": 40,
+    // Katalog taramasindan cikan gercek modeller (heuristic, ayni olcek)
+    "7500X3D": 130,
+    "5700X3D": 150,
+    "5800X3D": 165,
+    "9950X": 210,
+    "9850X3D": 255,
+    "5700X": 85,
+    "5700": 78,
+    "12600KF": 105,
+    "12600K": 105,
+    "12700F": 155,
+    "13420H": 85,
+    "14700F": 190,
+    "13500": 115,
+    "14400": 115,
+    "14900": 245,
+    "14900F": 245,
+    "9500F": 135,
+    "235": 115,
+    "7900": 165,
+    "9600": 135,
+    "8400F": 110,
+    "8700F": 140,
+    "5750G": 65,
+    "3000G": 20,
 }
 
 export function getGpuTier(gpuStr?: string): string {

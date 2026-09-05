@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
     ArrowLeft, ExternalLink, Cpu, LayoutGrid, MemoryStick,
-    HardDrive, Zap, Box, Thermometer, ShieldCheck, Store
+    HardDrive, Zap, Box, Thermometer, ShieldCheck, Store, Scale
 } from "lucide-react"
 import type { Product } from "@/hooks/use-products"
+import { useCompare, isCompareEnabled } from "@/hooks/use-compare"
 import { createSlug } from "@/hooks/use-slugs"
 import { calculateFPScore } from "@/lib/fp-scoring"
 import { Breadcrumb } from "./breadcrumb"
@@ -64,9 +65,11 @@ function ScoreRing({ score }: { score: number }) {
 interface DetailPageProps {
     product: Product
     allProducts: Product[]
+    /** API modunda sunucudan gelir (sayfalama varken istemcide tüm veri yoktur). */
+    similarProducts?: Product[]
 }
 
-export function DetailPage({ product, allProducts }: DetailPageProps) {
+export function DetailPage({ product, allProducts, similarProducts }: DetailPageProps) {
     const [, setLocation] = useLocation()
 
     // Scroll to top on mount
@@ -76,11 +79,14 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
 
     const logoUrl = getLogoUrl(product.magaza)
 
-    // F/P Score using the advanced algorithm
-    const normalised = calculateFPScore(product, allProducts)
+    const { toggle, has, full } = useCompare()
+    const inTray = has(product)
+
+    // F/P Score: API modunda sunucu tüm kataloğa göre hesaplar, yoksa yerelde hesapla
+    const normalised = product.fpScore ?? calculateFPScore(product, allProducts)
 
     // Similar systems: same GPU brand, different price (±25%)
-    const similar = allProducts
+    const similar = similarProducts ?? allProducts
         .filter(p =>
             p !== product &&
             p.gpuKey && product.gpuKey &&
@@ -92,7 +98,7 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
 
     const canonicalSlug = product.slug ?? createSlug(product.name || product.sistemAdi, product.magaza)
     const canonicalUrl = `https://www.pckarsilastir.com/sistem/${canonicalSlug}`
-    const pageTitle = `${product.sistemAdi} | ${product.magaza} | ${product.fiyat.toLocaleString("tr-TR")} ₺`
+    const pageTitle = `${product.sistemAdi} | ${product.magaza}`
     const pageDesc = `${product.magaza} mağazasından ${product.sistemAdi} hazır sistem bilgisayarı. ${product.islemci ? product.islemci + " işlemcili" : ""} ${product.ekranKarti ? "ve " + product.ekranKarti + " ekran kartlı" : ""} bu sistemi ${product.fiyat.toLocaleString("tr-TR")} ₺ fiyatıyla inceleyin.`
 
     const jsonLd = {
@@ -101,7 +107,6 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
         "name": product.sistemAdi,
         "description": pageDesc,
         "image": product.resimUrl,
-        "brand": { "@type": "Brand", "name": product.magaza },
         "offers": {
             "@type": "Offer",
             "price": product.fiyat,
@@ -218,6 +223,17 @@ export function DetailPage({ product, allProducts }: DetailPageProps) {
                                                 <ExternalLink className="w-4 h-4" />
                                             </a>
                                         </Button>
+                                        {isCompareEnabled() && (
+                                            <Button
+                                                variant="outline"
+                                                className="w-full rounded-full font-bold gap-2 mt-2"
+                                                disabled={full && !inTray}
+                                                onClick={() => toggle(product)}
+                                            >
+                                                <Scale className="w-4 h-4" />
+                                                {inTray ? "Karşılaştırmadan Çıkar" : "Karşılaştırmaya Ekle"}
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="bg-amber-500/5 border border-amber-500/10 rounded-lg p-2.5">

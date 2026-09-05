@@ -80,6 +80,8 @@ function main() {
 
   const urls = [
     { loc: `${SITE_URL}/`, changefreq: "daily", priority: "1.0", lastmod: today },
+    // /karsilastir bilinçli olarak listede YOK: özellik localhost-gated,
+    // yayına alınırken geri eklenecek.
   ]
 
   const slugs = assignSlugs(products)
@@ -89,18 +91,20 @@ function main() {
     const slug = slugs.get(p)
     if (!slug || slug === "-" || seen.has(slug)) continue
     seen.add(slug)
+    // Ürün URL'lerinde lastmod YOK: elimizde ürün-bazlı güncellenme tarihi
+    // olmadığı için build tarihini yazmak Google'a sahte tazelik sinyali verir.
     urls.push({
       loc: `${SITE_URL}/sistem/${slug}`,
       changefreq: "weekly",
       priority: "0.8",
-      lastmod: today,
+      lastmod: null,
     })
   }
 
   const body = urls
     .map(
       (u) =>
-        `  <url>\n    <loc>${xmlEscape(u.loc)}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`
+        `  <url>\n    <loc>${xmlEscape(u.loc)}</loc>\n${u.lastmod ? `    <lastmod>${u.lastmod}</lastmod>\n` : ""}    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`
     )
     .join("\n")
 

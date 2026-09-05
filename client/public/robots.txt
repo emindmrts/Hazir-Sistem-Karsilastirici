@@ -5,5 +5,7 @@ Disallow: /*.json$
 
 User-agent: Googlebot
 Allow: /
+Disallow: /api/
+Disallow: /*.json$
 
 Sitemap: https://www.pckarsilastir.com/sitemap.xml

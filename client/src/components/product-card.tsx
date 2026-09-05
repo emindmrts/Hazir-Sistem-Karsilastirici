@@ -1,9 +1,10 @@
 import { Card, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, Cpu, HardDrive, LayoutGrid, MemoryStick, Zap, Box, Thermometer } from "lucide-react"
-import { useLocation } from "wouter"
+import { ExternalLink, Cpu, HardDrive, LayoutGrid, MemoryStick, Zap, Box, Thermometer, Scale } from "lucide-react"
+import { useLocation, Link } from "wouter"
 import type { Product } from "@/hooks/use-products"
 import { createSlug } from "@/hooks/use-slugs"
+import { useCompare, MAX_COMPARE, isCompareEnabled } from "../hooks/use-compare"
 
 function getLogoUrl(store: string) {
     const key = store.toLowerCase().replace(/[^a-z]/g, "")
@@ -52,8 +53,24 @@ function shortenName(name: string) {
 }
 
 
-export function ProductCard({ product }: { product: Product }) {
-    const displayName = shortenName(product.sistemAdi)
+function CompareToggle({ product }: { product: Product }) {
+    const { toggle, has, full } = useCompare()
+    const active = has(product)
+    return (
+        <Button
+            variant="ghost"
+            size="sm"
+            title={active ? "Karşılaştırmadan çıkar" : full ? `En fazla ${MAX_COMPARE} ürün` : "Karşılaştırmaya ekle"}
+            disabled={full && !active}
+            onClick={() => toggle(product)}
+            className={`rounded-full shrink-0 h-7 w-7 p-0 ${active ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}`}
+        >
+            <Scale className="h-3.5 w-3.5" />
+        </Button>
+    )
+}
+
+export function ProductCard({ product }: { product: Product }) {    const displayName = shortenName(product.sistemAdi)
     const [, setLocation] = useLocation()
     const slug = product.slug ?? createSlug(product.name || product.sistemAdi, product.magaza)
     const goToDetail = () => setLocation(`/sistem/${slug}`)
@@ -62,8 +79,8 @@ export function ProductCard({ product }: { product: Product }) {
 
             {/* ── MOBILE: horizontal layout ── */}
             <div className="flex sm:hidden">
-                {/* Image — left column */}
-                <div className="relative bg-gradient-to-br from-muted/60 to-muted/20 flex items-center justify-center w-28 shrink-0 overflow-hidden">
+                {/* Image — left column (aspect-square rezerve alan: CLS önler) */}
+                <div className="relative bg-gradient-to-br from-muted/60 to-muted/20 flex items-center justify-center w-28 aspect-square shrink-0 overflow-hidden">
                     <div className="absolute top-2 left-2 z-10">
                         <StoreBadge store={product.magaza} />
                     </div>
@@ -77,6 +94,8 @@ export function ProductCard({ product }: { product: Product }) {
                     <img
                         src={product.resimUrl}
                         alt={product.sistemAdi}
+                        width={400}
+                        height={300}
                         className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-sm p-2"
                         loading="lazy"
                         onError={(e) => {
@@ -89,12 +108,14 @@ export function ProductCard({ product }: { product: Product }) {
 
                 {/* Details — right column */}
                 <div className="flex flex-col flex-1 min-w-0 p-3 gap-2 justify-between">
-                    <h3
-                        onClick={goToDetail}
-                        className="font-semibold text-xs leading-snug line-clamp-2 group-hover:text-primary transition-colors cursor-pointer hover:underline underline-offset-2"
-                    >
-                        {displayName}
-                    </h3>
+                    {/* Gerçek <a href> iç linki: crawler'lar detay sayfalarını keşfedebilsin */}
+                    <Link href={`/sistem/${slug}`}>
+                        <h3
+                            className="font-semibold text-xs leading-snug line-clamp-2 group-hover:text-primary transition-colors cursor-pointer hover:underline underline-offset-2"
+                        >
+                            {displayName}
+                        </h3>
+                    </Link>
                     <div className="space-y-0.5 text-[10px] text-muted-foreground">
                         {product.islemci && (
                             <div className="flex items-center gap-1.5">
@@ -146,6 +167,7 @@ export function ProductCard({ product }: { product: Product }) {
                             >
                                 Detay
                             </Button>
+                            {isCompareEnabled() && <CompareToggle product={product} />}
                             <Button
                                 size="sm"
                                 className="rounded-full shrink-0 gap-1 text-xs h-7 px-3 font-semibold shadow-sm"
@@ -179,6 +201,8 @@ export function ProductCard({ product }: { product: Product }) {
                     <img
                         src={product.resimUrl}
                         alt={product.sistemAdi}
+                        width={400}
+                        height={300}
                         className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
                         loading="lazy"
                         onError={(e) => {
@@ -191,12 +215,14 @@ export function ProductCard({ product }: { product: Product }) {
 
                 {/* Details */}
                 <CardHeader className="flex-1 p-4 pb-3 space-y-3">
-                    <h3
-                        onClick={goToDetail}
-                        className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors cursor-pointer hover:underline underline-offset-2"
-                    >
-                        {displayName}
-                    </h3>
+                    {/* Gerçek <a href> iç linki: crawler'lar detay sayfalarını keşfedebilsin */}
+                    <Link href={`/sistem/${slug}`}>
+                        <h3
+                            className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors cursor-pointer hover:underline underline-offset-2"
+                        >
+                            {displayName}
+                        </h3>
+                    </Link>
                     <div className="space-y-1.5 text-xs text-muted-foreground">
                         {product.islemci && (
                             <div className="flex items-center gap-2">
@@ -264,6 +290,7 @@ export function ProductCard({ product }: { product: Product }) {
                         >
                             Detay
                         </Button>
+                        {isCompareEnabled() && <CompareToggle product={product} />}
                         <Button
                             size="sm"
                             className="rounded-full shrink-0 gap-1.5 font-semibold shadow-sm hover:shadow-primary/25 transition-all"

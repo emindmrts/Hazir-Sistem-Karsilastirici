@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, lazy, Suspense } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { Router, Route, Switch } from "wouter"
@@ -6,9 +6,17 @@ import { ThemeProvider } from "./components/theme-provider"
 import { Layout } from "./components/layout"
 import { ProductCard } from "./components/product-card"
 import { FilterSidebar } from "./components/filter-sidebar"
-import { DetailPage } from "./components/detail-page"
+// Detay sayfası ayrı chunk'ta yüklensin (anasayfa paketi küçülür)
+const DetailPage = lazy(() =>
+  import("./components/detail-page").then((m) => ({ default: m.DetailPage }))
+)
 import { SEO } from "./components/seo"
-import { useProducts } from "./hooks/use-products"
+import { useProducts, useProductDetail } from "./hooks/use-products"
+import { CompareProvider, isCompareEnabled } from "./hooks/use-compare"
+import { CompareBar } from "./components/compare-bar"
+const ComparePage = lazy(() =>
+  import("./components/compare-page").then((m) => ({ default: m.ComparePage }))
+)
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, SearchX, SlidersHorizontal } from "lucide-react"
@@ -46,7 +54,7 @@ const HOME_FAQ = [
 
 function AppContent() {
   const {
-    products, totalCount, isLoading, error,
+    products, groups, grouped, groupBy, setGroupBy, totalCount, isLoading, error,
     filters, setFilters, resetFilters,
     page, setPage, totalPages,
     pageSize, setPageSize,
@@ -100,7 +108,8 @@ function AppContent() {
     setPage(1)
   }
 
-  // Generate JSON-LD for SEO
+  // Generate JSON-LD for SEO (gruplu modda her grubun en ucuz teklifi)
+  const schemaProducts = grouped ? groups.map((g) => g.offers[0]).filter(Boolean) : products
   const collectionJsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -111,7 +120,7 @@ function AppContent() {
       "@type": "ItemList",
       "name": "Hazır Sistemler",
       "numberOfItems": totalCount,
-      "itemListElement": products.slice(0, 10).map((p, i) => ({
+      "itemListElement": schemaProducts.slice(0, 10).map((p, i) => ({
         "@type": "ListItem",
         "position": i + 1,
         "item": {
@@ -249,6 +258,15 @@ function AppContent() {
                   ))}
                 </SelectContent>
               </Select>
+              <Button
+                variant={groupBy ? "default" : "outline"}
+                size="sm"
+                title="Aynı konfigürasyondaki ürünleri tek kartta birleştir"
+                className="h-8 rounded-full text-[11px] font-bold uppercase shrink-0"
+                onClick={() => { setGroupBy(!groupBy); setPage(1) }}
+              >
+                Gruplu
+              </Button>
             </div>
           </div>
         </div>
@@ -278,7 +296,7 @@ function AppContent() {
         )}
 
         {/* Empty state */}
-        {!isLoading && !error && products.length === 0 && (
+        {!isLoading && !error && (grouped ? groups.length === 0 : products.length === 0) && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4 text-muted-foreground">
               <SearchX className="w-8 h-8 opacity-80" />
@@ -294,7 +312,11 @@ function AppContent() {
         {/* Grid — cards are tagged with .product-card for GSAP selector */}
         {!isLoading && (
           <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
-            {products.map((p, i) => (
+            {grouped ? groups.map((g) => (
+              <div key={g.key} className="product-card opacity-0">
+                <ProductCard product={g.offers[0]} />
+              </div>
+            )) : products.map((p, i) => (
               <div key={i} className="product-card opacity-0">
                 <ProductCard product={p} />
               </div>
@@ -303,7 +325,7 @@ function AppContent() {
         )}
 
         {/* Pagination */}
-        {!isLoading && products.length > 0 && (
+        {!isLoading && (grouped ? groups.length > 0 : products.length > 0) && (
           <div className="flex items-center justify-between pt-6 border-t border-border/60 mt-2">
             <Button
               variant="outline" size="sm"
@@ -355,8 +377,33 @@ function AppContent() {
 }
 
 function DetailRoute({ params }: { params: { slug: string } }) {
+  // Önce API'den tek ürünü dene (sayfalama modunda tüm veri istemcide yok).
+  const api = useProductDetail(params.slug)
+  if (api.product) {
+    return (
+      <Suspense fallback={<DetailLoading />}>
+        <DetailPage product={api.product} allProducts={[]} similarProducts={api.similar ?? []} />
+      </Suspense>
+    )
+  }
+  if (api.loading) {
+    return <DetailLoading />
+  }
+  // API yoksa eski akış: tüm katalog + slug eşleşmesi.
+  return <LegacyDetailRoute slug={params.slug} />
+}
+
+function DetailLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-sm font-bold text-muted-foreground">Yükleniyor...</p>
+    </div>
+  )
+}
+
+function LegacyDetailRoute({ slug }: { slug: string }) {
   const { allProducts } = useProducts()
-  const product = findBySlug(allProducts, params.slug)
+  const product = findBySlug(allProducts, slug)
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center flex-col gap-4 text-center px-4">
@@ -366,20 +413,49 @@ function DetailRoute({ params }: { params: { slug: string } }) {
       </div>
     )
   }
-  return <DetailPage product={product} allProducts={allProducts} />
+  return (
+    <Suspense fallback={<DetailLoading />}>
+      <DetailPage product={product} allProducts={allProducts} />
+    </Suspense>
+  )
 }
 
 export default function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="sistem-ui-theme">
-      <Router>
-        <Switch>
+      <CompareProvider>
+        <Router>
+          <Switch>
           <Route path="/sistem/:slug" component={DetailRoute} />
-          <Route path="/">
-            <AppContent />
-          </Route>
-        </Switch>
-      </Router>
+          {/* Karşılaştırma yayında değilken rota kapalı (localhost hariç) */}
+          {isCompareEnabled() && (
+            <Route path="/karsilastir">
+              <Suspense fallback={<DetailLoading />}>
+                <ComparePage />
+              </Suspense>
+            </Route>
+          )}
+            <Route path="/">
+              <AppContent />
+            </Route>
+            {/* Path'siz Route her zaman eşleşir → tanımsız URL'lerde 404 ekranı */}
+            <Route>
+              <NotFound />
+            </Route>
+          </Switch>
+          {isCompareEnabled() && <CompareBar />}
+        </Router>
+      </CompareProvider>
     </ThemeProvider>
+  )
+}
+
+function NotFound() {
+  return (
+    <div className="min-h-screen flex items-center justify-center flex-col gap-4 text-center px-4">
+      <p className="text-6xl font-black text-muted/40">404</p>
+      <p className="text-lg font-bold">Aradığın sayfa bulunamadı.</p>
+      <Button variant="outline" onClick={() => (window.location.href = "/")}>Anasayfaya Dön</Button>
+    </div>
   )
 }
