@@ -35,9 +35,19 @@ export interface ProductsPageResponse {
     }
 }
 
+export interface PriceHistory {
+    dates: string[]
+    prices: number[]
+    min: number
+    max: number
+    change7dPct: number | null
+    change30dPct: number | null
+}
+
 export interface ProductDetailResponse {
     product: Product
     similar: Product[]
+    priceHistory?: PriceHistory | null
 }
 
 export interface FacetsResponse {

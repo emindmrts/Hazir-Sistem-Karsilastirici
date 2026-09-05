@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
     ArrowLeft, ExternalLink, Cpu, LayoutGrid, MemoryStick,
-    HardDrive, Zap, Box, Thermometer, ShieldCheck, Store, Scale
+    HardDrive, Zap, Box, Thermometer, ShieldCheck, Store, Scale,
+    Bookmark, TrendingDown, TrendingUp
 } from "lucide-react"
 import type { Product } from "@/hooks/use-products"
 import { useCompare, isCompareEnabled } from "@/hooks/use-compare"
+import { useFavorites } from "@/hooks/use-favorites"
+import type { PriceHistory } from "@/lib/api"
 import { createSlug } from "@/hooks/use-slugs"
 import { calculateFPScore } from "@/lib/fp-scoring"
 import { Breadcrumb } from "./breadcrumb"
@@ -62,14 +65,114 @@ function ScoreRing({ score }: { score: number }) {
     )
 }
 
+/** Basit SVG sparkline — dışa bağımlılık yok. */
+function Sparkline({ prices, width = 100, height = 36 }: { prices: number[]; width?: number; height?: number }) {
+    if (prices.length < 2) return null
+    const pad = 3
+    const innerW = width - pad * 2
+    const innerH = height - pad * 2
+    const min = Math.min(...prices)
+    const max = Math.max(...prices)
+    const range = max - min || 1
+    const step = innerW / (prices.length - 1)
+    const pts = prices
+        .map((p, i) => {
+            const x = pad + i * step
+            const y = pad + innerH - ((p - min) / range) * innerH
+            return `${x.toFixed(1)},${y.toFixed(1)}`
+        })
+        .join(" ")
+    const fell = prices[prices.length - 1] < prices[0]
+    const color = fell ? "#10b981" : "#f59e0b"
+    const area = `${pad},${pad + innerH} ${pts} ${pad + innerW},${pad + innerH}`
+    return (
+        <svg
+            viewBox={`0 0 ${width} ${height}`}
+            className="w-full"
+            preserveAspectRatio="none"
+            style={{ height }}
+            role="img"
+            aria-label="30 günlük fiyat eğilimi"
+        >
+            <polygon points={area} fill={color} opacity="0.12" />
+            <polyline
+                points={pts}
+                fill="none"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+            />
+            <circle
+                cx={pad + innerW}
+                cy={pad + innerH - ((prices[prices.length - 1] - min) / range) * innerH}
+                r="2.5"
+                fill={color}
+            />
+        </svg>
+    )
+}
+
+/** 30 günlük fiyat geçmişi kartı: rozet + sparkline + min/max. */
+function PriceHistoryCard({ history }: { history: PriceHistory }) {
+    const d7 = history.change7dPct
+    const d30 = history.change30dPct
+    const dropped7 = typeof d7 === "number" && d7 < 0
+    const fmt = (n: number) => n.toLocaleString("tr-TR", { maximumFractionDigits: 1 })
+
+    return (
+        <div className="rounded-2xl border border-border/50 bg-card p-5">
+            <div className="flex items-center justify-between gap-2 mb-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                    Fiyat Geçmişi · 30 Gün
+                </p>
+                {typeof d7 === "number" && (
+                    <span
+                        className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full border ${
+                            dropped7
+                                ? "text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
+                                : "text-amber-600 dark:text-amber-500 bg-amber-500/10 border-amber-500/20"
+                        }`}
+                    >
+                        {dropped7 ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
+                        7 günde {dropped7 ? "-" : "+"}%{fmt(Math.abs(d7))}
+                    </span>
+                )}
+            </div>
+
+            <Sparkline prices={history.prices} />
+
+            <div className="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-border/40 text-xs">
+                <div>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-0.5">En Düşük</p>
+                    <p className="font-bold text-emerald-600 dark:text-emerald-500">{history.min.toLocaleString("tr-TR")} ₺</p>
+                </div>
+                <div className="text-right">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-0.5">En Yüksek</p>
+                    <p className="font-bold text-amber-600 dark:text-amber-500">{history.max.toLocaleString("tr-TR")} ₺</p>
+                </div>
+            </div>
+
+            {typeof d30 === "number" && (
+                <p className="text-[10px] text-muted-foreground mt-2.5 text-center">
+                    Son 30 günde {d30 < 0 ? "düşüş" : "artış"}: {d30 < 0 ? "-" : "+"}%{fmt(Math.abs(d30))}
+                </p>
+            )}
+        </div>
+    )
+}
+
 interface DetailPageProps {
     product: Product
     allProducts: Product[]
     /** API modunda sunucudan gelir (sayfalama varken istemcide tüm veri yoktur). */
     similarProducts?: Product[]
+    /** API modunda sunucudan gelir; statik fallback'te yoktur. */
+    priceHistory?: PriceHistory | null
 }
 
-export function DetailPage({ product, allProducts, similarProducts }: DetailPageProps) {
+export function DetailPage({ product, allProducts, similarProducts, priceHistory }: DetailPageProps) {
     const [, setLocation] = useLocation()
 
     // Scroll to top on mount
@@ -81,6 +184,9 @@ export function DetailPage({ product, allProducts, similarProducts }: DetailPage
 
     const { toggle, has, full } = useCompare()
     const inTray = has(product)
+
+    const { toggle: toggleFav, has: hasFav } = useFavorites()
+    const inFavs = hasFav(product)
 
     // F/P Score: API modunda sunucu tüm kataloğa göre hesaplar, yoksa yerelde hesapla
     const normalised = product.fpScore ?? calculateFPScore(product, allProducts)
@@ -223,6 +329,14 @@ export function DetailPage({ product, allProducts, similarProducts }: DetailPage
                                                 <ExternalLink className="w-4 h-4" />
                                             </a>
                                         </Button>
+                                        <Button
+                                            variant={inFavs ? "default" : "outline"}
+                                            className={`w-full rounded-full font-bold gap-2 mt-2 ${inFavs ? "bg-rose-500 hover:bg-rose-600 text-white border-rose-500" : ""}`}
+                                            onClick={() => toggleFav(product)}
+                                        >
+                                            <Bookmark className={`w-4 h-4 ${inFavs ? "fill-current" : ""}`} />
+                                            {inFavs ? "Favorilerden Çıkar" : "Favorilere Ekle"}
+                                        </Button>
                                         {isCompareEnabled() && (
                                             <Button
                                                 variant="outline"
@@ -242,6 +356,10 @@ export function DetailPage({ product, allProducts, similarProducts }: DetailPage
                                     </p>
                                 </div>
                             </div>
+
+                            {priceHistory && priceHistory.prices.length >= 2 && (
+                                <PriceHistoryCard history={priceHistory} />
+                            )}
                         </div>
 
                         {/* ── Right: Title + Specs ── */}

@@ -11,6 +11,7 @@
 
 import { Router } from "express";
 import { loadCatalog, findBySlug } from "../lib/productIndex.mjs";
+import { getPriceHistory } from "../lib/priceHistory.mjs";
 
 const router = Router();
 
@@ -34,7 +35,9 @@ router.get("/:slug", async (req, res) => {
       )
       .slice(0, 4);
 
-    res.json({ product, similar });
+    const priceHistory = await getPriceHistory(product.slug);
+
+    res.json({ product, similar, priceHistory });
   } catch (err) {
     console.error("[product] Error:", err);
     res.status(500).json({ error: err.message });

@@ -43,6 +43,8 @@ export interface Product {
     islemciModel?: string
     /** F/P skoru — API modunda sunucu tarafından hesaplanır. */
     fpScore?: number
+    /** 7 günde fiyat değişimi (%) — API getProducts cevabında gelir. */
+    change7dPct?: number
     /** Unique, stable URL slug assigned by assignSlugs(). */
     slug?: string
 }
@@ -515,7 +517,7 @@ export function useProducts() {
 
 /** Detay sayfası için tek ürün + benzerler (API; düşerse tanımsız döner). */
 export function useProductDetail(slug: string) {
-    const [state, setState] = useState<{ loading: boolean; product?: Product; similar?: Product[] }>({
+    const [state, setState] = useState<{ loading: boolean; product?: Product; similar?: Product[]; priceHistory?: import("../lib/api").PriceHistory | null }>({
         loading: true,
     })
 
@@ -524,7 +526,7 @@ export function useProductDetail(slug: string) {
         setState({ loading: true })
         fetchProductDetail(slug)
             .then(r => {
-                if (!cancelled) setState({ loading: false, product: r.product, similar: r.similar })
+                if (!cancelled) setState({ loading: false, product: r.product, similar: r.similar, priceHistory: r.priceHistory ?? null })
             })
             .catch(() => {
                 if (!cancelled) setState({ loading: false })

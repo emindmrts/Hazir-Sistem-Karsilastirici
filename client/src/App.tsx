@@ -13,10 +13,15 @@ const DetailPage = lazy(() =>
 import { SEO } from "./components/seo"
 import { useProducts, useProductDetail } from "./hooks/use-products"
 import { CompareProvider, isCompareEnabled } from "./hooks/use-compare"
+import { FavoritesProvider } from "./hooks/use-favorites"
 import { CompareBar } from "./components/compare-bar"
 const ComparePage = lazy(() =>
   import("./components/compare-page").then((m) => ({ default: m.ComparePage }))
 )
+const FavoritesPage = lazy(() =>
+  import("./components/favorites-page").then((m) => ({ default: m.FavoritesPage }))
+)
+import { PwaInstallBanner } from "./components/pwa-install-banner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, SearchX, SlidersHorizontal } from "lucide-react"
@@ -369,7 +374,7 @@ function DetailRoute({ params }: { params: { slug: string } }) {
   if (api.product) {
     return (
       <Suspense fallback={<DetailLoading />}>
-        <DetailPage product={api.product} allProducts={[]} similarProducts={api.similar ?? []} />
+        <DetailPage product={api.product} allProducts={[]} similarProducts={api.similar ?? []} priceHistory={api.priceHistory} />
       </Suspense>
     )
   }
@@ -411,27 +416,37 @@ export default function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="sistem-ui-theme">
       <CompareProvider>
-        <Router>
-          <Switch>
-          <Route path="/sistem/:slug" component={DetailRoute} />
-          {/* Karşılaştırma yayında değilken rota kapalı (localhost hariç) */}
-          {isCompareEnabled() && (
-            <Route path="/karsilastir">
-              <Suspense fallback={<DetailLoading />}>
-                <ComparePage />
-              </Suspense>
-            </Route>
-          )}
-            <Route path="/">
-              <AppContent />
-            </Route>
-            {/* Path'siz Route her zaman eşleşir → tanımsız URL'lerde 404 ekranı */}
-            <Route>
-              <NotFound />
-            </Route>
-          </Switch>
-          {isCompareEnabled() && <CompareBar />}
-        </Router>
+        <FavoritesProvider>
+          <Router>
+            <Switch>
+            <Route path="/sistem/:slug" component={DetailRoute} />
+            {/* Karşılaştırma yayında değilken rota kapalı (localhost hariç) */}
+            {isCompareEnabled() && (
+              <Route path="/karsilastir">
+                <Suspense fallback={<DetailLoading />}>
+                  <ComparePage />
+                </Suspense>
+              </Route>
+            )}
+              <Route path="/favoriler">
+                <Layout sidebarContent={null}>
+                  <Suspense fallback={<DetailLoading />}>
+                    <FavoritesPage />
+                  </Suspense>
+                </Layout>
+              </Route>
+              <Route path="/">
+                <AppContent />
+              </Route>
+              {/* Path'siz Route her zaman eşleşir → tanımsız URL'lerde 404 ekranı */}
+              <Route>
+                <NotFound />
+              </Route>
+            </Switch>
+            {isCompareEnabled() && <CompareBar />}
+            <PwaInstallBanner />
+          </Router>
+        </FavoritesProvider>
       </CompareProvider>
     </ThemeProvider>
   )

@@ -14,13 +14,28 @@
 import { Router } from "express";
 import { loadCatalog } from "../lib/productIndex.mjs";
 import { filterProducts } from "../lib/filterProducts.mjs";
+import { getChange7dPct } from "../lib/priceHistory.mjs";
 
 const router = Router();
 
 router.post("/", async (req, res) => {
   try {
     const products = await loadCatalog();
-    res.json(filterProducts(products, req.body ?? {}));
+    const result = filterProducts(products, req.body ?? {});
+    // Kart rozeti: her ürün için 7 günlük fiyat değişimi (isteğe bağlı).
+    const changes = await Promise.all(
+      result.data.map(async (p) => {
+        const pct = p.slug ? await getChange7dPct(p.slug) : null;
+        return { slug: p.slug, pct };
+      })
+    );
+    for (const { slug, pct } of changes) {
+      if (pct != null) {
+        const target = result.data.find((p) => p.slug === slug);
+        if (target) target.change7dPct = pct;
+      }
+    }
+    res.json(result);
   } catch (err) {
     console.error("[getProducts] Error:", err);
     res.status(500).json({ error: err.message });

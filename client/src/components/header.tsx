@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ModeToggle } from "./mode-toggle"
-import { Search, Heart } from "lucide-react"
+import { Search, Heart, Bookmark } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { useFavorites } from "@/hooks/use-favorites"
 
 interface HeaderProps {
     searchValue?: string
@@ -58,6 +59,14 @@ export function Header({ searchValue, onSearchChange }: HeaderProps) {
                 {/* Right nav */}
                 <nav ref={navRef} className="flex items-center gap-1 shrink-0 opacity-0">
                     <a
+                        href="/favoriler"
+                        className="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 group"
+                        title="Favorilerim"
+                    >
+                        <Bookmark className="w-[18px] h-[18px] group-hover:scale-110 transition-transform" />
+                        <FavoriteBadge />
+                    </a>
+                    <a
                         href="https://kreosus.com/emindmrts"
                         target="_blank"
                         rel="noreferrer"
@@ -76,5 +85,15 @@ export function Header({ searchValue, onSearchChange }: HeaderProps) {
                 </nav>
             </div>
         </header>
+    )
+}
+
+function FavoriteBadge() {
+    const { count } = useFavorites()
+    if (count === 0) return null
+    return (
+        <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-black px-1 shadow-sm">
+            {count > 9 ? "9+" : count}
+        </span>
     )
 }

@@ -90,6 +90,7 @@ app.get("/api/status", async (req, res) => {
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
 app.get("/anasayfa", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
 app.get("/karsilastir", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
+app.get("/favoriler", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
 
 // Detay sayfaları: slug katalogda varsa 200 + SPA, yoksa 404'e düş.
 // (Hepsini körü körüne 404 dönmek, sitemap'teki 2661 URL'yi index dışı bırakır.)

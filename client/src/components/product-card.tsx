@@ -1,10 +1,11 @@
 import { Card, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, Cpu, HardDrive, LayoutGrid, MemoryStick, Zap, Box, Thermometer, Scale } from "lucide-react"
+import { ExternalLink, Cpu, HardDrive, LayoutGrid, MemoryStick, Zap, Box, Thermometer, Scale, Bookmark, TrendingDown, TrendingUp } from "lucide-react"
 import { useLocation, Link } from "wouter"
 import type { Product } from "@/hooks/use-products"
 import { createSlug } from "@/hooks/use-slugs"
 import { useCompare, MAX_COMPARE, isCompareEnabled } from "../hooks/use-compare"
+import { useFavorites } from "@/hooks/use-favorites"
 
 function getLogoUrl(store: string) {
     const key = store.toLowerCase().replace(/[^a-z]/g, "")
@@ -67,6 +68,44 @@ function CompareToggle({ product }: { product: Product }) {
         >
             <Scale className="h-3.5 w-3.5" />
         </Button>
+    )
+}
+
+function FavoriteToggle({ product }: { product: Product }) {
+    const { toggle, has } = useFavorites()
+    const active = has(product)
+    return (
+        <Button
+            variant="ghost"
+            size="sm"
+            title={active ? "Favorilerden çıkar" : "Favorilere ekle"}
+            onClick={() => toggle(product)}
+            className={`rounded-full shrink-0 h-7 w-7 p-0 ${active ? "text-rose-500 bg-rose-500/10" : "text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"}`}
+        >
+            <Bookmark className={`h-3.5 w-3.5 ${active ? "fill-current" : ""}`} />
+        </Button>
+    )
+}
+
+/** 7 günlük fiyat değişimi rozeti (API'den gelen change7dPct). */
+function PriceChangeBadge({ product }: { product: Product }) {
+    const pct = product.change7dPct
+    if (typeof pct !== "number" || !Number.isFinite(pct)) return null
+    const dropped = pct < 0
+    const abs = Math.abs(pct).toLocaleString("tr-TR", { maximumFractionDigits: 1 })
+    if (dropped) {
+        return (
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-1.5 py-0.5 leading-none mt-1 w-fit">
+                <TrendingDown className="w-2.5 h-2.5" />
+                -%{abs} / 7 gün
+            </span>
+        )
+    }
+    return (
+        <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-full px-1.5 py-0.5 leading-none mt-1 w-fit">
+            <TrendingUp className="w-2.5 h-2.5" />
+            +%{abs} / 7 gün
+        </span>
     )
 }
 
@@ -152,12 +191,15 @@ export function ProductCard({ product }: { product: Product }) {    const displa
                     </div>
                     {/* Price + CTA */}
                     <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
-                        <p
-                            onClick={goToDetail}
-                            className="text-base font-bold text-primary leading-none cursor-pointer hover:underline underline-offset-2"
-                        >
-                            {product.fiyat.toLocaleString("tr-TR")} ₺
-                        </p>
+                        <div className="flex flex-col items-start gap-1">
+                            <p
+                                onClick={goToDetail}
+                                className="text-base font-bold text-primary leading-none cursor-pointer hover:underline underline-offset-2"
+                            >
+                                {product.fiyat.toLocaleString("tr-TR")} ₺
+                            </p>
+                            <PriceChangeBadge product={product} />
+                        </div>
                         <div className="flex items-center gap-1.5">
                             <Button
                                 variant="ghost"
@@ -167,6 +209,7 @@ export function ProductCard({ product }: { product: Product }) {    const displa
                             >
                                 Detay
                             </Button>
+                            <FavoriteToggle product={product} />
                             {isCompareEnabled() && <CompareToggle product={product} />}
                             <Button
                                 size="sm"
@@ -280,6 +323,9 @@ export function ProductCard({ product }: { product: Product }) {    const displa
                         >
                             {product.fiyat.toLocaleString("tr-TR")} ₺
                         </p>
+                        <div className="mt-1">
+                            <PriceChangeBadge product={product} />
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button
@@ -290,6 +336,7 @@ export function ProductCard({ product }: { product: Product }) {    const displa
                         >
                             Detay
                         </Button>
+                        <FavoriteToggle product={product} />
                         {isCompareEnabled() && <CompareToggle product={product} />}
                         <Button
                             size="sm"
