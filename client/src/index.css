@@ -318,10 +318,7 @@ input[type="number"] {
   /* İçindekiler */
   .blog-toc {
     font-size: 13px;
-    border: 1px solid var(--b-smoke);
-    border-radius: 8px;
-    background: var(--b-carbon);
-    padding: 0.85rem;
+    padding: 0;
   }
 
   .blog-toc-title {
@@ -333,12 +330,12 @@ input[type="number"] {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--b-steel);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.55rem;
   }
 
   .blog-toc a {
     display: block;
-    padding: 0.22rem 0.55rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 4px;
     color: var(--b-fog);
     text-decoration: none;
@@ -349,7 +346,6 @@ input[type="number"] {
 
   .blog-toc a:hover {
     color: var(--b-snow);
-    background: var(--b-smoke);
   }
 
   .blog-toc a.is-h2 {
@@ -358,13 +354,12 @@ input[type="number"] {
   }
 
   .blog-toc a.is-h3 {
-    padding-left: 1rem;
+    padding-left: 1.05rem;
   }
 
   .blog-toc a.is-active {
     color: var(--b-snow);
     border-left-color: var(--b-snow);
-    background: var(--b-graphite);
   }
 
   .blog-toc-empty {

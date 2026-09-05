@@ -212,7 +212,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
     ]
 
     return (
-        <div className="blog-surface max-w-[720px] w-full mx-auto flex flex-col gap-6">
+        <div className="blog-surface max-w-[860px] w-full mx-auto flex flex-col gap-6">
             <SEO
                 title={article.title}
                 description={article.description}
@@ -264,29 +264,35 @@ export function BlogArticlePage({ slug }: { slug: string }) {
                 />
             )}
 
-            {toc.length > 0 && (
-                <nav className="blog-toc my-2" aria-label="İçindekiler">
-                    <div className="blog-toc-title">
-                        İçindekiler
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                        {toc.map((t) => (
-                            <a
-                                key={t.id}
-                                href={`#${t.id}`}
-                                className={`${t.depth === 2 ? "is-h2" : "is-h3"} ${t.id === activeId ? "is-active" : ""}`}
-                            >
-                                {t.text}
-                            </a>
-                        ))}
-                    </div>
-                </nav>
-            )}
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_200px] gap-12 items-start mt-2">
+                <article
+                    className="blog-content"
+                    dangerouslySetInnerHTML={{ __html: html }}
+                />
 
-            <article
-                className="blog-content mt-2"
-                dangerouslySetInnerHTML={{ __html: html }}
-            />
+                <aside className="hidden lg:block">
+                    <nav className="blog-toc lg:sticky lg:top-24" aria-label="İçindekiler">
+                        <div className="blog-toc-title">
+                            İçindekiler
+                        </div>
+                        {toc.length === 0 ? (
+                            <p className="blog-toc-empty">Başlık yok.</p>
+                        ) : (
+                            <div className="flex flex-col gap-0.5">
+                                {toc.map((t) => (
+                                    <a
+                                        key={t.id}
+                                        href={`#${t.id}`}
+                                        className={`${t.depth === 2 ? "is-h2" : "is-h3"} ${t.id === activeId ? "is-active" : ""}`}
+                                    >
+                                        {t.text}
+                                    </a>
+                                ))}
+                            </div>
+                        )}
+                    </nav>
+                </aside>
+            </div>
 
             <div className="flex flex-col gap-3 mt-4">
                 <p className="text-[12px] font-[500] uppercase tracking-wide text-[var(--b-steel)]">Paylaş</p>
