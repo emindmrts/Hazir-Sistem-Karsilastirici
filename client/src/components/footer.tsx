@@ -4,32 +4,32 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full border-t border-border/40 bg-background/50 backdrop-blur-md">
-      <div className="mx-auto w-full max-w-screen-2xl px-4 py-12 md:px-8 md:py-16">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+    <footer className="w-full border-t border-border bg-background/60 backdrop-blur-md">
+      <div className="mx-auto w-full max-w-screen-2xl px-4 py-14 md:px-8 md:py-16">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
           {/* Brand Segment */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2.5">
               <img
                 src="/siyahlogo.png"
                 alt="PCKARSILASTIR.com"
-                className="h-11 w-auto object-contain dark:hidden"
+                className="h-10 w-auto object-contain dark:hidden"
               />
               <img
                 src="/beyazlogo.png"
                 alt="PCKARSILASTIR.com"
-                className="h-11 w-auto object-contain hidden dark:block"
+                className="h-10 w-auto object-contain hidden dark:block"
               />
             </div>
-            <p className="max-w-[280px] text-xs leading-relaxed text-muted-foreground">
+            <p className="max-w-[280px] text-[13px] leading-relaxed tracking-[-0.01em] text-muted-foreground">
               En ucuz, en güncel ve en güçlü hazır sistem bilgisayarları anlık olarak tarar, karşılaştırır ve en mantıklı tercihi yapmanızı sağlar.
             </p>
-            <div className="flex items-center gap-3.5 pt-1">
+            <div className="flex items-center gap-1.5 pt-1">
               <a
                 href="https://github.com"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
+                className="rounded-full p-2 text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
                 aria-label="GitHub"
               >
                 <svg
@@ -47,7 +47,7 @@ export function Footer() {
               </a>
               <a
                 href="mailto:zenith31269@gmail.com"
-                className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
+                className="rounded-full p-2 text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
                 aria-label="Email"
               >
                 <Mail className="h-4.5 w-4.5" />
@@ -57,10 +57,10 @@ export function Footer() {
 
           {/* Column 2: Retailers */}
           <div className="flex flex-col gap-3">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-80">
+            <span className="text-[11px] font-[590] uppercase tracking-[0.08em] text-muted-foreground">
               Desteklenen Mağazalar
             </span>
-            <ul className="flex flex-col gap-2.5 text-xs text-muted-foreground">
+            <ul className="flex flex-col gap-2.5 text-[13px] text-muted-foreground">
               {[
                 { name: "Vatan Bilgisayar", url: "https://www.vatanbilgisayar.com" },
                 { name: "Sinerji Bilgisayar", url: "https://www.sinerji.gen.tr" },
@@ -74,7 +74,7 @@ export function Footer() {
                     href={store.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 hover:text-primary transition-colors group"
+                    className="-mx-1 inline-flex items-center gap-1 rounded-full px-1 font-[510] text-muted-foreground hover:text-foreground transition-colors group"
                   >
                     {store.name}
                     <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -86,10 +86,10 @@ export function Footer() {
 
           {/* Column 3: Support */}
           <div className="flex flex-col gap-3">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-80">
+            <span className="text-[11px] font-[590] uppercase tracking-[0.08em] text-muted-foreground">
               Proje Desteği
             </span>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="max-w-[280px] text-[13px] leading-relaxed tracking-[-0.01em] text-muted-foreground">
               Bu karşılaştırma sistemi tamamen bağımsız ve ücretsiz bir açık kaynak projesidir. Geliştirilmesine katkı sağlamak isterseniz destek olabilirsiniz.
             </p>
             <div className="pt-1">
@@ -97,9 +97,9 @@ export function Footer() {
                 href="https://kreosus.com/emindmrts"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300"
+                className="inline-flex items-center gap-1.5 rounded-full border border-foreground/80 px-4 py-2 text-[13px] font-[510] tracking-[-0.01em] text-foreground hover:bg-foreground hover:text-background transition-colors"
               >
-                <Heart className="h-3.5 w-3.5 fill-current" />
+                <Heart className="h-3.5 w-3.5" />
                 Destek Ol
               </a>
             </div>
@@ -107,7 +107,7 @@ export function Footer() {
         </div>
 
         {/* Separator & Bottom Row */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/40 pt-8 text-[11px] text-muted-foreground sm:flex-row">
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-[11px] tracking-[-0.01em] text-muted-foreground sm:flex-row">
           <p>© {currentYear} PCKARSILASTIR.com. Tüm hakları saklıdır.</p>
           <p className="flex items-center gap-1">
             <span>Made with</span>
