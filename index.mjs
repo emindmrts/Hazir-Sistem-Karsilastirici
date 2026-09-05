@@ -1,3 +1,4 @@
+import "dotenv/config"; // ilk import olmali: config.mjs env'i okumadan .env yuklenir
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -8,8 +9,11 @@ import { promises as fs } from "fs";
 import setupSwagger from "./swagger/swagger.mjs";
 import apiRouter from "./routes/api.mjs";
 import { startScheduler } from "./lib/scheduler.mjs";
+import { loadCatalog, findBySlug } from "./lib/productIndex.mjs";
+import { isSocialBot, botHtml } from "./lib/botMeta.mjs";
 
 const app = express();
+app.disable("x-powered-by");
 const port = process.env.PORT || 3000;
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +30,8 @@ const corsOptions = {
     "https://ucuzasistem.com",
     "https://www.ucuzasistem.com",
     "https://ucuzasistem.up.railway.app",
+    "https://pckarsilastir.com",
+    "https://www.pckarsilastir.com",
   ],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
@@ -33,11 +39,24 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // ─── Serve fresh mock data directly from root ───────────────────────────────
-app.get("/mock.json", (req, res) => {
-  res.sendFile(path.join(__dirname, "mock.json"));
+// mock.json / cache-meta.json are gitignored and only exist after a scrape
+// run — return JSON 404 instead of falling through to the SPA fallback
+// (which would serve index.html and break fetch().json() on the client).
+app.get("/mock.json", async (req, res) => {
+  try {
+    await fs.access(path.join(__dirname, "mock.json"));
+    res.sendFile(path.join(__dirname, "mock.json"));
+  } catch {
+    res.status(404).json({ error: "mock.json not generated yet — run the scrapers first." });
+  }
 });
-app.get("/cache-meta.json", (req, res) => {
-  res.sendFile(path.join(__dirname, "cache-meta.json"));
+app.get("/cache-meta.json", async (req, res) => {
+  try {
+    await fs.access(path.join(__dirname, "cache-meta.json"));
+    res.sendFile(path.join(__dirname, "cache-meta.json"));
+  } catch {
+    res.status(404).json({ error: "cache-meta.json not generated yet — run the scrapers first." });
+  }
 });
 
 // ─── Static (React build) ─────────────────────────────────────────────────────
@@ -70,6 +89,26 @@ app.get("/api/status", async (req, res) => {
 // ─── SPA routes ───────────────────────────────────────────────────────────────
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
 app.get("/anasayfa", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
+app.get("/karsilastir", (req, res) => res.sendFile(path.join(__dirname, "client", "dist", "index.html")));
+
+// Detay sayfaları: slug katalogda varsa 200 + SPA, yoksa 404'e düş.
+// (Hepsini körü körüne 404 dönmek, sitemap'teki 2661 URL'yi index dışı bırakır.)
+// Sosyal crawler'lar (WhatsApp/Twitter/...) JS çalıştırmadığı için onlara
+// sunucuda üretilmiş OG kabuğu verilir; arama motorları JS'i render eder.
+app.get("/sistem/:slug", async (req, res, next) => {
+  try {
+    const products = await loadCatalog();
+    const product = findBySlug(products, req.params.slug);
+    if (!product) return next();
+    if (isSocialBot(req.get("user-agent"))) {
+      res.set("Content-Type", "text/html; charset=utf-8");
+      return res.send(botHtml(product));
+    }
+    res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+  } catch {
+    next();
+  }
+});
 
 // ─── API routes ───────────────────────────────────────────────────────────────
 app.use("/api", apiRouter);

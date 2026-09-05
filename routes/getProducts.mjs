@@ -1,52 +1,26 @@
 /**
  * getProducts.mjs — filtered, sorted, paginated product endpoint.
  *
- * The filter/sort/paginate logic lives in lib/filterProducts.mjs so this
- * Express route stays a thin layer on top of it.
+ * POST /api/getProducts { stores?, searchStr?, minPrice?, maxPrice?,
+ *   cpuBrands?, cpuSeries?, cpuModels?, gpuBrands?, gpuSeries?,
+ *   inStock?, page?, pageSize?, sortOrder? }
+ * → { data: [...60 items...], pagination: { totalItems, totalPages, … } }
+ *
+ * Data comes from lib/productIndex.mjs (per-store partitions with
+ * mock.json fallback, in-memory cache). The client downloads ~50KB
+ * per page instead of the full ~2MB catalogue.
  */
 
 import { Router } from "express";
-import { promises as fs } from "fs";
-import { watch } from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import { loadCatalog } from "../lib/productIndex.mjs";
 import { filterProducts } from "../lib/filterProducts.mjs";
 
 const router = Router();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const MOCK_PATH = path.join(__dirname, "..", "mock.json");
-
-// ─── In-memory cache ─────────────────────────────────────────────────────────
-let cache = null;
-
-async function loadCache() {
-  const raw = await fs.readFile(MOCK_PATH, "utf-8");
-  cache = JSON.parse(raw);
-  console.log(`[cache] Loaded ${cache.length} products from mock.json`);
-  return cache;
-}
-
-async function getProducts() {
-  if (!cache) await loadCache();
-  return cache;
-}
-
-// Invalidate cache when mock.json is written
-watch(MOCK_PATH, (eventType) => {
-  if (eventType === "change") {
-    console.log("[cache] mock.json changed — invalidating cache");
-    cache = null;
-  }
-});
-
-// ─── Route ───────────────────────────────────────────────────────────────────
-
 router.post("/", async (req, res) => {
   try {
-    const data = await getProducts();
-    res.json(filterProducts(data, req.body));
+    const products = await loadCatalog();
+    res.json(filterProducts(products, req.body ?? {}));
   } catch (err) {
     console.error("[getProducts] Error:", err);
     res.status(500).json({ error: err.message });

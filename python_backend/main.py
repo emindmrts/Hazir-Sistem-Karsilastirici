@@ -8,6 +8,7 @@ Endpoints:
 
 import asyncio
 import json
+import re
 import sys
 import os
 import time
@@ -85,11 +86,40 @@ def load_mock() -> list[dict]:
     return []
 
 
+_STORE_TR = str.maketrans({
+    "ç": "c", "ğ": "g", "ı": "i", "ö": "o", "ş": "s", "ü": "u",
+    "Ç": "c", "Ğ": "g", "İ": "i", "I": "i", "Ö": "o", "Ş": "s", "Ü": "u",
+})
+
+
+def store_partition_key(store: str) -> str:
+    """'GamingGen' → 'gaminggen'. Mirrors storeKey() in lib/productIndex.mjs."""
+    return re.sub(r"[^a-z0-9]", "", (store or "").translate(_STORE_TR).lower())
+
+
+def save_partitions(products: list[dict]) -> None:
+    """Write per-store partitions (data/stores/<key>.json)."""
+    try:
+        stores_dir = Path(__file__).parent.parent / "data" / "stores"
+        stores_dir.mkdir(parents=True, exist_ok=True)
+        by_store: dict[str, list[dict]] = {}
+        for p in products:
+            by_store.setdefault(store_partition_key(p.get("store")), []).append(p)
+        for key, items in by_store.items():
+            (stores_dir / f"{key or 'unknown'}.json").write_text(
+                json.dumps(items, ensure_ascii=False, separators=(",", ":")),
+                encoding="utf-8",
+            )
+    except Exception as e:
+        print(f"[WARN] Failed to write store partitions: {e}", flush=True)
+
+
 def save_mock(products: list[dict]) -> None:
     MOCK_JSON.write_text(
-        json.dumps(products, ensure_ascii=False, indent=2),
+        json.dumps(products, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
+    save_partitions(products)
     CACHE_META.write_text(
         json.dumps({"lastUpdated": int(time.time() * 1000), "totalProducts": len(products)}, ensure_ascii=False),
         encoding="utf-8",
@@ -101,7 +131,7 @@ def save_mock(products: list[dict]) -> None:
     if client_public_dir.exists():
         try:
             (client_public_dir / "mock.json").write_text(
-                json.dumps(products, ensure_ascii=False, indent=2),
+                json.dumps(products, ensure_ascii=False, separators=(",", ":")),
                 encoding="utf-8",
             )
             (client_public_dir / "cache-meta.json").write_text(
@@ -117,7 +147,7 @@ def save_mock(products: list[dict]) -> None:
     if client_dist_dir.exists():
         try:
             (client_dist_dir / "mock.json").write_text(
-                json.dumps(products, ensure_ascii=False, indent=2),
+                json.dumps(products, ensure_ascii=False, separators=(",", ":")),
                 encoding="utf-8",
             )
             (client_dist_dir / "cache-meta.json").write_text(
@@ -147,7 +177,7 @@ async def run_all_scrapers() -> list[dict]:
             save_mock(all_products)
 
             # Sync scraper'lari thread pool'da calistir
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             sync_results = await asyncio.gather(
                 loop.run_in_executor(None, scrape_sinerji),
                 loop.run_in_executor(None, scrape_gamegaraj),

@@ -5,7 +5,7 @@ sys.path.insert(0, '.')
 
 async def test_all():
     results = {}
-    scrapers = ['sinerji', 'gamegaraj', 'itopya', 'vatan', 'incehesap', 'pckolik', 'gaminggen', 'tebilon']
+    scrapers = ['sinerji', 'gamegaraj', 'itopya', 'vatan', 'incehesap', 'pckolik', 'gaminggen', 'tebilon', 'enucuzsistem']
 
     for name in scrapers:
         try:

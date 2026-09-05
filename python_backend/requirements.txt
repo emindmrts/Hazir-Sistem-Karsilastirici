@@ -2,5 +2,6 @@ scrapling
 fastapi
 uvicorn
 curl_cffi
+httpx
 playwright
 rich

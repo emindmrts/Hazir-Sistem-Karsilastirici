@@ -377,6 +377,7 @@ def extract_specs_from_name(name: str) -> dict:
         _exclude.append(ram_m.span())
 
     storage_candidates = []
+    gpu_end = gpu_m.end() if gpu_m else -1
     for sm in re.finditer(
         r"\d+\s*(?:gb|tb)(?:\s+(?:nvme|m\.?\s*2|ssd|hdd|sata))*",
         text, re.IGNORECASE):
@@ -384,6 +385,12 @@ def extract_specs_from_name(name: str) -> dict:
         if any(s < e2 and s2 < e for s2, e2 in _exclude):
             continue
         has_kw = bool(re.search(r"(?:nvme|m\.?\s*2|ssd|hdd|sata)", sm.group(0), re.IGNORECASE))
+        # VRAM korumasi: GPU'dan hemen sonra gelen kucuk (<32GB) birimsiz
+        # kapasite VRAM'dir ("RTX 3050 ... 6gb"), depolama degil.
+        if not has_kw and gpu_end >= 0 and gpu_end <= s <= gpu_end + 30:
+            num = re.search(r"\d+", sm.group(0))
+            if num and int(num.group(0)) <= 32:
+                continue
         # For bare capacities (no storage keyword), skip if followed by DDR/RAM
         if not has_kw:
             tail = _norm(text[e:e + 12])
@@ -431,5 +438,10 @@ def extract_specs_from_name(name: str) -> dict:
             end = min(len(text), idx + len(kw) + 25)
             specs["Cooler"] = _clean(text[start:end])[:50]
             break
+    else:
+        # BOX (kutulu) islemci perakende kutusuyla gelir: stok sogutucu dahildir.
+        # TRAY/MPK icin tersi soylenemez (hazir sistemde sogutucu takilidir).
+        if re.search(r"(?<![a-z0-9])box(?![a-z0-9])", n):
+            specs["Cooler"] = "Stok Soğutucu"
 
     return specs

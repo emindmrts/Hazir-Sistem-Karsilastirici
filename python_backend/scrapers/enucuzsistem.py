@@ -8,8 +8,10 @@ Magaza adı 'store' alanından normalize edilir.
 """
 
 import asyncio
+import re
 import sys
 import httpx
+from .utils import extract_specs_from_name, merge_specs
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -41,17 +43,62 @@ def normalize_store(raw: str) -> str:
     return base
 
 
+def _s(*vals) -> str:
+    """Ilk dolu deger (API null'lari atla)."""
+    for v in vals:
+        if v is not None and str(v).strip() != "":
+            return str(v).strip()
+    return ""
+
+
+def _has_unit(s: str, *keywords) -> bool:
+    n = s.lower()
+    return any(k in n for k in keywords)
+
+
 def map_product(raw: dict) -> dict:
     specs_raw = raw.get("specs") or {}
 
-    cpu       = specs_raw.get("CPU") or ""
-    gpu       = specs_raw.get("GPU") or ""
-    ram       = specs_raw.get("Ram") or specs_raw.get("RAM") or ""
-    storage   = specs_raw.get("Storage") or ""
-    mobo      = specs_raw.get("Motherboard") or ""
-    psu       = specs_raw.get("PSU") or ""
-    case_     = specs_raw.get("Case") or ""
-    cooler    = specs_raw.get("Cooler") or ""
+    # CPU / GPU: ham metin, yoksa Brand + kanonik modelden derle
+    cpu = _s(specs_raw.get("CPU"))
+    if not cpu:
+        brand, canon = _s(specs_raw.get("CPU_Brand")), _s(raw.get("cpuCanonical"))
+        cpu = " ".join(x for x in [brand, canon] if x)
+    gpu = _s(specs_raw.get("GPU"))
+    if not gpu:
+        brand, canon = _s(specs_raw.get("GPU_Brand")), _s(raw.get("gpuCanonical"))
+        gpu = " ".join(x for x in [brand, canon] if x)
+
+    # RAM: Ram/RAM, yoksa Size (+Type) — birimsiz sayilari alma
+    ram = _s(specs_raw.get("Ram"), specs_raw.get("RAM"))
+    if not ram:
+        size = _s(specs_raw.get("RAM_Size"))
+        if _has_unit(size, "gb", "tb"):
+            rtype = _s(specs_raw.get("RAM_Type"))
+            ram = " ".join(x for x in [size, rtype] if x)
+
+    # Storage: ayni kural
+    storage = _s(specs_raw.get("Storage"))
+    if not storage:
+        size = _s(specs_raw.get("Storage_Size"))
+        stype = _s(specs_raw.get("ssdType"))
+        if _has_unit(size, "gb", "tb"):
+            storage = size + (
+                f" {stype}" if stype and _has_unit(stype, "gb", "tb", "ssd", "hdd", "nvme", "m.2") else ""
+            )
+
+    mobo = _s(specs_raw.get("Motherboard"), specs_raw.get("chipset"))
+
+    # PSU: yoksa guc + verimlilikten derle ("750W 80+ Bronze")
+    psu = _s(specs_raw.get("PSU"))
+    if not psu:
+        power = _s(specs_raw.get("PSU_Power"))
+        eff = _s(specs_raw.get("psuEfficiency"))
+        if re.match(r"^\d{3,4}$", power):
+            psu = f"{power}W" + (f" {eff}" if eff else "")
+
+    case_ = _s(specs_raw.get("Case"))
+    cooler = _s(specs_raw.get("Cooler"))
 
     # Görüntü URL'si — '/api/cached-images?url=...' ise decode et
     image = raw.get("image") or ""
@@ -65,22 +112,30 @@ def map_product(raw: dict) -> dict:
     if image and not image.startswith("http"):
         image = "https://enucuzsistem.com" + image
 
+    name = (raw.get("name") or "").strip()
+
+    specs = {
+        "CPU":         cpu        or "N/A",
+        "GPU":         gpu        or "N/A",
+        "RAM":         ram        or "N/A",
+        "Storage":     storage    or "N/A",
+        "Motherboard": mobo       or "N/A",
+        "PSU":         psu        or "N/A",
+        "Case":        case_      or "N/A",
+        "Cooler":      cooler     or "N/A",
+    }
+    # API'de eksik kalan alanlari once urun isminden, sonra link slug'indan
+    # doldur (diger scraper'larla ayni). Slug'da CPU/GPU/RAM izleri olur.
+    merge_specs(specs, extract_specs_from_name(name))
+    merge_specs(specs, extract_specs_from_name(raw.get("link") or ""))
+
     return {
-        "name":  raw.get("name", "").strip(),
+        "name":  name,
         "price": float(raw.get("price") or 0),
         "image": image,
         "url":   raw.get("link") or "",
         "store": normalize_store(raw.get("store") or ""),
-        "specs": {
-            "CPU":         cpu        or "N/A",
-            "GPU":         gpu        or "N/A",
-            "RAM":         ram        or "N/A",
-            "Storage":     storage    or "N/A",
-            "Motherboard": mobo       or "N/A",
-            "PSU":         psu        or "N/A",
-            "Case":        case_      or "N/A",
-            "Cooler":      cooler     or "N/A",
-        },
+        "specs": specs,
     }
 
 
