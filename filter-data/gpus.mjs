@@ -2,9 +2,12 @@ import express from "express";
 const router = express.Router();
 import { promises as fs } from "fs";
 import mysql from "mysql2/promise"; // mysql2 paketini kullanıyoruz
-import dbConfig from "../config.mjs";
+import dbConfig, { isDbConfigured } from "../config.mjs";
 
 router.get("/", async (req, res) => {
+  if (!isDbConfigured) {
+    return res.status(503).json({ error: "Database not configured" });
+  }
   try {
     const connection = await mysql.createConnection(dbConfig);
 
