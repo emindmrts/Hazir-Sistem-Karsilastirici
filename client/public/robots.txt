@@ -2,10 +2,14 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /*.json$
+Disallow: /sw.js
+Disallow: /manifest.webmanifest
 
 User-agent: Googlebot
 Allow: /
 Disallow: /api/
 Disallow: /*.json$
+Disallow: /sw.js
+Disallow: /manifest.webmanifest
 
 Sitemap: https://www.pckarsilastir.com/sitemap.xml

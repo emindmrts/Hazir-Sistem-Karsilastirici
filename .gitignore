@@ -47,3 +47,15 @@ scrapling_*.txt
 /test_scripts/
 /test_data/
 /python_backend/scratch/
+
+# Rust-yal ad-hoc python teşhis scriptleri
+/python_backend/test_*.py
+/python_backend/*_detail.html
+/python_backend/scrapers/*.cache.json
+/python_backend/start_nightly.bat
+/python_backend/nightly_updater.py
+/old_mock_tmp.json
+
+# Server logs
+/server.log
+/server.log.*

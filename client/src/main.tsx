@@ -8,6 +8,11 @@ import App from './App.tsx'
 // Performance monitoring başlat
 if (import.meta.env.PROD) {
   initPerformanceMonitoring()
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    })
+  }
 }
 
 createRoot(document.getElementById('root')!).render(
